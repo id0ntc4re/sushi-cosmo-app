@@ -11,6 +11,7 @@ import {
 import appCss from "../styles.css?url";
 import { CartProvider } from "@/lib/cart";
 import { CartDrawer } from "@/components/CartDrawer";
+import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
   return (
@@ -118,6 +119,7 @@ function RootComponent() {
       <CartProvider>
         <Outlet />
         <CartDrawer />
+        <Toaster position="top-right" />
       </CartProvider>
     </QueryClientProvider>
   );

@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/lib/cart";
 import logo from "@/assets/logo.svg";
@@ -89,7 +90,7 @@ function Index() {
   return (
     <div className="min-h-screen bg-white text-foreground">
       {/* TOP HEADER */}
-      <header className="bg-white border-b border-neutral-100">
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-neutral-100">
         <div className="mx-auto max-w-[1280px] px-6 h-20 flex items-center gap-10">
           <a href="/" className="flex items-center gap-2 shrink-0">
             <img src={logo} alt="КосмоСуши" className="h-10 w-10" />
@@ -272,20 +273,47 @@ function Index() {
                       )}
                       <div className="mt-auto pt-4 flex items-center justify-between gap-2">
                         <span className="text-xl font-extrabold">{Number(p.price)} ₽</span>
-                        <button
-                          onClick={() =>
-                            cart.add({
-                              id: p.id,
-                              name: p.name,
-                              price: Number(p.price),
-                              image_url: p.image_url,
-                              weight: p.weight,
-                            })
+                        {(() => {
+                          const inCart = cart.items.find((i) => i.id === p.id);
+                          if (inCart) {
+                            return (
+                              <div className="flex items-center gap-1">
+                                <button
+                                  onClick={() => cart.setQty(p.id, inCart.quantity - 1)}
+                                  className="h-8 w-8 rounded-full bg-neutral-100 hover:bg-neutral-200 font-bold"
+                                  aria-label="Уменьшить"
+                                >
+                                  −
+                                </button>
+                                <span className="w-7 text-center font-bold">{inCart.quantity}</span>
+                                <button
+                                  onClick={() => cart.setQty(p.id, inCart.quantity + 1)}
+                                  className="h-8 w-8 rounded-full bg-primary text-white hover:opacity-90 font-bold"
+                                  aria-label="Увеличить"
+                                >
+                                  +
+                                </button>
+                              </div>
+                            );
                           }
-                          className="px-4 py-2 rounded-full bg-primary text-white font-semibold hover:opacity-90 text-sm"
-                        >
-                          В корзину
-                        </button>
+                          return (
+                            <button
+                              onClick={() => {
+                                cart.add({
+                                  id: p.id,
+                                  name: p.name,
+                                  price: Number(p.price),
+                                  image_url: p.image_url,
+                                  weight: p.weight,
+                                });
+                                toast.success("Добавлено в корзину", { description: p.name });
+                              }}
+                              className="px-4 py-2 rounded-full bg-primary text-white font-semibold hover:opacity-90 text-sm"
+                            >
+                              В корзину
+                            </button>
+                          );
+                        })()}
                       </div>
                     </div>
                   </article>

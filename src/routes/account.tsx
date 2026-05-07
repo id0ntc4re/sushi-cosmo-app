@@ -31,14 +31,28 @@ function Account() {
   const [profile, setProfile] = useState<any>(null);
 
   useEffect(() => {
-    (async () => {
-      const { data: { user: u } } = await supabase.auth.getUser();
-      if (!u) { nav({ to: "/account-login", search: { redirect: "/account" } } as any); return; }
-      setUser({ id: u.id, email: u.email ?? null });
+    let cancelled = false;
+    const init = async (u: { id: string; email: string | null } | null) => {
+      if (cancelled) return;
+      if (!u) {
+        nav({ to: "/account-login", search: { redirect: "/account" } } as any);
+        return;
+      }
+      setUser(u);
       const { data: p } = await supabase.from("profiles").select("*").eq("id", u.id).maybeSingle();
+      if (cancelled) return;
       setProfile(p);
       setLoading(false);
-    })();
+    };
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      const u = session?.user;
+      init(u ? { id: u.id, email: u.email ?? null } : null);
+    });
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      const u = session?.user;
+      if (!u) nav({ to: "/account-login", search: { redirect: "/account" } } as any);
+    });
+    return () => { cancelled = true; sub.subscription.unsubscribe(); };
   }, [nav]);
 
   if (loading || !user) return <div className="min-h-screen grid place-items-center text-neutral-500">Загружаем…</div>;

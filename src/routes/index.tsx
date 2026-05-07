@@ -343,6 +343,11 @@ function Index() {
         {!products.length && (
           <div className="py-20 text-center text-neutral-500">Загружаем меню…</div>
         )}
+        {products.length > 0 && search && filteredProducts.length === 0 && (
+          <div className="py-20 text-center text-neutral-500">
+            По запросу «{search}» ничего не найдено
+          </div>
+        )}
       </section>
 
       {/* FOOTER */}

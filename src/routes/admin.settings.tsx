@@ -34,7 +34,7 @@ function SettingsAdmin() {
 
     const { data: roles } = await supabase
       .from("user_roles")
-      .select("user_id, role, profiles:user_id(full_name, phone)")
+      .select("user_id, role")
       .eq("role", "admin");
     setAdmins(roles ?? []);
   }
@@ -75,14 +75,11 @@ function SettingsAdmin() {
         <div className="space-y-2 mb-4">
           {admins.map((a: any) => (
             <div key={a.user_id} className="flex justify-between items-center bg-neutral-50 rounded-xl px-4 py-3">
-              <div>
-                <div className="font-semibold">{a.profiles?.full_name || "Без имени"}</div>
-                <div className="text-xs text-neutral-500">{a.profiles?.phone || a.user_id}</div>
-              </div>
-              <span className="text-xs text-primary font-semibold">admin</span>
+              <div className="text-sm font-mono text-neutral-700 truncate">{a.user_id}</div>
+              <span className="text-xs text-primary font-semibold ml-3">admin</span>
             </div>
           ))}
-          {!admins.length && <div className="text-sm text-neutral-400">Пока только вы</div>}
+          {!admins.length && <div className="text-sm text-neutral-400">Пока нет администраторов</div>}
         </div>
         <p className="text-xs text-neutral-500">
           Чтобы добавить админа: пользователь регистрируется на /login, затем вы добавляете запись в таблицу <code className="bg-neutral-100 px-1 rounded">user_roles</code> с ролью <code className="bg-neutral-100 px-1 rounded">admin</code>.

@@ -192,7 +192,7 @@ ${Number(o.bonus_used) > 0 ? `<div class="row"><span>Бонусы</span><span>�
   }
 
   if (loading) return <Loader />;
-  if (!orders.length) return <Empty icon="📦" text="У вас ещё нет заказов" cta={<Link to="/" className="btn-primary">К меню</Link>} />;
+  if (!orders.length) return <Empty icon="📦" text="У вас ещё нет заказов" cta={<Link to="/" className="inline-block px-6 py-3 rounded-full bg-primary text-white font-bold">К меню</Link>} />;
 
   return (
     <div className="space-y-3">
@@ -527,7 +527,7 @@ function FavoritesTab({ userId }: { userId: string }) {
   }
 
   if (loading) return <Loader />;
-  if (!items.length) return <Empty icon="❤️" text="Пока ничего не добавлено в избранное" cta={<Link to="/" className="btn-primary">К меню</Link>} />;
+  if (!items.length) return <Empty icon="❤️" text="Пока ничего не добавлено в избранное" cta={<Link to="/" className="inline-block px-6 py-3 rounded-full bg-primary text-white font-bold">К меню</Link>} />;
 
   return (
     <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">

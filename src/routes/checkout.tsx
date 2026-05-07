@@ -58,6 +58,9 @@ function Checkout() {
   const [promoInput, setPromoInput] = useState("");
   const [promo, setPromo] = useState<{ code: string; discount: number; promo: PromoCode } | null>(null);
   const [promoErr, setPromoErr] = useState<string | null>(null);
+  const [profile, setProfile] = useState<any | null>(null);
+  const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
+  const [bonusUse, setBonusUse] = useState(0);
 
   const [form, setForm] = useState({
     customer_name: "",
@@ -83,6 +86,22 @@ function Checkout() {
       ]);
       if (st?.value) setSettings({ ...DEFAULT_SETTINGS, ...(st.value as any) });
       setAddons((ad as Addon[]) ?? []);
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const [{ data: prof }, { data: addrs }] = await Promise.all([
+          supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
+          supabase.from("addresses").select("*").eq("user_id", user.id).order("is_default", { ascending: false }),
+        ]);
+        setProfile(prof);
+        setSavedAddresses(addrs ?? []);
+        setForm((f) => ({
+          ...f,
+          customer_name: f.customer_name || prof?.full_name || "",
+          phone: f.phone || prof?.phone || "",
+          address: f.address || addrs?.find((a: any) => a.is_default)?.address || "",
+        }));
+      }
     })();
   }, []);
 

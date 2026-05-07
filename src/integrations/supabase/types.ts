@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      addresses: {
+        Row: {
+          address: string
+          apartment: string | null
+          comment: string | null
+          created_at: string
+          entrance: string | null
+          floor: string | null
+          id: string
+          is_default: boolean
+          label: string | null
+          user_id: string
+        }
+        Insert: {
+          address: string
+          apartment?: string | null
+          comment?: string | null
+          created_at?: string
+          entrance?: string | null
+          floor?: string | null
+          id?: string
+          is_default?: boolean
+          label?: string | null
+          user_id: string
+        }
+        Update: {
+          address?: string
+          apartment?: string | null
+          comment?: string | null
+          created_at?: string
+          entrance?: string | null
+          floor?: string | null
+          id?: string
+          is_default?: boolean
+          label?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       banners: {
         Row: {
           created_at: string
@@ -53,6 +92,33 @@ export type Database = {
         }
         Relationships: []
       }
+      bonus_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          order_id: string | null
+          reason: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          reason: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          reason?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -80,6 +146,48 @@ export type Database = {
           name?: string
           slug?: string
           sort_order?: number
+        }
+        Relationships: []
+      }
+      combos: {
+        Row: {
+          created_at: string
+          id: string
+          items: Json
+          name: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          items?: Json
+          name: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          items?: Json
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      favorites: {
+        Row: {
+          created_at: string
+          product_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          product_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          product_id?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -132,6 +240,8 @@ export type Database = {
         Row: {
           address: string | null
           admin_note: string | null
+          bonus_earned: number
+          bonus_used: number
           change_from: number | null
           comment: string | null
           created_at: string
@@ -156,6 +266,8 @@ export type Database = {
         Insert: {
           address?: string | null
           admin_note?: string | null
+          bonus_earned?: number
+          bonus_used?: number
           change_from?: number | null
           comment?: string | null
           created_at?: string
@@ -180,6 +292,8 @@ export type Database = {
         Update: {
           address?: string | null
           admin_note?: string | null
+          bonus_earned?: number
+          bonus_used?: number
           change_from?: number | null
           comment?: string | null
           created_at?: string
@@ -270,22 +384,40 @@ export type Database = {
       }
       profiles: {
         Row: {
+          birth_date: string | null
+          bonus_balance: number
           created_at: string
+          email: string | null
           full_name: string | null
           id: string
           phone: string | null
+          referral_code: string | null
+          referred_by: string | null
+          total_spent: number
         }
         Insert: {
+          birth_date?: string | null
+          bonus_balance?: number
           created_at?: string
+          email?: string | null
           full_name?: string | null
           id: string
           phone?: string | null
+          referral_code?: string | null
+          referred_by?: string | null
+          total_spent?: number
         }
         Update: {
+          birth_date?: string | null
+          bonus_balance?: number
           created_at?: string
+          email?: string | null
           full_name?: string | null
           id?: string
           phone?: string | null
+          referral_code?: string | null
+          referred_by?: string | null
+          total_spent?: number
         }
         Relationships: []
       }
@@ -302,6 +434,7 @@ export type Database = {
           min_order: number
           starts_at: string | null
           used_count: number
+          user_id: string | null
         }
         Insert: {
           code: string
@@ -315,6 +448,7 @@ export type Database = {
           min_order?: number
           starts_at?: string | null
           used_count?: number
+          user_id?: string | null
         }
         Update: {
           code?: string
@@ -328,6 +462,34 @@ export type Database = {
           min_order?: number
           starts_at?: string | null
           used_count?: number
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      reviews: {
+        Row: {
+          comment: string | null
+          created_at: string
+          id: string
+          order_id: string
+          rating: number
+          user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          order_id: string
+          rating: number
+          user_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          id?: string
+          order_id?: string
+          rating?: number
+          user_id?: string
         }
         Relationships: []
       }
@@ -382,6 +544,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      loyalty_tier: { Args: { _total: number }; Returns: string }
     }
     Enums: {
       app_role: "admin" | "user"

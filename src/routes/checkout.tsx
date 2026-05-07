@@ -58,6 +58,9 @@ function Checkout() {
   const [promoInput, setPromoInput] = useState("");
   const [promo, setPromo] = useState<{ code: string; discount: number; promo: PromoCode } | null>(null);
   const [promoErr, setPromoErr] = useState<string | null>(null);
+  const [profile, setProfile] = useState<any | null>(null);
+  const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
+  const [bonusUse, setBonusUse] = useState(0);
 
   const [form, setForm] = useState({
     customer_name: "",
@@ -83,6 +86,22 @@ function Checkout() {
       ]);
       if (st?.value) setSettings({ ...DEFAULT_SETTINGS, ...(st.value as any) });
       setAddons((ad as Addon[]) ?? []);
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const [{ data: prof }, { data: addrs }] = await Promise.all([
+          supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
+          supabase.from("addresses").select("*").eq("user_id", user.id).order("is_default", { ascending: false }),
+        ]);
+        setProfile(prof);
+        setSavedAddresses(addrs ?? []);
+        setForm((f) => ({
+          ...f,
+          customer_name: f.customer_name || prof?.full_name || "",
+          phone: f.phone || prof?.phone || "",
+          address: f.address || addrs?.find((a: any) => a.is_default)?.address || "",
+        }));
+      }
     })();
   }, []);
 
@@ -102,7 +121,14 @@ function Checkout() {
         : settings.delivery_cost
       : 0;
   const discount = promo?.discount ?? 0;
-  const total = Math.max(0, subtotal - discount + deliveryCost);
+  const tier = profile ? (Number(profile.total_spent) >= 30000 ? "gold" : Number(profile.total_spent) >= 10000 ? "silver" : "bronze") : null;
+  const tierDiscount = tier === "gold" ? Math.round(subtotal * 0.07) : tier === "silver" ? Math.round(subtotal * 0.03) : 0;
+  const cashbackPct = tier === "gold" ? 10 : tier === "silver" ? 5 : 3;
+  const bonusBalance = Math.floor(Number(profile?.bonus_balance || 0));
+  const maxBonus = Math.min(bonusBalance, Math.floor(subtotal * 0.3));
+  const bonusApplied = Math.min(bonusUse, maxBonus);
+  const total = Math.max(0, subtotal - discount - tierDiscount - bonusApplied + deliveryCost);
+  const bonusEarn = profile ? Math.floor((subtotal - bonusApplied) * cashbackPct / 100) : 0;
   const belowMin = settings.min_order > 0 && subtotal < settings.min_order;
 
   async function applyPromo() {
@@ -131,6 +157,7 @@ function Checkout() {
     setSubmitting(true);
     try {
       const { data: user } = await supabase.auth.getUser();
+      const totalDiscount = discount + tierDiscount;
       const { data: order, error: orderErr } = await supabase
         .from("orders")
         .insert({
@@ -147,8 +174,10 @@ function Checkout() {
           comment: parsed.data.comment || null,
           subtotal,
           delivery_cost: deliveryCost,
-          discount,
+          discount: totalDiscount,
           promo_code: promo?.code ?? null,
+          bonus_used: bonusApplied,
+          bonus_earned: bonusEarn,
           total,
         })
         .select("id, number")
@@ -172,6 +201,19 @@ function Checkout() {
           .from("promo_codes")
           .update({ used_count: promo.promo.used_count + 1 })
           .eq("id", promo.promo.id);
+      }
+
+      // bonuses & total spent
+      if (user.user && profile) {
+        const newBalance = bonusBalance - bonusApplied + bonusEarn;
+        const newSpent = Number(profile.total_spent || 0) + total;
+        await supabase.from("profiles").update({ bonus_balance: newBalance, total_spent: newSpent }).eq("id", user.user.id);
+        if (bonusApplied > 0) {
+          await supabase.from("bonus_transactions").insert({ user_id: user.user.id, order_id: order.id, amount: -bonusApplied, reason: `Списание · заказ №${order.number}` });
+        }
+        if (bonusEarn > 0) {
+          await supabase.from("bonus_transactions").insert({ user_id: user.user.id, order_id: order.id, amount: bonusEarn, reason: `Кэшбэк · заказ №${order.number}` });
+        }
       }
 
       clear();
@@ -286,11 +328,23 @@ function Checkout() {
                   </div>
 
                   {form.delivery_type === "delivery" ? (
-                    <Field label="Адрес доставки*">
-                      <input className={inputCls} value={form.address}
-                        onChange={(e) => set("address", e.target.value)}
-                        placeholder="Улица, дом, кв., подъезд, этаж" required />
-                    </Field>
+                    <>
+                      {savedAddresses.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {savedAddresses.map((a) => (
+                            <button key={a.id} type="button" onClick={() => set("address", a.address)}
+                              className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${form.address === a.address ? "border-primary bg-primary/5 text-primary" : "border-neutral-200 hover:border-neutral-400"}`}>
+                              {a.label ? `${a.label}: ` : ""}{a.address}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      <Field label="Адрес доставки*">
+                        <input className={inputCls} value={form.address}
+                          onChange={(e) => set("address", e.target.value)}
+                          placeholder="Улица, дом, кв., подъезд, этаж" required />
+                      </Field>
+                    </>
                   ) : (
                     <Field label="Точка самовывоза">
                       <select className={inputCls} value={form.pickup_point}
@@ -415,15 +469,36 @@ function Checkout() {
                   )}
                 </div>
 
+                {profile && bonusBalance > 0 && (
+                  <div className="border-t pt-4 mb-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-bold">⭐ Бонусы ({bonusBalance} ₽)</span>
+                      <span className="text-xs text-neutral-500">Макс. {maxBonus} ₽</span>
+                    </div>
+                    <div className="flex gap-2 items-center">
+                      <input type="range" min={0} max={maxBonus} value={bonusApplied}
+                        onChange={(e) => setBonusUse(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min={0} max={maxBonus} value={bonusApplied}
+                        onChange={(e) => setBonusUse(Math.max(0, Math.min(maxBonus, Number(e.target.value) || 0)))}
+                        className="w-20 px-2 py-1 rounded-lg border text-sm text-right" />
+                    </div>
+                  </div>
+                )}
+
                 <div className="space-y-1 text-sm border-t pt-4">
                   <Row k="Товары" v={`${subtotal} ₽`} />
-                  {discount > 0 && <Row k="Скидка" v={`−${discount} ₽`} accent />}
+                  {discount > 0 && <Row k={`Промо ${promo?.code ?? ""}`} v={`−${discount} ₽`} accent />}
+                  {tierDiscount > 0 && <Row k="Скидка уровня" v={`−${tierDiscount} ₽`} accent />}
+                  {bonusApplied > 0 && <Row k="Бонусы" v={`−${bonusApplied} ₽`} accent />}
                   <Row k="Доставка" v={deliveryCost === 0 ? "Бесплатно" : `${deliveryCost} ₽`} />
                 </div>
                 <div className="flex justify-between mt-4 pt-4 border-t">
                   <span className="font-bold">Итого</span>
                   <span className="text-2xl font-extrabold">{total} ₽</span>
                 </div>
+                {bonusEarn > 0 && (
+                  <div className="text-xs text-amber-700 mt-2 text-center">+{bonusEarn} ₽ бонусов после заказа</div>
+                )}
               </>
             )}
           </aside>

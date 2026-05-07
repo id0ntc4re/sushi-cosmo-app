@@ -20,11 +20,14 @@ type Product = {
   in_stock: boolean;
   sort_order: number;
   sku: string | null;
+  is_addon: boolean;
+  is_recommended: boolean;
 };
 
 const empty: Partial<Product> = {
   name: "", price: 0, weight: "", description: "", image_url: "",
   category_id: null, is_active: true, in_stock: true, sort_order: 0, sku: "",
+  is_addon: false, is_recommended: false,
 };
 
 function ProductsAdmin() {
@@ -57,6 +60,8 @@ function ProductsAdmin() {
       in_stock: editing.in_stock ?? true,
       sort_order: Number(editing.sort_order ?? 0),
       sku: editing.sku || null,
+      is_addon: editing.is_addon ?? false,
+      is_recommended: editing.is_recommended ?? false,
     };
     if (!payload.name) return toast.error("Укажите название");
     const res = editing.id
@@ -165,6 +170,8 @@ function ProductsAdmin() {
             <div className="md:col-span-2"><Field label="Описание"><textarea className={`${inp} min-h-[80px]`} value={editing.description ?? ""} onChange={(e) => setEditing({ ...editing, description: e.target.value })} /></Field></div>
             <label className="flex items-center gap-2"><input type="checkbox" checked={editing.is_active ?? true} onChange={(e) => setEditing({ ...editing, is_active: e.target.checked })} /> Активен</label>
             <label className="flex items-center gap-2"><input type="checkbox" checked={editing.in_stock ?? true} onChange={(e) => setEditing({ ...editing, in_stock: e.target.checked })} /> В наличии</label>
+            <label className="flex items-center gap-2"><input type="checkbox" checked={editing.is_addon ?? false} onChange={(e) => setEditing({ ...editing, is_addon: e.target.checked })} /> Доп. товар (соус/палочки)</label>
+            <label className="flex items-center gap-2"><input type="checkbox" checked={editing.is_recommended ?? false} onChange={(e) => setEditing({ ...editing, is_recommended: e.target.checked })} /> Рекомендуемый («с этим заказывают»)</label>
           </div>
           <div className="flex gap-2 mt-6 justify-end">
             <button onClick={() => setEditing(null)} className="px-5 py-2.5 rounded-full bg-neutral-100 font-semibold">Отмена</button>

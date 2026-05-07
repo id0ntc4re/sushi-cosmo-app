@@ -1,8 +1,37 @@
 import { Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/lib/cart";
 
+type Reco = {
+  id: string;
+  name: string;
+  price: number;
+  image_url: string | null;
+  weight: string | null;
+};
+
 export function CartDrawer() {
-  const { items, open, setOpen, setQty, remove, subtotal } = useCart();
+  const { items, open, setOpen, setQty, remove, subtotal, add } = useCart();
+  const [recos, setRecos] = useState<Reco[]>([]);
+
+  useEffect(() => {
+    if (!open || recos.length) return;
+    (async () => {
+      const { data } = await supabase
+        .from("products")
+        .select("id,name,price,image_url,weight")
+        .eq("is_active", true)
+        .eq("in_stock", true)
+        .eq("is_recommended", true)
+        .limit(8);
+      setRecos((data as Reco[]) ?? []);
+    })();
+  }, [open, recos.length]);
+
+  const inCartIds = new Set(items.map((i) => i.id));
+  const recoFiltered = recos.filter((r) => !inCartIds.has(r.id)).slice(0, 6);
 
   return (
     <>
@@ -51,26 +80,46 @@ export function CartDrawer() {
                 <button
                   onClick={() => setQty(it.id, it.quantity - 1)}
                   className="h-7 w-7 rounded-full bg-white border hover:bg-neutral-100"
-                >
-                  −
-                </button>
+                >−</button>
                 <span className="w-6 text-center font-bold">{it.quantity}</span>
                 <button
                   onClick={() => setQty(it.id, it.quantity + 1)}
                   className="h-7 w-7 rounded-full bg-white border hover:bg-neutral-100"
-                >
-                  +
-                </button>
+                >+</button>
               </div>
               <button
                 onClick={() => remove(it.id)}
                 className="text-neutral-400 hover:text-red-500 text-xl px-1"
                 aria-label="Удалить"
-              >
-                ×
-              </button>
+              >×</button>
             </div>
           ))}
+
+          {items.length > 0 && recoFiltered.length > 0 && (
+            <div className="pt-4">
+              <div className="text-sm font-bold text-neutral-700 mb-3">С этим заказывают</div>
+              <div className="grid grid-cols-2 gap-2">
+                {recoFiltered.map((r) => (
+                  <div key={r.id} className="rounded-2xl border border-neutral-100 p-2 flex flex-col">
+                    <div className="aspect-square rounded-xl bg-neutral-50 grid place-items-center overflow-hidden text-2xl mb-2">
+                      {r.image_url ? <img src={r.image_url} alt={r.name} className="w-full h-full object-cover" /> : "🍣"}
+                    </div>
+                    <div className="text-xs font-semibold line-clamp-2 leading-snug min-h-[2.4em]">{r.name}</div>
+                    <div className="mt-2 flex items-center justify-between">
+                      <span className="text-sm font-extrabold">{Number(r.price)} ₽</span>
+                      <button
+                        onClick={() => {
+                          add({ id: r.id, name: r.name, price: Number(r.price), image_url: r.image_url, weight: r.weight });
+                          toast.success("Добавлено", { description: r.name });
+                        }}
+                        className="h-7 w-7 rounded-full bg-primary text-white font-bold"
+                      >+</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {items.length > 0 && (

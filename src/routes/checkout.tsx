@@ -1,14 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { z } from "zod";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/lib/cart";
+import { validatePromo, type PromoCode } from "@/lib/promo";
 import logo from "@/assets/logo.svg";
 
 export const Route = createFileRoute("/checkout")({
-  head: () => ({
-    meta: [{ title: "Оформление заказа — КосмоСуши" }],
-  }),
+  head: () => ({ meta: [{ title: "Оформление заказа — КосмоСуши" }] }),
   component: Checkout,
 });
 
@@ -27,11 +27,38 @@ const schema = z.object({
 
 const PICKUP_POINTS = ["пр-т Шахтёров, 68", "Бр Строителей, 21"];
 
+type Settings = {
+  delivery_cost: number;
+  free_delivery_from: number;
+  min_order: number;
+};
+const DEFAULT_SETTINGS: Settings = {
+  delivery_cost: 150,
+  free_delivery_from: 1000,
+  min_order: 0,
+};
+
+type Addon = {
+  id: string;
+  name: string;
+  price: number;
+  image_url: string | null;
+  weight: string | null;
+};
+
 function Checkout() {
-  const { items, subtotal, clear } = useCart();
+  const cart = useCart();
+  const { items, subtotal, clear, add, setQty } = cart;
   const nav = useNavigate();
+  const [step, setStep] = useState<1 | 2>(1);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
+  const [addons, setAddons] = useState<Addon[]>([]);
+  const [promoInput, setPromoInput] = useState("");
+  const [promo, setPromo] = useState<{ code: string; discount: number; promo: PromoCode } | null>(null);
+  const [promoErr, setPromoErr] = useState<string | null>(null);
+
   const [form, setForm] = useState({
     customer_name: "",
     phone: "",
@@ -48,25 +75,58 @@ function Checkout() {
   const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
 
-  const deliveryCost = form.delivery_type === "delivery" ? (subtotal >= 1000 ? 0 : 150) : 0;
-  const total = subtotal + deliveryCost;
+  useEffect(() => {
+    (async () => {
+      const [{ data: st }, { data: ad }] = await Promise.all([
+        supabase.from("settings").select("value").eq("key", "general").maybeSingle(),
+        supabase.from("products").select("id,name,price,image_url,weight").eq("is_active", true).eq("in_stock", true).eq("is_addon", true).order("sort_order"),
+      ]);
+      if (st?.value) setSettings({ ...DEFAULT_SETTINGS, ...(st.value as any) });
+      setAddons((ad as Addon[]) ?? []);
+    })();
+  }, []);
+
+  // re-validate promo when subtotal changes
+  useEffect(() => {
+    if (!promo) return;
+    if (subtotal < Number(promo.promo.min_order)) {
+      setPromo(null);
+      setPromoErr(`Минимальная сумма для промокода: ${promo.promo.min_order} ₽`);
+    }
+  }, [subtotal, promo]);
+
+  const deliveryCost =
+    form.delivery_type === "delivery"
+      ? subtotal >= settings.free_delivery_from
+        ? 0
+        : settings.delivery_cost
+      : 0;
+  const discount = promo?.discount ?? 0;
+  const total = Math.max(0, subtotal - discount + deliveryCost);
+  const belowMin = settings.min_order > 0 && subtotal < settings.min_order;
+
+  async function applyPromo() {
+    setPromoErr(null);
+    const res = await validatePromo(promoInput, subtotal);
+    if (!res.ok) {
+      setPromoErr(res.error);
+      setPromo(null);
+      return;
+    }
+    setPromo({ code: res.promo.code, discount: res.discount, promo: res.promo });
+    toast.success(`Промокод применён: −${res.discount} ₽`);
+  }
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
-    if (items.length === 0) {
-      setError("Корзина пуста");
-      return;
-    }
+    if (items.length === 0) return setError("Корзина пуста");
+    if (belowMin) return setError(`Минимальная сумма заказа: ${settings.min_order} ₽`);
+
     const parsed = schema.safeParse(form);
-    if (!parsed.success) {
-      setError(parsed.error.issues[0].message);
-      return;
-    }
-    if (parsed.data.delivery_type === "delivery" && !parsed.data.address) {
-      setError("Укажите адрес доставки");
-      return;
-    }
+    if (!parsed.success) return setError(parsed.error.issues[0].message);
+    if (parsed.data.delivery_type === "delivery" && !parsed.data.address)
+      return setError("Укажите адрес доставки");
 
     setSubmitting(true);
     try {
@@ -87,6 +147,8 @@ function Checkout() {
           comment: parsed.data.comment || null,
           subtotal,
           delivery_cost: deliveryCost,
+          discount,
+          promo_code: promo?.code ?? null,
           total,
         })
         .select("id, number")
@@ -104,6 +166,13 @@ function Checkout() {
         })),
       );
       if (itemsErr) throw itemsErr;
+
+      if (promo) {
+        await supabase
+          .from("promo_codes")
+          .update({ used_count: promo.promo.used_count + 1 })
+          .eq("id", promo.promo.id);
+      }
 
       clear();
       nav({ to: "/order-success", search: { n: order.number } });
@@ -129,104 +198,175 @@ function Checkout() {
       </header>
 
       <main className="mx-auto max-w-[1280px] px-6 py-10">
-        <h1 className="text-3xl md:text-4xl font-extrabold mb-8">Оформление заказа</h1>
+        <h1 className="text-3xl md:text-4xl font-extrabold mb-6">Оформление заказа</h1>
+
+        {/* Stepper */}
+        <div className="flex items-center gap-2 mb-8 text-sm">
+          <StepDot n={1} active={step === 1} done={step > 1} label="Дополнительно" />
+          <div className="h-px flex-1 bg-neutral-200 max-w-[80px]" />
+          <StepDot n={2} active={step === 2} done={false} label="Контакты и доставка" />
+        </div>
 
         <div className="grid lg:grid-cols-[1fr_400px] gap-8">
-          <form onSubmit={submit} className="bg-white rounded-3xl p-6 md:p-8 space-y-6">
-            <Section title="Контактные данные">
-              <Field label="Имя*">
-                <input className={inputCls} value={form.customer_name}
-                  onChange={(e) => set("customer_name", e.target.value)} required />
-              </Field>
-              <Field label="Телефон*">
-                <input type="tel" className={inputCls} value={form.phone}
-                  onChange={(e) => set("phone", e.target.value)} placeholder="+7 ___ ___ __ __" required />
-              </Field>
-            </Section>
+          <div className="bg-white rounded-3xl p-6 md:p-8 space-y-6">
+            {step === 1 ? (
+              <>
+                <div>
+                  <h2 className="text-xl font-extrabold mb-1">Не забудьте добавить</h2>
+                  <p className="text-sm text-neutral-500 mb-5">Соусы, имбирь и палочки — всё для идеального ужина</p>
 
-            <Section title="Способ получения">
-              <div className="grid grid-cols-2 gap-2">
-                {(["delivery", "pickup"] as const).map((t) => (
-                  <button key={t} type="button" onClick={() => set("delivery_type", t)}
-                    className={`py-3 rounded-xl font-semibold border-2 transition ${
-                      form.delivery_type === t
-                        ? "border-primary bg-primary/5 text-primary"
-                        : "border-neutral-200 text-neutral-700 hover:border-neutral-300"
-                    }`}>
-                    {t === "delivery" ? "Доставка" : "Самовывоз"}
+                  {addons.length === 0 ? (
+                    <div className="py-8 text-center text-neutral-400 text-sm">Допы не настроены</div>
+                  ) : (
+                    <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                      {addons.map((a) => {
+                        const inCart = items.find((i) => i.id === a.id);
+                        return (
+                          <div key={a.id} className="rounded-2xl border border-neutral-100 p-3 flex flex-col">
+                            <div className="aspect-square rounded-xl bg-neutral-50 grid place-items-center overflow-hidden text-3xl mb-2">
+                              {a.image_url ? <img src={a.image_url} alt={a.name} className="w-full h-full object-cover" /> : "🥢"}
+                            </div>
+                            <div className="text-sm font-semibold line-clamp-2 leading-snug min-h-[2.4em]">{a.name}</div>
+                            <div className="mt-2 flex items-center justify-between">
+                              <span className="font-extrabold">{Number(a.price)} ₽</span>
+                              {inCart ? (
+                                <div className="flex items-center gap-1">
+                                  <button onClick={() => setQty(a.id, inCart.quantity - 1)} className="h-7 w-7 rounded-full bg-neutral-100 font-bold">−</button>
+                                  <span className="w-5 text-center text-sm font-bold">{inCart.quantity}</span>
+                                  <button onClick={() => setQty(a.id, inCart.quantity + 1)} className="h-7 w-7 rounded-full bg-primary text-white font-bold">+</button>
+                                </div>
+                              ) : (
+                                <button
+                                  onClick={() => add({ id: a.id, name: a.name, price: Number(a.price), image_url: a.image_url, weight: a.weight })}
+                                  className="h-7 w-7 rounded-full bg-primary text-white font-bold"
+                                >+</button>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex justify-end pt-2">
+                  <button
+                    onClick={() => setStep(2)}
+                    className="px-8 py-3.5 rounded-full bg-primary text-white font-bold hover:opacity-90"
+                  >
+                    Далее →
                   </button>
-                ))}
-              </div>
+                </div>
+              </>
+            ) : (
+              <form onSubmit={submit} className="space-y-6">
+                <Section title="Контактные данные">
+                  <Field label="Имя*">
+                    <input className={inputCls} value={form.customer_name}
+                      onChange={(e) => set("customer_name", e.target.value)} required />
+                  </Field>
+                  <Field label="Телефон*">
+                    <input type="tel" className={inputCls} value={form.phone}
+                      onChange={(e) => set("phone", e.target.value)} placeholder="+7 ___ ___ __ __" required />
+                  </Field>
+                </Section>
 
-              {form.delivery_type === "delivery" ? (
-                <Field label="Адрес доставки*">
-                  <input className={inputCls} value={form.address}
-                    onChange={(e) => set("address", e.target.value)}
-                    placeholder="Улица, дом, кв., подъезд, этаж" required />
-                </Field>
-              ) : (
-                <Field label="Точка самовывоза">
-                  <select className={inputCls} value={form.pickup_point}
-                    onChange={(e) => set("pickup_point", e.target.value)}>
-                    {PICKUP_POINTS.map((p) => <option key={p} value={p}>{p}</option>)}
-                  </select>
-                </Field>
-              )}
+                <Section title="Способ получения">
+                  <div className="grid grid-cols-2 gap-2">
+                    {(["delivery", "pickup"] as const).map((t) => (
+                      <button key={t} type="button" onClick={() => set("delivery_type", t)}
+                        className={`py-3 rounded-xl font-semibold border-2 transition ${
+                          form.delivery_type === t
+                            ? "border-primary bg-primary/5 text-primary"
+                            : "border-neutral-200 text-neutral-700 hover:border-neutral-300"
+                        }`}>
+                        {t === "delivery" ? "Доставка" : "Самовывоз"}
+                      </button>
+                    ))}
+                  </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <Field label="Время">
-                  <input className={inputCls} value={form.delivery_time}
-                    onChange={(e) => set("delivery_time", e.target.value)}
-                    placeholder="Как можно скорее" />
-                </Field>
-                <Field label="Персон">
-                  <input type="number" min={1} max={20} className={inputCls} value={form.persons}
-                    onChange={(e) => set("persons", Number(e.target.value))} />
-                </Field>
-              </div>
-            </Section>
+                  {form.delivery_type === "delivery" ? (
+                    <Field label="Адрес доставки*">
+                      <input className={inputCls} value={form.address}
+                        onChange={(e) => set("address", e.target.value)}
+                        placeholder="Улица, дом, кв., подъезд, этаж" required />
+                    </Field>
+                  ) : (
+                    <Field label="Точка самовывоза">
+                      <select className={inputCls} value={form.pickup_point}
+                        onChange={(e) => set("pickup_point", e.target.value)}>
+                        {PICKUP_POINTS.map((p) => <option key={p} value={p}>{p}</option>)}
+                      </select>
+                    </Field>
+                  )}
 
-            <Section title="Оплата">
-              <div className="grid grid-cols-3 gap-2">
-                {([
-                  ["cash", "Наличные"],
-                  ["card_courier", "Картой курьеру"],
-                  ["card_online", "Онлайн"],
-                ] as const).map(([v, l]) => (
-                  <button key={v} type="button" onClick={() => set("payment_method", v)}
-                    className={`py-3 rounded-xl text-sm font-semibold border-2 transition ${
-                      form.payment_method === v
-                        ? "border-primary bg-primary/5 text-primary"
-                        : "border-neutral-200 text-neutral-700 hover:border-neutral-300"
-                    }`}>
-                    {l}
+                  <div className="grid grid-cols-2 gap-3">
+                    <Field label="Время">
+                      <input className={inputCls} value={form.delivery_time}
+                        onChange={(e) => set("delivery_time", e.target.value)}
+                        placeholder="Как можно скорее" />
+                    </Field>
+                    <Field label="Персон">
+                      <input type="number" min={1} max={20} className={inputCls} value={form.persons}
+                        onChange={(e) => set("persons", Number(e.target.value))} />
+                    </Field>
+                  </div>
+                </Section>
+
+                <Section title="Оплата">
+                  <div className="grid grid-cols-3 gap-2">
+                    {([
+                      ["cash", "Наличные"],
+                      ["card_courier", "Картой курьеру"],
+                      ["card_online", "Онлайн"],
+                    ] as const).map(([v, l]) => (
+                      <button key={v} type="button" onClick={() => set("payment_method", v)}
+                        className={`py-3 rounded-xl text-sm font-semibold border-2 transition ${
+                          form.payment_method === v
+                            ? "border-primary bg-primary/5 text-primary"
+                            : "border-neutral-200 text-neutral-700 hover:border-neutral-300"
+                        }`}>
+                        {l}
+                      </button>
+                    ))}
+                  </div>
+                  {form.payment_method === "cash" && (
+                    <Field label="Сдача с (₽)">
+                      <input type="number" className={inputCls} value={form.change_from}
+                        onChange={(e) => set("change_from", e.target.value)}
+                        placeholder="Например, 2000" />
+                    </Field>
+                  )}
+                </Section>
+
+                <Section title="Комментарий">
+                  <textarea className={`${inputCls} min-h-[90px]`} value={form.comment}
+                    onChange={(e) => set("comment", e.target.value)}
+                    placeholder="Пожелания к заказу" />
+                </Section>
+
+                {belowMin && (
+                  <div className="px-4 py-3 rounded-xl bg-amber-50 text-amber-800 text-sm">
+                    Минимальная сумма заказа: <b>{settings.min_order} ₽</b>. Добавьте ещё на {settings.min_order - subtotal} ₽.
+                  </div>
+                )}
+                {error && (
+                  <div className="px-4 py-3 rounded-xl bg-red-50 text-red-700 text-sm">{error}</div>
+                )}
+
+                <div className="flex gap-3">
+                  <button type="button" onClick={() => setStep(1)}
+                    className="px-6 py-4 rounded-full bg-neutral-100 font-bold hover:bg-neutral-200">
+                    ← Назад
                   </button>
-                ))}
-              </div>
-              {form.payment_method === "cash" && (
-                <Field label="Сдача с (₽)">
-                  <input type="number" className={inputCls} value={form.change_from}
-                    onChange={(e) => set("change_from", e.target.value)}
-                    placeholder="Например, 2000" />
-                </Field>
-              )}
-            </Section>
-
-            <Section title="Комментарий">
-              <textarea className={`${inputCls} min-h-[90px]`} value={form.comment}
-                onChange={(e) => set("comment", e.target.value)}
-                placeholder="Пожелания к заказу" />
-            </Section>
-
-            {error && (
-              <div className="px-4 py-3 rounded-xl bg-red-50 text-red-700 text-sm">{error}</div>
+                  <button type="submit" disabled={submitting || items.length === 0 || belowMin}
+                    className="flex-1 py-4 rounded-full bg-primary text-white font-bold text-lg hover:opacity-90 disabled:opacity-50 transition">
+                    {submitting ? "Отправляем…" : `Оформить заказ — ${total} ₽`}
+                  </button>
+                </div>
+              </form>
             )}
-
-            <button type="submit" disabled={submitting || items.length === 0}
-              className="w-full py-4 rounded-full bg-primary text-white font-bold text-lg hover:opacity-90 disabled:opacity-50 transition">
-              {submitting ? "Отправляем…" : `Оформить заказ — ${total} ₽`}
-            </button>
-          </form>
+          </div>
 
           <aside className="bg-white rounded-3xl p-6 h-fit lg:sticky lg:top-6">
             <h3 className="font-extrabold text-lg mb-4">Ваш заказ</h3>
@@ -250,8 +390,34 @@ function Checkout() {
                     </div>
                   ))}
                 </div>
+
+                {/* Promo */}
+                <div className="border-t pt-4 mb-3">
+                  {promo ? (
+                    <div className="flex items-center justify-between bg-green-50 text-green-700 rounded-xl px-3 py-2 text-sm">
+                      <span>🏷️ <b>{promo.code}</b> применён</span>
+                      <button onClick={() => { setPromo(null); setPromoInput(""); }} className="text-xs hover:underline">Убрать</button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="flex gap-2">
+                        <input
+                          value={promoInput}
+                          onChange={(e) => { setPromoInput(e.target.value.toUpperCase()); setPromoErr(null); }}
+                          placeholder="Промокод"
+                          className="flex-1 px-3 py-2 rounded-xl border border-neutral-200 focus:border-primary outline-none text-sm uppercase"
+                        />
+                        <button type="button" onClick={applyPromo}
+                          className="px-4 rounded-xl bg-neutral-900 text-white text-sm font-semibold">Применить</button>
+                      </div>
+                      {promoErr && <div className="text-xs text-red-600 mt-1.5">{promoErr}</div>}
+                    </>
+                  )}
+                </div>
+
                 <div className="space-y-1 text-sm border-t pt-4">
                   <Row k="Товары" v={`${subtotal} ₽`} />
+                  {discount > 0 && <Row k="Скидка" v={`−${discount} ₽`} accent />}
                   <Row k="Доставка" v={deliveryCost === 0 ? "Бесплатно" : `${deliveryCost} ₽`} />
                 </div>
                 <div className="flex justify-between mt-4 pt-4 border-t">
@@ -286,11 +452,21 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
     </label>
   );
 }
-function Row({ k, v }: { k: string; v: string }) {
+function Row({ k, v, accent }: { k: string; v: string; accent?: boolean }) {
   return (
     <div className="flex justify-between">
       <span className="text-neutral-600">{k}</span>
-      <span className="font-semibold">{v}</span>
+      <span className={`font-semibold ${accent ? "text-green-600" : ""}`}>{v}</span>
+    </div>
+  );
+}
+function StepDot({ n, active, done, label }: { n: number; active: boolean; done: boolean; label: string }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className={`h-7 w-7 rounded-full grid place-items-center text-xs font-bold ${
+        done ? "bg-green-500 text-white" : active ? "bg-primary text-white" : "bg-neutral-200 text-neutral-500"
+      }`}>{done ? "✓" : n}</span>
+      <span className={`font-semibold ${active ? "text-foreground" : "text-neutral-500"}`}>{label}</span>
     </div>
   );
 }

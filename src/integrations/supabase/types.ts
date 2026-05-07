@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      banners: {
+        Row: {
+          created_at: string
+          cta_label: string | null
+          cta_link: string | null
+          eyebrow: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          sort_order: number
+          subtitle: string | null
+          title: string
+        }
+        Insert: {
+          created_at?: string
+          cta_label?: string | null
+          cta_link?: string | null
+          eyebrow?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          sort_order?: number
+          subtitle?: string | null
+          title: string
+        }
+        Update: {
+          created_at?: string
+          cta_label?: string | null
+          cta_link?: string | null
+          eyebrow?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          sort_order?: number
+          subtitle?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -100,12 +139,14 @@ export type Database = {
           delivery_cost: number
           delivery_time: string | null
           delivery_type: Database["public"]["Enums"]["delivery_type"]
+          discount: number
           id: string
           number: number
           payment_method: Database["public"]["Enums"]["payment_method"]
           persons: number | null
           phone: string
           pickup_point: string | null
+          promo_code: string | null
           status: Database["public"]["Enums"]["order_status"]
           subtotal: number
           total: number
@@ -122,12 +163,14 @@ export type Database = {
           delivery_cost?: number
           delivery_time?: string | null
           delivery_type?: Database["public"]["Enums"]["delivery_type"]
+          discount?: number
           id?: string
           number?: number
           payment_method?: Database["public"]["Enums"]["payment_method"]
           persons?: number | null
           phone: string
           pickup_point?: string | null
+          promo_code?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           subtotal?: number
           total?: number
@@ -144,12 +187,14 @@ export type Database = {
           delivery_cost?: number
           delivery_time?: string | null
           delivery_type?: Database["public"]["Enums"]["delivery_type"]
+          discount?: number
           id?: string
           number?: number
           payment_method?: Database["public"]["Enums"]["payment_method"]
           persons?: number | null
           phone?: string
           pickup_point?: string | null
+          promo_code?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           subtotal?: number
           total?: number
@@ -167,6 +212,8 @@ export type Database = {
           image_url: string | null
           in_stock: boolean
           is_active: boolean
+          is_addon: boolean
+          is_recommended: boolean
           name: string
           price: number
           sku: string | null
@@ -183,6 +230,8 @@ export type Database = {
           image_url?: string | null
           in_stock?: boolean
           is_active?: boolean
+          is_addon?: boolean
+          is_recommended?: boolean
           name: string
           price?: number
           sku?: string | null
@@ -199,6 +248,8 @@ export type Database = {
           image_url?: string | null
           in_stock?: boolean
           is_active?: boolean
+          is_addon?: boolean
+          is_recommended?: boolean
           name?: string
           price?: number
           sku?: string | null
@@ -235,6 +286,48 @@ export type Database = {
           full_name?: string | null
           id?: string
           phone?: string | null
+        }
+        Relationships: []
+      }
+      promo_codes: {
+        Row: {
+          code: string
+          created_at: string
+          discount_type: string
+          discount_value: number
+          expires_at: string | null
+          id: string
+          is_active: boolean
+          max_uses: number | null
+          min_order: number
+          starts_at: string | null
+          used_count: number
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          discount_type?: string
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          min_order?: number
+          starts_at?: string | null
+          used_count?: number
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          discount_type?: string
+          discount_value?: number
+          expires_at?: string | null
+          id?: string
+          is_active?: boolean
+          max_uses?: number | null
+          min_order?: number
+          starts_at?: string | null
+          used_count?: number
         }
         Relationships: []
       }

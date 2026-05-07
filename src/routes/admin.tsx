@@ -13,6 +13,8 @@ const NAV = [
   { to: "/admin/orders", label: "Заказы", icon: "📦" },
   { to: "/admin/products", label: "Товары", icon: "🍣" },
   { to: "/admin/categories", label: "Категории", icon: "🗂️" },
+  { to: "/admin/banners", label: "Баннеры", icon: "🖼️" },
+  { to: "/admin/promos", label: "Промокоды", icon: "🏷️" },
   { to: "/admin/settings", label: "Настройки", icon: "⚙️" },
 ];
 

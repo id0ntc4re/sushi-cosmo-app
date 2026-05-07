@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,28 +8,10 @@ import hero1 from "@/assets/hero-1.jpg";
 import hero2 from "@/assets/hero-2.jpg";
 import hero3 from "@/assets/hero-3.jpg";
 
-const HERO_SLIDES = [
-  {
-    image: hero1,
-    eyebrow: "Хит сезона",
-    title: "Свежие суши и роллы",
-    subtitle: "Доставка по Кемерово ежедневно с 10:00 до 22:00",
-    cta: "Смотреть меню",
-  },
-  {
-    image: hero2,
-    eyebrow: "Классика",
-    title: "Ассорти из лосося и тунца",
-    subtitle: "Только свежая рыба и нежный рис каждый день",
-    cta: "Заказать сет",
-  },
-  {
-    image: hero3,
-    eyebrow: "Новинка",
-    title: "Горячие запечённые роллы",
-    subtitle: "Тающий сыр, острый соус и хрустящая корочка",
-    cta: "Попробовать",
-  },
+const FALLBACK_SLIDES = [
+  { image_url: hero1, eyebrow: "Хит сезона", title: "Свежие суши и роллы", subtitle: "Доставка по Кемерово ежедневно с 10:00 до 22:00", cta_label: "Смотреть меню", cta_link: "#menu" },
+  { image_url: hero2, eyebrow: "Классика", title: "Ассорти из лосося и тунца", subtitle: "Только свежая рыба и нежный рис каждый день", cta_label: "Заказать сет", cta_link: "#menu" },
+  { image_url: hero3, eyebrow: "Новинка", title: "Горячие запечённые роллы", subtitle: "Тающий сыр, острый соус и хрустящая корочка", cta_label: "Попробовать", cta_link: "#menu" },
 ];
 
 export const Route = createFileRoute("/")({
@@ -51,36 +33,52 @@ type Product = {
   category_id: string | null;
   image_url: string | null;
   description?: string | null;
+  is_addon?: boolean;
+};
+type Banner = {
+  image_url: string | null;
+  eyebrow: string | null;
+  title: string;
+  subtitle: string | null;
+  cta_label: string | null;
+  cta_link: string | null;
 };
 
 function Index() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [active, setActive] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
   const [slide, setSlide] = useState(0);
+  const [banners, setBanners] = useState<Banner[]>(FALLBACK_SLIDES as any);
   const cart = useCart();
 
   useEffect(() => {
-    const t = setInterval(() => setSlide((s) => (s + 1) % HERO_SLIDES.length), 5000);
+    const t = setInterval(() => setSlide((s) => (s + 1) % banners.length), 5000);
     return () => clearInterval(t);
-  }, []);
+  }, [banners.length]);
 
   useEffect(() => {
     (async () => {
-      const { data: cats } = await supabase
-        .from("categories")
-        .select("id,name,slug")
-        .eq("is_active", true)
-        .order("sort_order");
-      const { data: prods } = await supabase
-        .from("products")
-        .select("id,name,price,weight,category_id,image_url,description")
-        .eq("is_active", true)
-        .order("sort_order");
-      setCategories(cats ?? []);
-      setProducts((prods as Product[]) ?? []);
+      const [cats, prods, bans] = await Promise.all([
+        supabase.from("categories").select("id,name,slug").eq("is_active", true).order("sort_order"),
+        supabase.from("products").select("id,name,price,weight,category_id,image_url,description,is_addon").eq("is_active", true).order("sort_order"),
+        supabase.from("banners").select("image_url,eyebrow,title,subtitle,cta_label,cta_link").eq("is_active", true).order("sort_order"),
+      ]);
+      setCategories(cats.data ?? []);
+      setProducts((prods.data as Product[]) ?? []);
+      if (bans.data && bans.data.length) setBanners(bans.data as Banner[]);
     })();
   }, []);
+
+  const filteredProducts = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return products.filter((p) => {
+      if (p.is_addon) return false;
+      if (q && !p.name.toLowerCase().includes(q) && !(p.description ?? "").toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }, [products, search]);
 
   const visibleCats = useMemo(
     () => (active ? categories.filter((c) => c.id === active) : categories),
@@ -106,6 +104,7 @@ function Index() {
             <a href="#menu" className="hover:text-primary">Меню</a>
             <a href="#delivery" className="hover:text-primary">Доставка</a>
             <a href="#contacts" className="hover:text-primary">Контакты</a>
+            <Link to="/account" className="hover:text-primary">Кабинет</Link>
           </nav>
           <a
             href="tel:+79132869284"
@@ -131,35 +130,41 @@ function Index() {
       <section className="bg-white">
         <div className="mx-auto max-w-[1280px] px-6 pt-6">
           <div className="relative rounded-[32px] overflow-hidden aspect-[16/7] md:aspect-[16/6] bg-neutral-900 text-white">
-            {HERO_SLIDES.map((s, i) => (
+            {banners.map((s, i) => (
               <div
                 key={i}
                 className={`absolute inset-0 transition-opacity duration-700 ${
                   i === slide ? "opacity-100" : "opacity-0 pointer-events-none"
                 }`}
               >
-                <img
-                  src={s.image}
-                  alt={s.title}
-                  className="absolute inset-0 w-full h-full object-cover"
-                  loading={i === 0 ? "eager" : "lazy"}
-                />
+                {s.image_url && (
+                  <img
+                    src={s.image_url}
+                    alt={s.title}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    loading={i === 0 ? "eager" : "lazy"}
+                  />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
                 <div className="relative z-10 h-full flex items-center">
                   <div className="px-8 md:px-14 max-w-2xl animate-fade-in" key={`c-${i}-${slide}`}>
-                    <span className="inline-block px-3 py-1 rounded-full bg-primary/90 text-white text-xs font-bold uppercase tracking-wider">
-                      {s.eyebrow}
-                    </span>
+                    {s.eyebrow && (
+                      <span className="inline-block px-3 py-1 rounded-full bg-primary/90 text-white text-xs font-bold uppercase tracking-wider">
+                        {s.eyebrow}
+                      </span>
+                    )}
                     <h1 className="mt-4 text-3xl md:text-5xl lg:text-6xl font-extrabold leading-tight drop-shadow-lg">
                       {s.title}
                     </h1>
-                    <p className="mt-3 md:text-xl opacity-95 max-w-lg">{s.subtitle}</p>
-                    <a
-                      href="#menu"
-                      className="inline-block mt-6 px-8 py-3.5 rounded-full bg-primary text-white font-bold shadow-xl hover:bg-primary/90 transition"
-                    >
-                      {s.cta} →
-                    </a>
+                    {s.subtitle && <p className="mt-3 md:text-xl opacity-95 max-w-lg">{s.subtitle}</p>}
+                    {s.cta_label && (
+                      <a
+                        href={s.cta_link || "#menu"}
+                        className="inline-block mt-6 px-8 py-3.5 rounded-full bg-primary text-white font-bold shadow-xl hover:bg-primary/90 transition"
+                      >
+                        {s.cta_label} →
+                      </a>
+                    )}
                   </div>
                 </div>
               </div>
@@ -167,14 +172,14 @@ function Index() {
 
             {/* arrows */}
             <button
-              onClick={() => setSlide((s) => (s - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)}
+              onClick={() => setSlide((s) => (s - 1 + banners.length) % banners.length)}
               className="absolute left-4 top-1/2 -translate-y-1/2 z-20 h-11 w-11 rounded-full bg-white/20 hover:bg-white/40 backdrop-blur grid place-items-center text-white text-2xl"
               aria-label="Назад"
             >
               ‹
             </button>
             <button
-              onClick={() => setSlide((s) => (s + 1) % HERO_SLIDES.length)}
+              onClick={() => setSlide((s) => (s + 1) % banners.length)}
               className="absolute right-4 top-1/2 -translate-y-1/2 z-20 h-11 w-11 rounded-full bg-white/20 hover:bg-white/40 backdrop-blur grid place-items-center text-white text-2xl"
               aria-label="Вперёд"
             >
@@ -183,7 +188,7 @@ function Index() {
 
             {/* dots */}
             <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-20 flex gap-2">
-              {HERO_SLIDES.map((_, i) => (
+              {banners.map((_, i) => (
                 <button
                   key={i}
                   onClick={() => setSlide(i)}
@@ -218,7 +223,19 @@ function Index() {
 
       {/* MENU */}
       <section id="menu" className="mx-auto max-w-[1280px] px-6 mt-12">
-        <h2 className="text-3xl md:text-4xl font-extrabold mb-6">Меню</h2>
+        <div className="flex items-center justify-between gap-4 flex-wrap mb-6">
+          <h2 className="text-3xl md:text-4xl font-extrabold">Меню</h2>
+          <div className="relative w-full sm:w-80">
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Поиск по меню…"
+              className="w-full pl-11 pr-4 py-3 rounded-full bg-neutral-100 focus:bg-white border border-transparent focus:border-primary outline-none transition"
+            />
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400">🔍</span>
+          </div>
+        </div>
 
         {/* category pills */}
         <div className="flex gap-2 overflow-x-auto pb-3 mb-8 -mx-6 px-6 sticky top-0 bg-white/95 backdrop-blur z-30">
@@ -248,7 +265,7 @@ function Index() {
         </div>
 
         {visibleCats.map((cat) => {
-          const list = products.filter((p) => p.category_id === cat.id);
+          const list = filteredProducts.filter((p) => p.category_id === cat.id);
           if (!list.length) return null;
           return (
             <div key={cat.id} className="mb-14">
@@ -325,6 +342,11 @@ function Index() {
 
         {!products.length && (
           <div className="py-20 text-center text-neutral-500">Загружаем меню…</div>
+        )}
+        {products.length > 0 && search && filteredProducts.length === 0 && (
+          <div className="py-20 text-center text-neutral-500">
+            По запросу «{search}» ничего не найдено
+          </div>
         )}
       </section>
 

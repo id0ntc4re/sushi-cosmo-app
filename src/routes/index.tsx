@@ -55,6 +55,12 @@ function Index() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [active, setActive] = useState<string | null>(null);
+  const [slide, setSlide] = useState(0);
+
+  useEffect(() => {
+    const t = setInterval(() => setSlide((s) => (s + 1) % HERO_SLIDES.length), 5000);
+    return () => clearInterval(t);
+  }, []);
 
   useEffect(() => {
     (async () => {

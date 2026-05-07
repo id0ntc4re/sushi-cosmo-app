@@ -1,0 +1,111 @@
+import { createFileRoute, Outlet, Link, useRouterState, useNavigate, redirect } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import logo from "@/assets/logo.svg";
+
+export const Route = createFileRoute("/admin")({
+  head: () => ({ meta: [{ title: "Админ — КосмоСуши" }] }),
+  component: AdminLayout,
+});
+
+const NAV = [
+  { to: "/admin", label: "Дашборд", icon: "📊", exact: true },
+  { to: "/admin/orders", label: "Заказы", icon: "📦" },
+  { to: "/admin/products", label: "Товары", icon: "🍣" },
+  { to: "/admin/categories", label: "Категории", icon: "🗂️" },
+  { to: "/admin/settings", label: "Настройки", icon: "⚙️" },
+];
+
+function AdminLayout() {
+  const nav = useNavigate();
+  const path = useRouterState({ select: (s) => s.location.pathname });
+  const [state, setState] = useState<"loading" | "ok" | "no-auth" | "no-admin">("loading");
+  const [email, setEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        if (mounted) setState("no-auth");
+        return;
+      }
+      setEmail(user.email ?? null);
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id);
+      const isAdmin = (roles ?? []).some((r) => r.role === "admin");
+      if (!mounted) return;
+      setState(isAdmin ? "ok" : "no-admin");
+    })();
+    return () => { mounted = false; };
+  }, []);
+
+  if (state === "loading") {
+    return <div className="min-h-screen grid place-items-center text-neutral-500">Загрузка…</div>;
+  }
+  if (state === "no-auth") {
+    throw redirect({ to: "/login", search: { redirect: "/admin" } });
+  }
+  if (state === "no-admin") {
+    return (
+      <div className="min-h-screen grid place-items-center bg-neutral-50 px-4">
+        <div className="bg-white rounded-3xl p-8 max-w-md text-center shadow-sm">
+          <div className="text-5xl mb-3">🔒</div>
+          <h1 className="text-2xl font-extrabold mb-2">Нет доступа</h1>
+          <p className="text-neutral-500 mb-5 text-sm">
+            Аккаунт <b>{email}</b> не имеет роли администратора.<br />
+            Назначьте роль <code className="bg-neutral-100 px-1.5 py-0.5 rounded">admin</code> в таблице <code className="bg-neutral-100 px-1.5 py-0.5 rounded">user_roles</code>.
+          </p>
+          <button
+            onClick={async () => { await supabase.auth.signOut(); nav({ to: "/login" }); }}
+            className="px-6 py-2.5 rounded-full bg-neutral-900 text-white font-semibold"
+          >
+            Сменить аккаунт
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex bg-neutral-50">
+      <aside className="w-64 bg-white border-r flex flex-col shrink-0">
+        <Link to="/admin" className="flex items-center gap-2 p-5 border-b">
+          <img src={logo} className="h-9 w-9" alt="" />
+          <div>
+            <div className="font-extrabold leading-tight">КосмоСуши</div>
+            <div className="text-xs text-neutral-500">Админ-панель</div>
+          </div>
+        </Link>
+        <nav className="p-3 flex-1 space-y-1">
+          {NAV.map((n) => {
+            const active = n.exact ? path === n.to : path.startsWith(n.to);
+            return (
+              <Link key={n.to} to={n.to}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition ${
+                  active ? "bg-primary text-white" : "text-neutral-700 hover:bg-neutral-100"
+                }`}>
+                <span>{n.icon}</span>{n.label}
+              </Link>
+            );
+          })}
+        </nav>
+        <div className="p-3 border-t space-y-2">
+          <Link to="/" className="block text-xs text-neutral-500 hover:text-primary px-3">← На сайт</Link>
+          <div className="text-xs text-neutral-500 px-3 truncate">{email}</div>
+          <button
+            onClick={async () => { await supabase.auth.signOut(); nav({ to: "/login" }); }}
+            className="w-full text-left px-3 py-2 rounded-lg text-sm text-neutral-700 hover:bg-neutral-100"
+          >
+            Выйти
+          </button>
+        </div>
+      </aside>
+      <main className="flex-1 min-w-0 p-8 overflow-x-auto">
+        <Outlet />
+      </main>
+    </div>
+  );
+}

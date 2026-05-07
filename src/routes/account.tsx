@@ -52,7 +52,7 @@ function Account() {
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        nav({ to: "/login", search: { redirect: "/account" } });
+        nav({ to: "/account-login", search: { redirect: "/account" } });
         return;
       }
       setEmail(user.email ?? null);

@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useCart } from "@/lib/cart";
 import logo from "@/assets/logo.svg";
 import hero1 from "@/assets/hero-1.jpg";
 import hero2 from "@/assets/hero-2.jpg";
@@ -56,6 +57,7 @@ function Index() {
   const [products, setProducts] = useState<Product[]>([]);
   const [active, setActive] = useState<string | null>(null);
   const [slide, setSlide] = useState(0);
+  const cart = useCart();
 
   useEffect(() => {
     const t = setInterval(() => setSlide((s) => (s + 1) % HERO_SLIDES.length), 5000);
@@ -110,6 +112,17 @@ function Index() {
           >
             +7 913 286 92-84
           </a>
+          <button
+            onClick={() => cart.setOpen(true)}
+            className="relative ml-2 px-5 py-2.5 rounded-full bg-primary text-white font-bold hover:opacity-90 flex items-center gap-2"
+          >
+            🛒 Корзина
+            {cart.count > 0 && (
+              <span className="bg-white text-primary text-xs font-extrabold rounded-full h-5 min-w-5 px-1.5 grid place-items-center">
+                {cart.count}
+              </span>
+            )}
+          </button>
         </div>
       </header>
 
@@ -259,7 +272,18 @@ function Index() {
                       )}
                       <div className="mt-auto pt-4 flex items-center justify-between gap-2">
                         <span className="text-xl font-extrabold">{Number(p.price)} ₽</span>
-                        <button className="px-4 py-2 rounded-full bg-primary text-white font-semibold hover:opacity-90 text-sm">
+                        <button
+                          onClick={() =>
+                            cart.add({
+                              id: p.id,
+                              name: p.name,
+                              price: Number(p.price),
+                              image_url: p.image_url,
+                              weight: p.weight,
+                            })
+                          }
+                          className="px-4 py-2 rounded-full bg-primary text-white font-semibold hover:opacity-90 text-sm"
+                        >
                           В корзину
                         </button>
                       </div>

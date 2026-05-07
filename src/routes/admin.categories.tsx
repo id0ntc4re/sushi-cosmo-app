@@ -22,14 +22,15 @@ function CategoriesAdmin() {
 
   async function save() {
     if (!editing) return;
+    const name = editing.name?.trim();
+    if (!name) return toast.error("Укажите название");
     const payload = {
-      name: editing.name?.trim(),
-      slug: (editing.slug?.trim() || editing.name?.trim().toLowerCase().replace(/\s+/g, "-")) ?? "",
+      name,
+      slug: (editing.slug?.trim() || name.toLowerCase().replace(/\s+/g, "-")),
       sort_order: Number(editing.sort_order ?? 0),
       is_active: editing.is_active ?? true,
       image_url: editing.image_url || null,
     };
-    if (!payload.name) return toast.error("Укажите название");
     const res = editing.id
       ? await supabase.from("categories").update(payload).eq("id", editing.id)
       : await supabase.from("categories").insert(payload);

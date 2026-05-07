@@ -77,7 +77,7 @@ function ProductsAdmin() {
   }
 
   async function toggle(p: Product, field: "is_active" | "in_stock") {
-    const { error } = await supabase.from("products").update({ [field]: !p[field] }).eq("id", p.id);
+    const { error } = await supabase.from("products").update({ [field]: !p[field] } as any).eq("id", p.id);
     if (error) return toast.error(error.message);
     load();
   }

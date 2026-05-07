@@ -121,7 +121,14 @@ function Checkout() {
         : settings.delivery_cost
       : 0;
   const discount = promo?.discount ?? 0;
-  const total = Math.max(0, subtotal - discount + deliveryCost);
+  const tier = profile ? (Number(profile.total_spent) >= 30000 ? "gold" : Number(profile.total_spent) >= 10000 ? "silver" : "bronze") : null;
+  const tierDiscount = tier === "gold" ? Math.round(subtotal * 0.07) : tier === "silver" ? Math.round(subtotal * 0.03) : 0;
+  const cashbackPct = tier === "gold" ? 10 : tier === "silver" ? 5 : 3;
+  const bonusBalance = Math.floor(Number(profile?.bonus_balance || 0));
+  const maxBonus = Math.min(bonusBalance, Math.floor(subtotal * 0.3));
+  const bonusApplied = Math.min(bonusUse, maxBonus);
+  const total = Math.max(0, subtotal - discount - tierDiscount - bonusApplied + deliveryCost);
+  const bonusEarn = profile ? Math.floor((subtotal - bonusApplied) * cashbackPct / 100) : 0;
   const belowMin = settings.min_order > 0 && subtotal < settings.min_order;
 
   async function applyPromo() {
@@ -150,6 +157,7 @@ function Checkout() {
     setSubmitting(true);
     try {
       const { data: user } = await supabase.auth.getUser();
+      const totalDiscount = discount + tierDiscount;
       const { data: order, error: orderErr } = await supabase
         .from("orders")
         .insert({
@@ -166,8 +174,10 @@ function Checkout() {
           comment: parsed.data.comment || null,
           subtotal,
           delivery_cost: deliveryCost,
-          discount,
+          discount: totalDiscount,
           promo_code: promo?.code ?? null,
+          bonus_used: bonusApplied,
+          bonus_earned: bonusEarn,
           total,
         })
         .select("id, number")
@@ -191,6 +201,19 @@ function Checkout() {
           .from("promo_codes")
           .update({ used_count: promo.promo.used_count + 1 })
           .eq("id", promo.promo.id);
+      }
+
+      // bonuses & total spent
+      if (user.user && profile) {
+        const newBalance = bonusBalance - bonusApplied + bonusEarn;
+        const newSpent = Number(profile.total_spent || 0) + total;
+        await supabase.from("profiles").update({ bonus_balance: newBalance, total_spent: newSpent }).eq("id", user.user.id);
+        if (bonusApplied > 0) {
+          await supabase.from("bonus_transactions").insert({ user_id: user.user.id, order_id: order.id, amount: -bonusApplied, reason: `Списание · заказ №${order.number}` });
+        }
+        if (bonusEarn > 0) {
+          await supabase.from("bonus_transactions").insert({ user_id: user.user.id, order_id: order.id, amount: bonusEarn, reason: `Кэшбэк · заказ №${order.number}` });
+        }
       }
 
       clear();

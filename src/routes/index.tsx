@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/lib/cart";
+import { useFavorites, pushHistory } from "@/lib/favorites";
 import logo from "@/assets/logo.svg";
 import hero1 from "@/assets/hero-1.jpg";
 import hero2 from "@/assets/hero-2.jpg";
@@ -52,6 +53,7 @@ function Index() {
   const [slide, setSlide] = useState(0);
   const [banners, setBanners] = useState<Banner[]>(FALLBACK_SLIDES as any);
   const cart = useCart();
+  const fav = useFavorites();
 
   useEffect(() => {
     const t = setInterval(() => setSlide((s) => (s + 1) % banners.length), 5000);
@@ -276,12 +278,19 @@ function Index() {
                     key={p.id}
                     className="bg-white rounded-3xl overflow-hidden border border-neutral-100 hover:shadow-lg transition flex flex-col"
                   >
-                    <div className="aspect-square bg-neutral-50 grid place-items-center text-6xl">
+                    <div className="relative aspect-square bg-neutral-50 grid place-items-center text-6xl">
                       {p.image_url ? (
                         <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" />
                       ) : (
                         "🍣"
                       )}
+                      <button
+                        onClick={(e) => { e.stopPropagation(); fav.toggle(p.id); }}
+                        className="absolute top-2 right-2 h-9 w-9 rounded-full bg-white/90 backdrop-blur grid place-items-center text-lg shadow hover:scale-110 transition"
+                        aria-label="В избранное"
+                      >
+                        {fav.has(p.id) ? "❤️" : "🤍"}
+                      </button>
                     </div>
                     <div className="p-4 flex flex-col flex-1">
                       <h4 className="font-bold leading-snug line-clamp-2">{p.name}</h4>
@@ -323,6 +332,7 @@ function Index() {
                                   image_url: p.image_url,
                                   weight: p.weight,
                                 });
+                                pushHistory(p.id);
                                 toast.success("Добавлено в корзину", { description: p.name });
                               }}
                               className="px-4 py-2 rounded-full bg-primary text-white font-semibold hover:opacity-90 text-sm"

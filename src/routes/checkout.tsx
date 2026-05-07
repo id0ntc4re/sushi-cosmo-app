@@ -328,11 +328,23 @@ function Checkout() {
                   </div>
 
                   {form.delivery_type === "delivery" ? (
-                    <Field label="Адрес доставки*">
-                      <input className={inputCls} value={form.address}
-                        onChange={(e) => set("address", e.target.value)}
-                        placeholder="Улица, дом, кв., подъезд, этаж" required />
-                    </Field>
+                    <>
+                      {savedAddresses.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {savedAddresses.map((a) => (
+                            <button key={a.id} type="button" onClick={() => set("address", a.address)}
+                              className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${form.address === a.address ? "border-primary bg-primary/5 text-primary" : "border-neutral-200 hover:border-neutral-400"}`}>
+                              {a.label ? `${a.label}: ` : ""}{a.address}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      <Field label="Адрес доставки*">
+                        <input className={inputCls} value={form.address}
+                          onChange={(e) => set("address", e.target.value)}
+                          placeholder="Улица, дом, кв., подъезд, этаж" required />
+                      </Field>
+                    </>
                   ) : (
                     <Field label="Точка самовывоза">
                       <select className={inputCls} value={form.pickup_point}

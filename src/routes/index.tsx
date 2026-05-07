@@ -223,7 +223,19 @@ function Index() {
 
       {/* MENU */}
       <section id="menu" className="mx-auto max-w-[1280px] px-6 mt-12">
-        <h2 className="text-3xl md:text-4xl font-extrabold mb-6">Меню</h2>
+        <div className="flex items-center justify-between gap-4 flex-wrap mb-6">
+          <h2 className="text-3xl md:text-4xl font-extrabold">Меню</h2>
+          <div className="relative w-full sm:w-80">
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Поиск по меню…"
+              className="w-full pl-11 pr-4 py-3 rounded-full bg-neutral-100 focus:bg-white border border-transparent focus:border-primary outline-none transition"
+            />
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400">🔍</span>
+          </div>
+        </div>
 
         {/* category pills */}
         <div className="flex gap-2 overflow-x-auto pb-3 mb-8 -mx-6 px-6 sticky top-0 bg-white/95 backdrop-blur z-30">
@@ -253,7 +265,7 @@ function Index() {
         </div>
 
         {visibleCats.map((cat) => {
-          const list = products.filter((p) => p.category_id === cat.id);
+          const list = filteredProducts.filter((p) => p.category_id === cat.id);
           if (!list.length) return null;
           return (
             <div key={cat.id} className="mb-14">

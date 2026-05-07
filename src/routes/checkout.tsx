@@ -18,7 +18,7 @@ const schema = z.object({
   delivery_type: z.enum(["delivery", "pickup"]),
   address: z.string().trim().max(300).optional().or(z.literal("")),
   pickup_point: z.string().trim().max(200).optional().or(z.literal("")),
-  payment_method: z.enum(["cash", "card", "online"]),
+  payment_method: z.enum(["cash", "card_courier", "card_online"]),
   change_from: z.string().optional(),
   persons: z.coerce.number().int().min(1).max(20),
   delivery_time: z.string().max(50).optional().or(z.literal("")),
@@ -38,7 +38,7 @@ function Checkout() {
     delivery_type: "delivery" as "delivery" | "pickup",
     address: "",
     pickup_point: PICKUP_POINTS[0],
-    payment_method: "cash" as "cash" | "card" | "online",
+    payment_method: "cash" as "cash" | "card_courier" | "card_online",
     change_from: "",
     persons: 1,
     delivery_time: "",
@@ -190,8 +190,8 @@ function Checkout() {
               <div className="grid grid-cols-3 gap-2">
                 {([
                   ["cash", "Наличные"],
-                  ["card", "Картой курьеру"],
-                  ["online", "Онлайн"],
+                  ["card_courier", "Картой курьеру"],
+                  ["card_online", "Онлайн"],
                 ] as const).map(([v, l]) => (
                   <button key={v} type="button" onClick={() => set("payment_method", v)}
                     className={`py-3 rounded-xl text-sm font-semibold border-2 transition ${

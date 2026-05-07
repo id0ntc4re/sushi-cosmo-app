@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,28 +8,10 @@ import hero1 from "@/assets/hero-1.jpg";
 import hero2 from "@/assets/hero-2.jpg";
 import hero3 from "@/assets/hero-3.jpg";
 
-const HERO_SLIDES = [
-  {
-    image: hero1,
-    eyebrow: "Хит сезона",
-    title: "Свежие суши и роллы",
-    subtitle: "Доставка по Кемерово ежедневно с 10:00 до 22:00",
-    cta: "Смотреть меню",
-  },
-  {
-    image: hero2,
-    eyebrow: "Классика",
-    title: "Ассорти из лосося и тунца",
-    subtitle: "Только свежая рыба и нежный рис каждый день",
-    cta: "Заказать сет",
-  },
-  {
-    image: hero3,
-    eyebrow: "Новинка",
-    title: "Горячие запечённые роллы",
-    subtitle: "Тающий сыр, острый соус и хрустящая корочка",
-    cta: "Попробовать",
-  },
+const FALLBACK_SLIDES = [
+  { image_url: hero1, eyebrow: "Хит сезона", title: "Свежие суши и роллы", subtitle: "Доставка по Кемерово ежедневно с 10:00 до 22:00", cta_label: "Смотреть меню", cta_link: "#menu" },
+  { image_url: hero2, eyebrow: "Классика", title: "Ассорти из лосося и тунца", subtitle: "Только свежая рыба и нежный рис каждый день", cta_label: "Заказать сет", cta_link: "#menu" },
+  { image_url: hero3, eyebrow: "Новинка", title: "Горячие запечённые роллы", subtitle: "Тающий сыр, острый соус и хрустящая корочка", cta_label: "Попробовать", cta_link: "#menu" },
 ];
 
 export const Route = createFileRoute("/")({
@@ -51,36 +33,52 @@ type Product = {
   category_id: string | null;
   image_url: string | null;
   description?: string | null;
+  is_addon?: boolean;
+};
+type Banner = {
+  image_url: string | null;
+  eyebrow: string | null;
+  title: string;
+  subtitle: string | null;
+  cta_label: string | null;
+  cta_link: string | null;
 };
 
 function Index() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [active, setActive] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
   const [slide, setSlide] = useState(0);
+  const [banners, setBanners] = useState<Banner[]>(FALLBACK_SLIDES as any);
   const cart = useCart();
 
   useEffect(() => {
-    const t = setInterval(() => setSlide((s) => (s + 1) % HERO_SLIDES.length), 5000);
+    const t = setInterval(() => setSlide((s) => (s + 1) % banners.length), 5000);
     return () => clearInterval(t);
-  }, []);
+  }, [banners.length]);
 
   useEffect(() => {
     (async () => {
-      const { data: cats } = await supabase
-        .from("categories")
-        .select("id,name,slug")
-        .eq("is_active", true)
-        .order("sort_order");
-      const { data: prods } = await supabase
-        .from("products")
-        .select("id,name,price,weight,category_id,image_url,description")
-        .eq("is_active", true)
-        .order("sort_order");
-      setCategories(cats ?? []);
-      setProducts((prods as Product[]) ?? []);
+      const [cats, prods, bans] = await Promise.all([
+        supabase.from("categories").select("id,name,slug").eq("is_active", true).order("sort_order"),
+        supabase.from("products").select("id,name,price,weight,category_id,image_url,description,is_addon").eq("is_active", true).order("sort_order"),
+        supabase.from("banners").select("image_url,eyebrow,title,subtitle,cta_label,cta_link").eq("is_active", true).order("sort_order"),
+      ]);
+      setCategories(cats.data ?? []);
+      setProducts((prods.data as Product[]) ?? []);
+      if (bans.data && bans.data.length) setBanners(bans.data as Banner[]);
     })();
   }, []);
+
+  const filteredProducts = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return products.filter((p) => {
+      if (p.is_addon) return false;
+      if (q && !p.name.toLowerCase().includes(q) && !(p.description ?? "").toLowerCase().includes(q)) return false;
+      return true;
+    });
+  }, [products, search]);
 
   const visibleCats = useMemo(
     () => (active ? categories.filter((c) => c.id === active) : categories),

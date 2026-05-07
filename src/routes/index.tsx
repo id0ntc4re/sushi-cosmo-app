@@ -113,23 +113,72 @@ function Index() {
         </div>
       </header>
 
-      {/* HERO BANNER */}
+      {/* HERO SLIDER */}
       <section className="bg-white">
         <div className="mx-auto max-w-[1280px] px-6 pt-6">
-          <div className="relative rounded-[32px] overflow-hidden bg-gradient-to-br from-primary via-orange-500 to-red-500 aspect-[16/6] grid place-items-center text-white">
-            <div className="text-center px-8">
-              <h1 className="text-3xl md:text-5xl font-extrabold drop-shadow-md">
-                Свежие суши и роллы
-              </h1>
-              <p className="mt-3 md:text-xl opacity-95">
-                Доставка по Кемерово ежедневно с 10:00 до 22:00
-              </p>
-              <a
-                href="#menu"
-                className="inline-block mt-6 px-8 py-3 rounded-full bg-white text-primary font-bold shadow-lg hover:bg-neutral-100"
+          <div className="relative rounded-[32px] overflow-hidden aspect-[16/7] md:aspect-[16/6] bg-neutral-900 text-white">
+            {HERO_SLIDES.map((s, i) => (
+              <div
+                key={i}
+                className={`absolute inset-0 transition-opacity duration-700 ${
+                  i === slide ? "opacity-100" : "opacity-0 pointer-events-none"
+                }`}
               >
-                Смотреть меню
-              </a>
+                <img
+                  src={s.image}
+                  alt={s.title}
+                  className="absolute inset-0 w-full h-full object-cover"
+                  loading={i === 0 ? "eager" : "lazy"}
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
+                <div className="relative z-10 h-full flex items-center">
+                  <div className="px-8 md:px-14 max-w-2xl animate-fade-in" key={`c-${i}-${slide}`}>
+                    <span className="inline-block px-3 py-1 rounded-full bg-primary/90 text-white text-xs font-bold uppercase tracking-wider">
+                      {s.eyebrow}
+                    </span>
+                    <h1 className="mt-4 text-3xl md:text-5xl lg:text-6xl font-extrabold leading-tight drop-shadow-lg">
+                      {s.title}
+                    </h1>
+                    <p className="mt-3 md:text-xl opacity-95 max-w-lg">{s.subtitle}</p>
+                    <a
+                      href="#menu"
+                      className="inline-block mt-6 px-8 py-3.5 rounded-full bg-primary text-white font-bold shadow-xl hover:bg-primary/90 transition"
+                    >
+                      {s.cta} →
+                    </a>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {/* arrows */}
+            <button
+              onClick={() => setSlide((s) => (s - 1 + HERO_SLIDES.length) % HERO_SLIDES.length)}
+              className="absolute left-4 top-1/2 -translate-y-1/2 z-20 h-11 w-11 rounded-full bg-white/20 hover:bg-white/40 backdrop-blur grid place-items-center text-white text-2xl"
+              aria-label="Назад"
+            >
+              ‹
+            </button>
+            <button
+              onClick={() => setSlide((s) => (s + 1) % HERO_SLIDES.length)}
+              className="absolute right-4 top-1/2 -translate-y-1/2 z-20 h-11 w-11 rounded-full bg-white/20 hover:bg-white/40 backdrop-blur grid place-items-center text-white text-2xl"
+              aria-label="Вперёд"
+            >
+              ›
+            </button>
+
+            {/* dots */}
+            <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+              {HERO_SLIDES.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setSlide(i)}
+                  className={`h-2 rounded-full transition-all ${
+                    i === slide ? "bg-white w-8" : "bg-white/50 w-2 hover:bg-white/80"
+                  }`}
+                  aria-label={`Слайд ${i + 1}`}
+                />
+              ))}
             </div>
           </div>
         </div>

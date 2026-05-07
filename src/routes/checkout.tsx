@@ -469,15 +469,36 @@ function Checkout() {
                   )}
                 </div>
 
+                {profile && bonusBalance > 0 && (
+                  <div className="border-t pt-4 mb-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-bold">⭐ Бонусы ({bonusBalance} ₽)</span>
+                      <span className="text-xs text-neutral-500">Макс. {maxBonus} ₽</span>
+                    </div>
+                    <div className="flex gap-2 items-center">
+                      <input type="range" min={0} max={maxBonus} value={bonusApplied}
+                        onChange={(e) => setBonusUse(Number(e.target.value))} className="flex-1" />
+                      <input type="number" min={0} max={maxBonus} value={bonusApplied}
+                        onChange={(e) => setBonusUse(Math.max(0, Math.min(maxBonus, Number(e.target.value) || 0)))}
+                        className="w-20 px-2 py-1 rounded-lg border text-sm text-right" />
+                    </div>
+                  </div>
+                )}
+
                 <div className="space-y-1 text-sm border-t pt-4">
                   <Row k="Товары" v={`${subtotal} ₽`} />
-                  {discount > 0 && <Row k="Скидка" v={`−${discount} ₽`} accent />}
+                  {discount > 0 && <Row k={`Промо ${promo?.code ?? ""}`} v={`−${discount} ₽`} accent />}
+                  {tierDiscount > 0 && <Row k="Скидка уровня" v={`−${tierDiscount} ₽`} accent />}
+                  {bonusApplied > 0 && <Row k="Бонусы" v={`−${bonusApplied} ₽`} accent />}
                   <Row k="Доставка" v={deliveryCost === 0 ? "Бесплатно" : `${deliveryCost} ₽`} />
                 </div>
                 <div className="flex justify-between mt-4 pt-4 border-t">
                   <span className="font-bold">Итого</span>
                   <span className="text-2xl font-extrabold">{total} ₽</span>
                 </div>
+                {bonusEarn > 0 && (
+                  <div className="text-xs text-amber-700 mt-2 text-center">+{bonusEarn} ₽ бонусов после заказа</div>
+                )}
               </>
             )}
           </aside>

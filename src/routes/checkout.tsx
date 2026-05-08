@@ -157,12 +157,13 @@ function Checkout() {
 
     setSubmitting(true);
     try {
-      const { data: user } = await supabase.auth.getUser();
+      const { data: sessionData } = await supabase.auth.getSession();
+      const sessionUserId = sessionData.session?.user?.id ?? null;
       const totalDiscount = discount + tierDiscount;
       const { data: order, error: orderErr } = await supabase
         .from("orders")
         .insert({
-          user_id: user.user?.id ?? null,
+          user_id: sessionUserId,
           customer_name: parsed.data.customer_name,
           phone: parsed.data.phone,
           delivery_type: parsed.data.delivery_type,
@@ -205,15 +206,15 @@ function Checkout() {
       }
 
       // bonuses & total spent
-      if (user.user && profile) {
+      if (sessionUserId && profile) {
         const newBalance = bonusBalance - bonusApplied + bonusEarn;
         const newSpent = Number(profile.total_spent || 0) + total;
-        await supabase.from("profiles").update({ bonus_balance: newBalance, total_spent: newSpent }).eq("id", user.user.id);
+        await supabase.from("profiles").update({ bonus_balance: newBalance, total_spent: newSpent }).eq("id", sessionUserId);
         if (bonusApplied > 0) {
-          await supabase.from("bonus_transactions").insert({ user_id: user.user.id, order_id: order.id, amount: -bonusApplied, reason: `Списание · заказ №${order.number}` });
+          await supabase.from("bonus_transactions").insert({ user_id: sessionUserId, order_id: order.id, amount: -bonusApplied, reason: `Списание · заказ №${order.number}` });
         }
         if (bonusEarn > 0) {
-          await supabase.from("bonus_transactions").insert({ user_id: user.user.id, order_id: order.id, amount: bonusEarn, reason: `Кэшбэк · заказ №${order.number}` });
+          await supabase.from("bonus_transactions").insert({ user_id: sessionUserId, order_id: order.id, amount: bonusEarn, reason: `Кэшбэк · заказ №${order.number}` });
         }
       }
 

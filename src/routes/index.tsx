@@ -309,25 +309,32 @@ function Index() {
                     key={p.id}
                     className="group bg-card rounded-3xl overflow-hidden border border-border hover:border-primary hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1 transition-all flex flex-col"
                   >
-                    <div className="relative aspect-square bg-neutral-50 grid place-items-center text-6xl">
+                    <button
+                      type="button"
+                      onClick={() => setOpenProduct(p)}
+                      className="relative aspect-square bg-neutral-50 grid place-items-center text-6xl text-left w-full"
+                      aria-label={`Подробнее о ${p.name}`}
+                    >
                       {p.image_url ? (
                         <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" />
                       ) : (
                         "🍣"
                       )}
-                      <button
+                      <span
                         onClick={(e) => { e.stopPropagation(); fav.toggle(p.id); }}
-                        className="absolute top-2 right-2 h-9 w-9 rounded-full bg-white/90 backdrop-blur grid place-items-center text-lg shadow hover:scale-110 transition"
+                        className="absolute top-2 right-2 h-9 w-9 rounded-full bg-white/90 backdrop-blur grid place-items-center text-lg shadow hover:scale-110 transition cursor-pointer"
                         aria-label="В избранное"
                       >
                         {fav.has(p.id) ? "❤️" : "🤍"}
-                      </button>
-                    </div>
+                      </span>
+                    </button>
                     <div className="p-4 flex flex-col flex-1">
-                      <h4 className="font-bold leading-snug line-clamp-2">{p.name}</h4>
-                      {p.weight && (
-                        <div className="text-xs text-neutral-500 mt-1">{p.weight}</div>
-                      )}
+                      <button type="button" onClick={() => setOpenProduct(p)} className="text-left">
+                        <h4 className="font-bold leading-snug line-clamp-2 hover:text-primary transition">{p.name}</h4>
+                        {p.weight && (
+                          <div className="text-xs text-neutral-500 mt-1">{p.weight}</div>
+                        )}
+                      </button>
                       <div className="mt-auto pt-4 flex items-center justify-between gap-2">
                         <span className="text-xl font-extrabold">{Number(p.price)} ₽</span>
                         {(() => {

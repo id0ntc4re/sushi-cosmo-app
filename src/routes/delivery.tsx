@@ -1,3 +1,4 @@
+import { SiteFooter } from "@/components/SiteFooter";
 import { createFileRoute } from "@tanstack/react-router";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Truck, Clock, MapPin, CreditCard, Banknote, Phone } from "lucide-react";
@@ -88,6 +89,7 @@ function DeliveryPage() {
           </a>
         </div>
       </main>
+      <SiteFooter />
     </div>
   );
 }

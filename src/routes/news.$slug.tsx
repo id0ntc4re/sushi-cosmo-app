@@ -1,3 +1,4 @@
+import { SiteFooter } from "@/components/SiteFooter";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -69,6 +70,7 @@ function NewsDetail() {
           </article>
         )}
       </main>
+      <SiteFooter />
     </div>
   );
 }

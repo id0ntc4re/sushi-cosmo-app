@@ -159,8 +159,9 @@ export function DeliveryCalculator({ subtotal, onOpenCart }: Props) {
         <div className="relative">
           <div className="flex items-center justify-between gap-4 flex-wrap mb-4">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted text-foreground text-xs font-bold uppercase tracking-wider">
-                ✨ Помощник заказа · 30 секунд
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-muted text-foreground text-xs font-bold uppercase tracking-wider">
+                <Sparkles className="h-3.5 w-3.5 text-primary" strokeWidth={2.5} />
+                Помощник заказа · 30 секунд
               </div>
               <h2 className="mt-3 text-3xl md:text-4xl font-extrabold leading-tight text-foreground">
                 Соберём идеальный заказ за 3 шага

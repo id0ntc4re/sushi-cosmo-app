@@ -178,19 +178,24 @@ export function DeliveryCalculator({ subtotal, onOpenCart, products: providedPro
           </div>
 
           {/* Stepper */}
-          <div className="flex items-center gap-2 md:gap-4 mb-6 overflow-x-auto pb-1">
+          <div className="flex items-center gap-1.5 sm:gap-2 md:gap-4 mb-6 pb-1">
             {STEPS.map((s, i) => {
               const done = step > s.n;
               const active = step === s.n;
               return (
-                <div key={s.n} className="flex items-center gap-2 md:gap-4 shrink-0">
+                <div
+                  key={s.n}
+                  className={`flex items-center gap-1.5 sm:gap-2 md:gap-4 min-w-0 ${
+                    active ? "flex-1 sm:flex-initial" : "shrink-0"
+                  }`}
+                >
                   <button
                     onClick={() => {
                       if (s.n === 1) setStep(1);
                       if (s.n === 2 && persons) setStep(2);
                       if (s.n === 3 && persons && occasion) setStep(3);
                     }}
-                    className={`flex items-center gap-2 px-3 md:px-4 py-2 rounded-full text-xs md:text-sm font-bold transition-all ${
+                    className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 md:px-4 py-2 rounded-full text-xs md:text-sm font-bold transition-all min-w-0 ${
                       active
                         ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30"
                         : done
@@ -199,7 +204,7 @@ export function DeliveryCalculator({ subtotal, onOpenCart, products: providedPro
                     }`}
                   >
                     <span
-                      className={`h-6 w-6 rounded-full grid place-items-center text-xs ${
+                      className={`h-5 w-5 sm:h-6 sm:w-6 shrink-0 rounded-full grid place-items-center text-[10px] sm:text-xs ${
                         active
                           ? "bg-primary-foreground text-primary"
                           : done
@@ -209,10 +214,12 @@ export function DeliveryCalculator({ subtotal, onOpenCart, products: providedPro
                     >
                       {done ? "✓" : s.n}
                     </span>
-                    <span className="whitespace-nowrap">{s.label}</span>
+                    <span className={`truncate sm:whitespace-nowrap ${active ? "" : "hidden sm:inline"}`}>
+                      {s.label}
+                    </span>
                   </button>
                   {i < STEPS.length - 1 && (
-                    <div className={`h-0.5 w-4 md:w-10 rounded-full ${done ? "bg-primary" : "bg-muted"}`} />
+                    <div className={`h-0.5 flex-1 sm:flex-initial sm:w-4 md:w-10 rounded-full ${done ? "bg-primary" : "bg-muted"}`} />
                   )}
                 </div>
               );

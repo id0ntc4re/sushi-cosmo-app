@@ -2,6 +2,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { ruError } from "@/lib/errors";
 import { useCart } from "@/lib/cart";
 import { TIERS, tierFromTotal, nextTier, type Tier } from "@/lib/loyalty";
 import logo from "@/assets/logo.svg";

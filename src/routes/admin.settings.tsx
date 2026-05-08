@@ -82,6 +82,32 @@ function SettingsAdmin() {
         <button onClick={save} className="px-6 py-2.5 rounded-full bg-primary text-white font-bold">Сохранить</button>
       </div>
 
+      <div className="bg-white rounded-3xl p-6 space-y-4 mb-6">
+        <div className="flex items-center justify-between">
+          <h2 className="font-extrabold text-lg">🔥 Флэш-акция (баннер с таймером)</h2>
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" checked={flash.enabled}
+              onChange={(e) => setFlash({ ...flash, enabled: e.target.checked })} /> Включить
+          </label>
+        </div>
+        <Field label="Заголовок">
+          <input className={inp} value={flash.title}
+            onChange={(e) => setFlash({ ...flash, title: e.target.value })} placeholder="−20% на всё меню" />
+        </Field>
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Скидка, %">
+            <input type="number" className={inp} value={flash.percent}
+              onChange={(e) => setFlash({ ...flash, percent: Number(e.target.value) })} />
+          </Field>
+          <Field label="Действует до">
+            <input type="datetime-local" className={inp}
+              value={flash.ends_at ? flash.ends_at.slice(0, 16) : ""}
+              onChange={(e) => setFlash({ ...flash, ends_at: e.target.value ? new Date(e.target.value).toISOString() : null })} />
+          </Field>
+        </div>
+        <button onClick={saveFlash} className="px-6 py-2.5 rounded-full bg-primary text-white font-bold">Сохранить акцию</button>
+      </div>
+
       <div className="bg-white rounded-3xl p-6">
         <h2 className="font-extrabold text-lg mb-4">Администраторы</h2>
         <div className="space-y-2 mb-4">

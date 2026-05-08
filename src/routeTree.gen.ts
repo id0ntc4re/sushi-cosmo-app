@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as OrderSuccessRouteImport } from './routes/order-success'
+import { Route as NewsRouteImport } from './routes/news'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DeliveryRouteImport } from './routes/delivery'
 import { Route as CheckoutRouteImport } from './routes/checkout'
@@ -29,6 +30,11 @@ import { Route as AdminBannersRouteImport } from './routes/admin.banners'
 const OrderSuccessRoute = OrderSuccessRouteImport.update({
   id: '/order-success',
   path: '/order-success',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NewsRoute = NewsRouteImport.update({
+  id: '/news',
+  path: '/news',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -116,6 +122,7 @@ export interface FileRoutesByFullPath {
   '/checkout': typeof CheckoutRoute
   '/delivery': typeof DeliveryRoute
   '/login': typeof LoginRoute
+  '/news': typeof NewsRoute
   '/order-success': typeof OrderSuccessRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/categories': typeof AdminCategoriesRoute
@@ -133,6 +140,7 @@ export interface FileRoutesByTo {
   '/checkout': typeof CheckoutRoute
   '/delivery': typeof DeliveryRoute
   '/login': typeof LoginRoute
+  '/news': typeof NewsRoute
   '/order-success': typeof OrderSuccessRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/categories': typeof AdminCategoriesRoute
@@ -152,6 +160,7 @@ export interface FileRoutesById {
   '/checkout': typeof CheckoutRoute
   '/delivery': typeof DeliveryRoute
   '/login': typeof LoginRoute
+  '/news': typeof NewsRoute
   '/order-success': typeof OrderSuccessRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/categories': typeof AdminCategoriesRoute
@@ -172,6 +181,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/delivery'
     | '/login'
+    | '/news'
     | '/order-success'
     | '/admin/banners'
     | '/admin/categories'
@@ -189,6 +199,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/delivery'
     | '/login'
+    | '/news'
     | '/order-success'
     | '/admin/banners'
     | '/admin/categories'
@@ -207,6 +218,7 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/delivery'
     | '/login'
+    | '/news'
     | '/order-success'
     | '/admin/banners'
     | '/admin/categories'
@@ -226,6 +238,7 @@ export interface RootRouteChildren {
   CheckoutRoute: typeof CheckoutRoute
   DeliveryRoute: typeof DeliveryRoute
   LoginRoute: typeof LoginRoute
+  NewsRoute: typeof NewsRoute
   OrderSuccessRoute: typeof OrderSuccessRoute
 }
 
@@ -236,6 +249,13 @@ declare module '@tanstack/react-router' {
       path: '/order-success'
       fullPath: '/order-success'
       preLoaderRoute: typeof OrderSuccessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/news': {
+      id: '/news'
+      path: '/news'
+      fullPath: '/news'
+      preLoaderRoute: typeof NewsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -377,8 +397,19 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutRoute: CheckoutRoute,
   DeliveryRoute: DeliveryRoute,
   LoginRoute: LoginRoute,
+  NewsRoute: NewsRoute,
   OrderSuccessRoute: OrderSuccessRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

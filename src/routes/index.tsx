@@ -6,6 +6,7 @@ import { useCart } from "@/lib/cart";
 import { useFavorites, pushHistory } from "@/lib/favorites";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
+import { DeliveryCalculator } from "@/components/DeliveryCalculator";
 import logo from "@/assets/logo.svg";
 import hero1 from "@/assets/hero-1.jpg";
 import hero2 from "@/assets/hero-2.jpg";

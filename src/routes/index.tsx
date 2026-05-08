@@ -344,15 +344,15 @@ function Index() {
                               <div className="flex items-center gap-1">
                                 <button
                                   onClick={() => cart.setQty(p.id, inCart.quantity - 1)}
-                                  className="h-8 w-8 rounded-full bg-neutral-100 hover:bg-neutral-200 font-bold"
+                                  className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-neutral-100 hover:bg-neutral-200 font-bold"
                                   aria-label="Уменьшить"
                                 >
                                   −
                                 </button>
-                                <span className="w-7 text-center font-bold">{inCart.quantity}</span>
+                                <span className="w-6 sm:w-7 text-center font-bold text-sm sm:text-base">{inCart.quantity}</span>
                                 <button
                                   onClick={() => cart.setQty(p.id, inCart.quantity + 1)}
-                                  className="h-8 w-8 rounded-full bg-primary text-white hover:opacity-90 font-bold"
+                                  className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-primary text-white hover:opacity-90 font-bold"
                                   aria-label="Увеличить"
                                 >
                                   +
@@ -488,12 +488,12 @@ function ProductModal({ product, onClose, onAdd }: { product: Product; onClose: 
   }, [product.id]);
 
   return (
-    <div className="fixed inset-0 bg-black/60 z-50 grid place-items-center p-4 animate-fade-in" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/60 z-50 grid sm:place-items-center sm:p-4 animate-fade-in" onClick={onClose}>
       <div
-        className="bg-white rounded-3xl overflow-hidden max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+        className="bg-white sm:rounded-3xl rounded-t-3xl overflow-hidden max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto shadow-2xl mt-auto sm:mt-0"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="relative aspect-[16/10] bg-neutral-100 grid place-items-center text-7xl">
+        <div className="relative aspect-[4/3] sm:aspect-[16/10] bg-neutral-100 grid place-items-center text-7xl">
           {product.image_url ? (
             <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
           ) : (
@@ -501,27 +501,27 @@ function ProductModal({ product, onClose, onAdd }: { product: Product; onClose: 
           )}
           <button
             onClick={onClose}
-            className="absolute top-3 right-3 h-10 w-10 rounded-full bg-white/95 hover:bg-white grid place-items-center shadow leading-none"
+            className="absolute top-3 right-3 h-10 w-10 rounded-full bg-white/95 hover:bg-white grid place-items-center shadow"
             aria-label="Закрыть"
           >
             <span className="block text-2xl font-bold leading-none -mt-0.5">×</span>
           </button>
         </div>
-        <div className="p-6 md:p-8">
-          <h2 className="text-2xl md:text-3xl font-extrabold mb-2">{product.name}</h2>
-          {product.weight && <div className="text-sm text-neutral-500 mb-4">{product.weight}</div>}
+        <div className="p-4 sm:p-6 md:p-8">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold mb-2">{product.name}</h2>
+          {product.weight && <div className="text-sm text-neutral-500 mb-3 sm:mb-4">{product.weight}</div>}
           {product.description && (
-            <p className="text-foreground/90 leading-relaxed mb-5">{product.description}</p>
+            <p className="text-sm sm:text-base text-foreground/90 leading-relaxed mb-4 sm:mb-5">{product.description}</p>
           )}
           {product.ingredients && (
-            <div className="mb-6">
+            <div className="mb-5 sm:mb-6">
               <div className="text-xs uppercase tracking-wider font-bold text-primary mb-1">Состав</div>
               <p className="text-sm text-foreground/80">{product.ingredients}</p>
             </div>
           )}
-          <div className="flex items-center justify-between gap-4 pt-4 border-t">
-            <span className="text-3xl font-extrabold">{Number(product.price) * qty} ₽</span>
-            <div className="flex items-center gap-3">
+          <div className="flex items-center justify-between gap-3 pt-4 border-t flex-wrap">
+            <span className="text-2xl sm:text-3xl font-extrabold">{Number(product.price) * qty} ₽</span>
+            <div className="flex items-center gap-2 sm:gap-3">
               <div className="flex items-center gap-2 rounded-full border border-neutral-200 px-2 py-1">
                 <button
                   onClick={() => setQty((q) => Math.max(1, q - 1))}
@@ -541,7 +541,7 @@ function ProductModal({ product, onClose, onAdd }: { product: Product; onClose: 
               </div>
               <button
                 onClick={() => onAdd(qty)}
-                className="px-6 py-3 rounded-full bg-primary text-primary-foreground font-bold hover:opacity-90 transition"
+                className="px-4 py-2.5 sm:px-6 sm:py-3 rounded-full bg-primary text-primary-foreground font-bold hover:opacity-90 transition text-sm sm:text-base"
               >
                 В корзину
               </button>

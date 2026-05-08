@@ -322,7 +322,11 @@ function Index() {
                         "🍣"
                       )}
                       <span
-                        onClick={(e) => { e.stopPropagation(); fav.toggle(p.id); }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!fav.isAuthenticated) { setAuthPromptOpen(true); return; }
+                          fav.toggle(p.id);
+                        }}
                         className="absolute top-2 right-2 h-9 w-9 rounded-full bg-white/90 backdrop-blur grid place-items-center text-lg shadow hover:scale-110 transition cursor-pointer"
                         aria-label="В избранное"
                       >

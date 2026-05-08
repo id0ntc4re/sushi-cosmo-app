@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/lib/cart";
 import { useFavorites, pushHistory } from "@/lib/favorites";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { SiteHeader } from "@/components/SiteHeader";
 import logo from "@/assets/logo.svg";
 import hero1 from "@/assets/hero-1.jpg";
 import hero2 from "@/assets/hero-2.jpg";
@@ -122,44 +123,7 @@ function Index() {
 
   return (
     <div className="min-h-screen bg-white text-foreground">
-      {/* TOP HEADER */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur border-b border-neutral-100">
-        <div className="mx-auto max-w-[1280px] px-6 h-20 flex items-center gap-10">
-          <a href="/" className="flex items-center gap-2 shrink-0">
-            <img src={logo} alt="КосмоСуши" className="h-10 w-10" />
-            <span className="font-extrabold text-[22px] tracking-tight">
-              КосмоСуши
-            </span>
-          </a>
-          <div className="hidden md:flex items-center gap-2 text-[15px] text-neutral-700">
-            <span className="text-primary">📍</span>
-            <span>Кемерово</span>
-          </div>
-          <nav className="ml-auto hidden lg:flex items-center gap-7 text-[15px] font-medium text-neutral-800">
-            <a href="#menu" className="hover:text-primary">Меню</a>
-            <a href="#delivery" className="hover:text-primary">Доставка</a>
-            <a href="#contacts" className="hover:text-primary">Контакты</a>
-            <Link to="/account" className="hover:text-primary">Кабинет</Link>
-          </nav>
-          <a
-            href="tel:+79132869284"
-            className="hidden md:inline-block font-extrabold text-[17px] text-neutral-900 hover:text-primary"
-          >
-            +7 913 286 92-84
-          </a>
-          <button
-            onClick={() => cart.setOpen(true)}
-            className="relative ml-2 px-5 py-2.5 rounded-full bg-primary text-white font-bold hover:opacity-90 flex items-center gap-2"
-          >
-            🛒 Корзина
-            {cart.count > 0 && (
-              <span className="bg-white text-primary text-xs font-extrabold rounded-full h-5 min-w-5 px-1.5 grid place-items-center">
-                {cart.count}
-              </span>
-            )}
-          </button>
-        </div>
-      </header>
+      <SiteHeader />
 
       {/* HERO SLIDER */}
       <section className="bg-white">

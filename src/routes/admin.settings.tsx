@@ -23,14 +23,20 @@ const DEFAULT: Settings = {
   phone: "+7 913 286 92-84",
 };
 
+type Flash = { enabled: boolean; title: string; percent: number; ends_at: string | null };
+const DEFAULT_FLASH: Flash = { enabled: false, title: "−20% на всё меню", percent: 20, ends_at: null };
+
 function SettingsAdmin() {
   const [s, setS] = useState<Settings>(DEFAULT);
+  const [flash, setFlash] = useState<Flash>(DEFAULT_FLASH);
   const [admins, setAdmins] = useState<any[]>([]);
-  const [newAdminEmail, setNewAdminEmail] = useState("");
 
   async function load() {
     const { data } = await supabase.from("settings").select("*").eq("key", "general").maybeSingle();
     if (data?.value) setS({ ...DEFAULT, ...(data.value as any) });
+
+    const { data: f } = await supabase.from("settings").select("value").eq("key", "flash_sale").maybeSingle();
+    if (f?.value) setFlash({ ...DEFAULT_FLASH, ...(f.value as any) });
 
     const { data: roles } = await supabase
       .from("user_roles")
@@ -44,6 +50,12 @@ function SettingsAdmin() {
     const { error } = await supabase.from("settings").upsert({ key: "general", value: s as any });
     if (error) return toast.error(error.message);
     toast.success("Сохранено");
+  }
+
+  async function saveFlash() {
+    const { error } = await supabase.from("settings").upsert({ key: "flash_sale", value: flash as any });
+    if (error) return toast.error(error.message);
+    toast.success("Акция обновлена");
   }
 
   return (

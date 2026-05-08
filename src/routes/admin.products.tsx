@@ -12,6 +12,7 @@ type Product = {
   id: string;
   name: string;
   description: string | null;
+  ingredients: string | null;
   price: number;
   weight: string | null;
   category_id: string | null;
@@ -34,7 +35,7 @@ const TAGS = [
 ];
 
 const empty: Partial<Product> = {
-  name: "", price: 0, weight: "", description: "", image_url: "",
+  name: "", price: 0, weight: "", description: "", ingredients: "", image_url: "",
   category_id: null, is_active: true, in_stock: true, sort_order: 0, sku: "",
   is_addon: false, is_recommended: false, tags: [],
 };
@@ -61,6 +62,7 @@ function ProductsAdmin() {
     const payload: any = {
       name: editing.name?.trim(),
       description: editing.description || null,
+      ingredients: editing.ingredients || null,
       price: Number(editing.price ?? 0),
       weight: editing.weight || null,
       category_id: editing.category_id || null,
@@ -178,6 +180,7 @@ function ProductsAdmin() {
             <Field label="Сортировка"><input type="number" className={inp} value={editing.sort_order ?? 0} onChange={(e) => setEditing({ ...editing, sort_order: Number(e.target.value) })} /></Field>
             <div className="md:col-span-2"><Field label="URL изображения"><input className={inp} value={editing.image_url ?? ""} onChange={(e) => setEditing({ ...editing, image_url: e.target.value })} placeholder="https://…" /></Field></div>
             <div className="md:col-span-2"><Field label="Описание"><textarea className={`${inp} min-h-[80px]`} value={editing.description ?? ""} onChange={(e) => setEditing({ ...editing, description: e.target.value })} /></Field></div>
+            <div className="md:col-span-2"><Field label="Состав"><textarea className={`${inp} min-h-[60px]`} value={editing.ingredients ?? ""} onChange={(e) => setEditing({ ...editing, ingredients: e.target.value })} placeholder="Рис, нори, лосось, огурец…" /></Field></div>
             <label className="flex items-center gap-2"><input type="checkbox" checked={editing.is_active ?? true} onChange={(e) => setEditing({ ...editing, is_active: e.target.checked })} /> Активен</label>
             <label className="flex items-center gap-2"><input type="checkbox" checked={editing.in_stock ?? true} onChange={(e) => setEditing({ ...editing, in_stock: e.target.checked })} /> В наличии</label>
             <label className="flex items-center gap-2"><input type="checkbox" checked={editing.is_addon ?? false} onChange={(e) => setEditing({ ...editing, is_addon: e.target.checked })} /> Доп. товар (соус/палочки)</label>

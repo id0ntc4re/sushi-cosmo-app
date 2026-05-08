@@ -191,6 +191,51 @@ export type Database = {
         }
         Relationships: []
       }
+      news_posts: {
+        Row: {
+          content: string
+          created_at: string
+          excerpt: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          kind: string
+          published_at: string
+          slug: string
+          sort_order: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content?: string
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          kind?: string
+          published_at?: string
+          slug: string
+          sort_order?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          excerpt?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          kind?: string
+          published_at?: string
+          slug?: string
+          sort_order?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       newsletter_subscribers: {
         Row: {
           created_at: string
@@ -343,6 +388,7 @@ export type Database = {
           id: string
           image_url: string | null
           in_stock: boolean
+          ingredients: string | null
           is_active: boolean
           is_addon: boolean
           is_recommended: boolean
@@ -362,6 +408,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           in_stock?: boolean
+          ingredients?: string | null
           is_active?: boolean
           is_addon?: boolean
           is_recommended?: boolean
@@ -381,6 +428,7 @@ export type Database = {
           id?: string
           image_url?: string | null
           in_stock?: boolean
+          ingredients?: string | null
           is_active?: boolean
           is_addon?: boolean
           is_recommended?: boolean

@@ -37,6 +37,7 @@ type Product = {
   category_id: string | null;
   image_url: string | null;
   description?: string | null;
+  ingredients?: string | null;
   is_addon?: boolean;
   tags?: string[];
 };
@@ -49,13 +50,6 @@ type Banner = {
   cta_link: string | null;
 };
 
-const TAG_OPTIONS = [
-  { id: "spicy", label: "🌶 Острое" },
-  { id: "vegan", label: "🌱 Веган" },
-  { id: "no_fish", label: "🚫🐟 Без рыбы" },
-  { id: "baked", label: "🔥 Запечённые" },
-  { id: "new", label: "✨ Новинка" },
-];
 
 function Index() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -66,8 +60,7 @@ function Index() {
   const [search, setSearch] = useState("");
   const [slide, setSlide] = useState(0);
   const [banners, setBanners] = useState<Banner[]>(FALLBACK_SLIDES as any);
-  const [activeTags, setActiveTags] = useState<string[]>([]);
-  const [maxPrice, setMaxPrice] = useState<number>(0);
+  const [openProduct, setOpenProduct] = useState<Product | null>(null);
   const cart = useCart();
   const fav = useFavorites();
 
@@ -83,14 +76,12 @@ function Index() {
         setLoadError(null);
         const prods = await supabase
           .from("products")
-          .select("id,name,price,weight,category_id,image_url,description,is_addon,tags")
+          .select("id,name,price,weight,category_id,image_url,description,ingredients,is_addon,tags")
           .eq("is_active", true)
           .order("sort_order");
         if (prods.error) throw prods.error;
         const list = (prods.data as Product[]) ?? [];
         setProducts(list);
-        const top = Math.max(0, ...list.map((p) => Number(p.price) || 0));
-        setMaxPrice(Math.ceil(top / 100) * 100 || 1000);
       } catch (e: any) {
         setLoadError(e?.message ?? "Не удалось загрузить меню");
       } finally {
@@ -106,21 +97,14 @@ function Index() {
     })();
   }, []);
 
-  const [priceCap, setPriceCap] = useState<number | null>(null);
-  useEffect(() => { if (maxPrice && priceCap === null) setPriceCap(maxPrice); }, [maxPrice, priceCap]);
-
   const filteredProducts = useMemo(() => {
     const q = search.trim().toLowerCase();
     return products.filter((p) => {
       if (p.is_addon) return false;
       if (q && !p.name.toLowerCase().includes(q) && !(p.description ?? "").toLowerCase().includes(q)) return false;
-      if (activeTags.length && !activeTags.every((t) => (p.tags ?? []).includes(t))) return false;
-      if (priceCap !== null && Number(p.price) > priceCap) return false;
       return true;
     });
-  }, [products, search, activeTags, priceCap]);
-
-  const toggleTag = (id: string) => setActiveTags((cur) => cur.includes(id) ? cur.filter((t) => t !== id) : [...cur, id]);
+  }, [products, search]);
 
   const visibleCats = useMemo(
     () => {
@@ -281,30 +265,6 @@ function Index() {
           ))}
         </div>
 
-        {/* tag filters + price */}
-        <div className="flex flex-wrap gap-2 items-center mb-6">
-          {TAG_OPTIONS.map((t) => {
-            const on = activeTags.includes(t.id);
-            return (
-              <button key={t.id} onClick={() => toggleTag(t.id)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition ${on ? "bg-primary text-primary-foreground border-primary border-solid" : "bg-card text-foreground border-primary/30 hover:border-primary"}`}>
-                {t.label}
-              </button>
-            );
-          })}
-          {maxPrice > 0 && (
-            <div className="flex items-center gap-2 ml-auto bg-card border border-border rounded-full px-4 py-1.5 text-xs">
-              <span className="text-muted-foreground whitespace-nowrap">Цена до</span>
-              <input type="range" min={100} max={maxPrice} step={50} value={priceCap ?? maxPrice}
-                onChange={(e) => setPriceCap(Number(e.target.value))} className="w-32 sm:w-44 accent-primary" />
-              <span className="font-bold tabular-nums w-14 text-right text-primary">{priceCap ?? maxPrice} ₽</span>
-            </div>
-          )}
-          {(activeTags.length > 0 || (priceCap !== null && priceCap < maxPrice)) && (
-            <button onClick={() => { setActiveTags([]); setPriceCap(maxPrice); }}
-              className="text-xs text-primary font-semibold hover:underline">Сбросить</button>
-          )}
-        </div>
 
         {loading && (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
@@ -349,25 +309,32 @@ function Index() {
                     key={p.id}
                     className="group bg-card rounded-3xl overflow-hidden border border-border hover:border-primary hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1 transition-all flex flex-col"
                   >
-                    <div className="relative aspect-square bg-neutral-50 grid place-items-center text-6xl">
+                    <button
+                      type="button"
+                      onClick={() => setOpenProduct(p)}
+                      className="relative aspect-square bg-neutral-50 grid place-items-center text-6xl text-left w-full"
+                      aria-label={`Подробнее о ${p.name}`}
+                    >
                       {p.image_url ? (
                         <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" />
                       ) : (
                         "🍣"
                       )}
-                      <button
+                      <span
                         onClick={(e) => { e.stopPropagation(); fav.toggle(p.id); }}
-                        className="absolute top-2 right-2 h-9 w-9 rounded-full bg-white/90 backdrop-blur grid place-items-center text-lg shadow hover:scale-110 transition"
+                        className="absolute top-2 right-2 h-9 w-9 rounded-full bg-white/90 backdrop-blur grid place-items-center text-lg shadow hover:scale-110 transition cursor-pointer"
                         aria-label="В избранное"
                       >
                         {fav.has(p.id) ? "❤️" : "🤍"}
-                      </button>
-                    </div>
+                      </span>
+                    </button>
                     <div className="p-4 flex flex-col flex-1">
-                      <h4 className="font-bold leading-snug line-clamp-2">{p.name}</h4>
-                      {p.weight && (
-                        <div className="text-xs text-neutral-500 mt-1">{p.weight}</div>
-                      )}
+                      <button type="button" onClick={() => setOpenProduct(p)} className="text-left">
+                        <h4 className="font-bold leading-snug line-clamp-2 hover:text-primary transition">{p.name}</h4>
+                        {p.weight && (
+                          <div className="text-xs text-neutral-500 mt-1">{p.weight}</div>
+                        )}
+                      </button>
                       <div className="mt-auto pt-4 flex items-center justify-between gap-2">
                         <span className="text-xl font-extrabold">{Number(p.price)} ₽</span>
                         {(() => {
@@ -472,6 +439,73 @@ function Index() {
           </div>
         </div>
       </footer>
+
+      {openProduct && (
+        <ProductModal
+          product={openProduct}
+          onClose={() => setOpenProduct(null)}
+          onAdd={() => {
+            cart.add({
+              id: openProduct.id,
+              name: openProduct.name,
+              price: Number(openProduct.price),
+              image_url: openProduct.image_url,
+              weight: openProduct.weight,
+            });
+            pushHistory(openProduct.id);
+            toast.success("Добавлено в корзину", { description: openProduct.name });
+            setOpenProduct(null);
+          }}
+        />
+      )}
+    </div>
+  );
+}
+
+function ProductModal({ product, onClose, onAdd }: { product: Product; onClose: () => void; onAdd: () => void }) {
+  return (
+    <div className="fixed inset-0 bg-black/60 z-50 grid place-items-center p-4 animate-fade-in" onClick={onClose}>
+      <div
+        className="bg-white rounded-3xl overflow-hidden max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="relative aspect-[16/10] bg-neutral-100 grid place-items-center text-7xl">
+          {product.image_url ? (
+            <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+          ) : (
+            "🍣"
+          )}
+          <button
+            onClick={onClose}
+            className="absolute top-3 right-3 h-10 w-10 rounded-full bg-white/95 hover:bg-white grid place-items-center text-xl font-bold shadow"
+            aria-label="Закрыть"
+          >
+            ×
+          </button>
+        </div>
+        <div className="p-6 md:p-8">
+          <h2 className="text-2xl md:text-3xl font-extrabold mb-2">{product.name}</h2>
+          {product.weight && <div className="text-sm text-neutral-500 mb-4">{product.weight}</div>}
+          {product.description && (
+            <p className="text-foreground/90 leading-relaxed mb-5">{product.description}</p>
+          )}
+          {product.ingredients && (
+            <div className="mb-6">
+              <div className="text-xs uppercase tracking-wider font-bold text-primary mb-1">Состав</div>
+              <p className="text-sm text-foreground/80">{product.ingredients}</p>
+            </div>
+          )}
+          <div className="flex items-center justify-between gap-4 pt-4 border-t">
+            <span className="text-3xl font-extrabold">{Number(product.price)} ₽</span>
+            <button
+              onClick={onAdd}
+              className="px-6 py-3 rounded-full bg-primary text-primary-foreground font-bold hover:opacity-90 transition"
+            >
+              В корзину
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

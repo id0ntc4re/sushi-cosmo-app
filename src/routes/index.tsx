@@ -57,6 +57,8 @@ const TAG_OPTIONS = [
 function Index() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [active, setActive] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [slide, setSlide] = useState(0);
@@ -73,17 +75,26 @@ function Index() {
 
   useEffect(() => {
     (async () => {
-      const [cats, prods, bans] = await Promise.all([
-        supabase.from("categories").select("id,name,slug").eq("is_active", true).order("sort_order"),
-        supabase.from("products").select("id,name,price,weight,category_id,image_url,description,is_addon,tags").eq("is_active", true).order("sort_order"),
-        supabase.from("banners").select("image_url,eyebrow,title,subtitle,cta_label,cta_link").eq("is_active", true).order("sort_order"),
-      ]);
-      setCategories(cats.data ?? []);
-      const list = (prods.data as Product[]) ?? [];
-      setProducts(list);
-      const top = Math.max(0, ...list.map((p) => Number(p.price) || 0));
-      setMaxPrice(Math.ceil(top / 100) * 100 || 1000);
-      if (bans.data && bans.data.length) setBanners(bans.data as Banner[]);
+      try {
+        setLoading(true);
+        setLoadError(null);
+        const [cats, prods, bans] = await Promise.all([
+          supabase.from("categories").select("id,name,slug").eq("is_active", true).order("sort_order"),
+          supabase.from("products").select("id,name,price,weight,category_id,image_url,description,is_addon,tags").eq("is_active", true).order("sort_order"),
+          supabase.from("banners").select("image_url,eyebrow,title,subtitle,cta_label,cta_link").eq("is_active", true).order("sort_order"),
+        ]);
+        if (prods.error) throw prods.error;
+        setCategories(cats.data ?? []);
+        const list = (prods.data as Product[]) ?? [];
+        setProducts(list);
+        const top = Math.max(0, ...list.map((p) => Number(p.price) || 0));
+        setMaxPrice(Math.ceil(top / 100) * 100 || 1000);
+        if (bans.data && bans.data.length) setBanners(bans.data as Banner[]);
+      } catch (e: any) {
+        setLoadError(e?.message || "Не удалось загрузить меню");
+      } finally {
+        setLoading(false);
+      }
     })();
   }, []);
 
@@ -312,7 +323,35 @@ function Index() {
           )}
         </div>
 
-        {visibleCats.map((cat) => {
+        {loading && (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="bg-white rounded-3xl overflow-hidden border border-neutral-100">
+                <div className="aspect-square bg-neutral-100 animate-pulse" />
+                <div className="p-4 space-y-3">
+                  <div className="h-4 bg-neutral-100 rounded animate-pulse" />
+                  <div className="h-3 w-1/2 bg-neutral-100 rounded animate-pulse" />
+                  <div className="h-8 bg-neutral-100 rounded-full animate-pulse" />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+        {!loading && loadError && (
+          <div className="text-center py-12 text-red-600">
+            <p className="font-bold mb-2">Ошибка загрузки меню</p>
+            <p className="text-sm text-neutral-500 mb-4">{loadError}</p>
+            <button onClick={() => location.reload()} className="px-6 py-2.5 rounded-full bg-primary text-white font-bold">
+              Обновить
+            </button>
+          </div>
+        )}
+        {!loading && !loadError && filteredProducts.length === 0 && products.length > 0 && (
+          <div className="text-center py-12 text-neutral-500">
+            Ничего не найдено. Попробуйте сбросить фильтры.
+          </div>
+        )}
+        {!loading && visibleCats.map((cat) => {
           const list = filteredProducts.filter((p) => p.category_id === cat.id);
           if (!list.length) return null;
           return (

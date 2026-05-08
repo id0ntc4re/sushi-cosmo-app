@@ -2,6 +2,20 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/lib/cart";
 import { toast } from "sonner";
+import {
+  User,
+  Users,
+  UsersRound,
+  PartyPopper,
+  Utensils,
+  Cake,
+  Flame,
+  Leaf,
+  Truck,
+  CreditCard,
+  Sparkles,
+  type LucideIcon,
+} from "lucide-react";
 
 type Product = {
   id: string;
@@ -18,18 +32,18 @@ type Props = {
   onOpenCart: () => void;
 };
 
-const PERSONS = [
-  { n: 1, label: "1 человек", emoji: "🙂", hint: "лёгкий перекус" },
-  { n: 2, label: "2 человека", emoji: "💑", hint: "ужин на двоих" },
-  { n: 4, label: "3-4 человека", emoji: "👨‍👩‍👧", hint: "семейный заказ" },
-  { n: 6, label: "5+ человек", emoji: "🎉", hint: "вечеринка" },
+const PERSONS: { n: number; label: string; Icon: LucideIcon; hint: string }[] = [
+  { n: 1, label: "1 человек", Icon: User, hint: "лёгкий перекус" },
+  { n: 2, label: "2 человека", Icon: Users, hint: "ужин на двоих" },
+  { n: 4, label: "3-4 человека", Icon: UsersRound, hint: "семейный заказ" },
+  { n: 6, label: "5+ человек", Icon: PartyPopper, hint: "вечеринка" },
 ];
 
-const OCCASIONS = [
-  { id: "dinner", label: "Просто поужинать", emoji: "🍽️", boost: ["Филадельфия", "Калифорния"] },
-  { id: "party", label: "Вечеринка / День рождения", emoji: "🎂", boost: ["сет", "ассорти"] },
-  { id: "spicy", label: "Хочу остренького 🌶", emoji: "🔥", boost: ["острый", "спайси", "запечён"] },
-  { id: "light", label: "Лёгкое и классика", emoji: "🌿", boost: ["филадельфия", "ролл", "суши"] },
+const OCCASIONS: { id: string; label: string; Icon: LucideIcon; boost: string[] }[] = [
+  { id: "dinner", label: "Просто поужинать", Icon: Utensils, boost: ["Филадельфия", "Калифорния"] },
+  { id: "party", label: "Вечеринка / День рождения", Icon: Cake, boost: ["сет", "ассорти"] },
+  { id: "spicy", label: "Хочу остренького", Icon: Flame, boost: ["острый", "спайси", "запечён"] },
+  { id: "light", label: "Лёгкое и классика", Icon: Leaf, boost: ["филадельфия", "ролл", "суши"] },
 ];
 
 export function DeliveryCalculator({ subtotal, onOpenCart }: Props) {
@@ -145,8 +159,9 @@ export function DeliveryCalculator({ subtotal, onOpenCart }: Props) {
         <div className="relative">
           <div className="flex items-center justify-between gap-4 flex-wrap mb-4">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted text-foreground text-xs font-bold uppercase tracking-wider">
-                ✨ Помощник заказа · 30 секунд
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-muted text-foreground text-xs font-bold uppercase tracking-wider">
+                <Sparkles className="h-3.5 w-3.5 text-primary" strokeWidth={2.5} />
+                Помощник заказа · 30 секунд
               </div>
               <h2 className="mt-3 text-3xl md:text-4xl font-extrabold leading-tight text-foreground">
                 Соберём идеальный заказ за 3 шага
@@ -219,7 +234,9 @@ export function DeliveryCalculator({ subtotal, onOpenCart }: Props) {
                           : "border border-border bg-card hover:border-primary hover:-translate-y-0.5"
                       }`}
                     >
-                      <div className="text-3xl mb-2">{opt.emoji}</div>
+                      <div className="h-11 w-11 rounded-xl bg-muted grid place-items-center mb-3 group-hover:bg-primary/10 transition-colors">
+                        <opt.Icon className="h-5 w-5 text-primary" strokeWidth={2} />
+                      </div>
                       <div className="font-extrabold">{opt.label}</div>
                       <div className="text-xs text-muted-foreground mt-1">{opt.hint}</div>
                       <div className="text-xs font-bold text-primary mt-2">от {opt.n * 600} ₽</div>
@@ -250,7 +267,9 @@ export function DeliveryCalculator({ subtotal, onOpenCart }: Props) {
                           : "border border-border bg-card hover:border-primary hover:-translate-y-0.5"
                       }`}
                     >
-                      <div className="text-3xl mb-2">{opt.emoji}</div>
+                      <div className="h-11 w-11 rounded-xl bg-muted grid place-items-center mb-3 group-hover:bg-primary/10 transition-colors">
+                        <opt.Icon className="h-5 w-5 text-primary" strokeWidth={2} />
+                      </div>
                       <div className="font-extrabold leading-tight">{opt.label}</div>
                     </button>
                   );
@@ -385,7 +404,7 @@ export function DeliveryCalculator({ subtotal, onOpenCart }: Props) {
                 <div className="mb-3">
                   <div className="flex justify-between text-[11px] font-semibold mb-1">
                     <span className="text-muted-foreground">
-                      {free ? "🎉 Бесплатная доставка!" : `До бесплатной доставки ${left} ₽`}
+                      {free ? "Бесплатная доставка включена" : `До бесплатной доставки ${left} ₽`}
                     </span>
                     <span className="text-primary">{freeFrom} ₽</span>
                   </div>
@@ -411,10 +430,10 @@ export function DeliveryCalculator({ subtotal, onOpenCart }: Props) {
                 >
                   В корзину →
                 </button>
-                <div className="mt-2 flex items-center gap-1.5 text-[11px] text-muted-foreground justify-center">
-                  <span>🚚 Доставка 60 мин</span>
-                  <span>·</span>
-                  <span>💳 Оплата при получении</span>
+                <div className="mt-2 flex items-center gap-2 text-[11px] text-muted-foreground justify-center">
+                  <span className="inline-flex items-center gap-1"><Truck className="h-3 w-3" /> 60 мин</span>
+                  <span className="opacity-40">·</span>
+                  <span className="inline-flex items-center gap-1"><CreditCard className="h-3 w-3" /> Оплата при получении</span>
                 </div>
               </div>
             </div>

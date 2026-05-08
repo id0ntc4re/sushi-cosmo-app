@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/lib/cart";
 import { useFavorites, pushHistory } from "@/lib/favorites";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Truck, Fish, Sparkles, Clock } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { DeliveryCalculator } from "@/components/DeliveryCalculator";
 import logo from "@/assets/logo.svg";
@@ -207,18 +207,17 @@ function Index() {
       <section className="mx-auto max-w-[1280px] px-6 mt-10">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           {[
-            { icon: "🚚", title: "Бесплатно от 1500 ₽", text: "Доставим в течение часа" },
-            { icon: "🐟", title: "Свежая рыба", text: "Поставки каждый день" },
-            { icon: "⭐", title: "Бонусы за заказ", text: "Копите и оплачивайте" },
-            { icon: "🕒", title: "10:00 – 22:00", text: "Работаем без выходных" },
-          ].map((f) => (
-            <div key={f.title} className="group relative rounded-2xl bg-card p-4 md:p-5 border border-border hover:border-primary hover:shadow-lg hover:shadow-primary/10 transition-all">
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-              <div className="relative">
-                <div className="text-3xl mb-2">{f.icon}</div>
-                <div className="font-bold leading-tight">{f.title}</div>
-                <div className="text-sm text-muted-foreground mt-1">{f.text}</div>
+            { Icon: Truck, title: "Бесплатно от 1500 ₽", text: "Доставим в течение часа" },
+            { Icon: Fish, title: "Свежая рыба", text: "Поставки каждый день" },
+            { Icon: Sparkles, title: "Бонусы за заказ", text: "Копите и оплачивайте" },
+            { Icon: Clock, title: "10:00 – 22:00", text: "Работаем без выходных" },
+          ].map(({ Icon, title, text }) => (
+            <div key={title} className="group rounded-2xl bg-card p-5 border border-border hover:border-foreground/20 hover:shadow-md transition-all">
+              <div className="h-11 w-11 rounded-xl bg-muted grid place-items-center mb-3 group-hover:bg-primary/10 transition-colors">
+                <Icon className="h-5 w-5 text-primary" strokeWidth={2} />
               </div>
+              <div className="font-bold leading-tight">{title}</div>
+              <div className="text-sm text-muted-foreground mt-1">{text}</div>
             </div>
           ))}
         </div>

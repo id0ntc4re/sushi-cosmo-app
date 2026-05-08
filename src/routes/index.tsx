@@ -60,8 +60,7 @@ function Index() {
   const [search, setSearch] = useState("");
   const [slide, setSlide] = useState(0);
   const [banners, setBanners] = useState<Banner[]>(FALLBACK_SLIDES as any);
-  const [activeTags, setActiveTags] = useState<string[]>([]);
-  const [maxPrice, setMaxPrice] = useState<number>(0);
+  const [openProduct, setOpenProduct] = useState<Product | null>(null);
   const cart = useCart();
   const fav = useFavorites();
 

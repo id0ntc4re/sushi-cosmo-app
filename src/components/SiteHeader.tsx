@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { MapPin, Phone, Clock, ChevronDown, User, Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/logo.svg";
 
 const BRANCHES = [
@@ -14,11 +15,26 @@ export function SiteHeader() {
   const [active, setActive] = useState(BRANCHES[0]);
   const [open, setOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [authName, setAuthName] = useState<string | null>(null);
 
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [mobileOpen]);
+
+  useEffect(() => {
+    let mounted = true;
+    const load = async (userId: string | undefined) => {
+      if (!userId) { if (mounted) setAuthName(null); return; }
+      const { data } = await supabase.from("profiles").select("full_name, email").eq("id", userId).maybeSingle();
+      if (!mounted) return;
+      const name = (data?.full_name as string | null) || (data?.email as string | null) || "Профиль";
+      setAuthName(name);
+    };
+    supabase.auth.getSession().then(({ data }) => load(data.session?.user?.id));
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => load(session?.user?.id));
+    return () => { mounted = false; sub.subscription.unsubscribe(); };
+  }, []);
 
   return (
     <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-lg border-b shadow-sm">
@@ -95,11 +111,14 @@ export function SiteHeader() {
           <Link to="/delivery" className="hover:text-primary transition-colors whitespace-nowrap">Доставка</Link>
           <Link to="/faq" className="hover:text-primary transition-colors whitespace-nowrap">Вопросы</Link>
           <Link
-            to="/account-login"
-            className="flex items-center gap-1.5 px-3 py-2 rounded-full border-2 border-primary text-primary font-semibold hover:bg-primary hover:text-primary-foreground transition-all whitespace-nowrap"
+            to={authName ? "/account" : "/account-login"}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-full border-2 font-semibold transition-all whitespace-nowrap ${authName ? "border-emerald-500 text-emerald-700 bg-emerald-50 hover:bg-emerald-500 hover:text-white" : "border-primary text-primary hover:bg-primary hover:text-primary-foreground"}`}
           >
-            <User className="h-4 w-4" />
-            <span className="hidden lg:inline">Личный кабинет</span>
+            <span className="relative">
+              <User className="h-4 w-4" />
+              {authName && <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-background" />}
+            </span>
+            <span className="hidden lg:inline max-w-[140px] truncate">{authName ?? "Личный кабинет"}</span>
           </Link>
           <a
             href={`tel:${active.phone.replace(/\s/g, "")}`}
@@ -112,6 +131,14 @@ export function SiteHeader() {
 
         {/* Mobile actions */}
         <div className="ml-auto flex md:hidden items-center gap-1">
+          <Link
+            to={authName ? "/account" : "/account-login"}
+            className={`h-10 w-10 grid place-items-center rounded-full relative ${authName ? "bg-emerald-500 text-white" : "border border-border"}`}
+            aria-label={authName ?? "Войти"}
+          >
+            <User className="h-4 w-4" />
+            {authName && <span className="absolute top-0.5 right-0.5 h-2 w-2 rounded-full bg-white ring-2 ring-emerald-500" />}
+          </Link>
           <a
             href={`tel:${active.phone.replace(/\s/g, "")}`}
             className="h-10 w-10 grid place-items-center rounded-full bg-primary text-primary-foreground"
@@ -154,7 +181,9 @@ export function SiteHeader() {
                 { to: "/about", label: "О компании" },
                 { to: "/delivery", label: "Доставка" },
                 { to: "/faq", label: "Вопросы и ответы" },
-                { to: "/account-login", label: "Личный кабинет" },
+                authName
+                  ? { to: "/account", label: `👤 ${authName}` }
+                  : { to: "/account-login", label: "Личный кабинет" },
               ].map((l) => (
                 <Link
                   key={l.label}

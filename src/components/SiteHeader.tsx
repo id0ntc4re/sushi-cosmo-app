@@ -131,6 +131,14 @@ export function SiteHeader() {
 
         {/* Mobile actions */}
         <div className="ml-auto flex md:hidden items-center gap-1">
+          <Link
+            to={authName ? "/account" : "/account-login"}
+            className={`h-10 w-10 grid place-items-center rounded-full relative ${authName ? "bg-emerald-500 text-white" : "border border-border"}`}
+            aria-label={authName ?? "Войти"}
+          >
+            <User className="h-4 w-4" />
+            {authName && <span className="absolute top-0.5 right-0.5 h-2 w-2 rounded-full bg-white ring-2 ring-emerald-500" />}
+          </Link>
           <a
             href={`tel:${active.phone.replace(/\s/g, "")}`}
             className="h-10 w-10 grid place-items-center rounded-full bg-primary text-primary-foreground"

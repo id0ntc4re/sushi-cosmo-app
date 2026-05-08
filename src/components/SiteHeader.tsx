@@ -32,7 +32,10 @@ export function SiteHeader() {
       setAuthName(name);
     };
     supabase.auth.getSession().then(({ data }) => load(data.session?.user?.id));
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => load(session?.user?.id));
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
+      const uid = session?.user?.id;
+      setTimeout(() => load(uid), 0);
+    });
     return () => { mounted = false; sub.subscription.unsubscribe(); };
   }, []);
 

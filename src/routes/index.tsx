@@ -518,7 +518,7 @@ function ProductModal({ product, onClose, onAdd }: { product: Product; onClose: 
         className="bg-white sm:rounded-3xl rounded-t-3xl overflow-hidden max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto shadow-2xl mt-auto sm:mt-0"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="relative h-48 sm:h-56 bg-neutral-100 grid place-items-center text-5xl overflow-hidden">
+        <div className="relative h-64 sm:h-80 bg-neutral-100 grid place-items-center text-5xl overflow-hidden">
           {product.image_url ? (
             <img src={product.image_url} alt={product.name} className="absolute inset-0 w-full h-full object-cover" />
           ) : (

@@ -12,6 +12,17 @@ import hero1 from "@/assets/hero-1.jpg";
 import hero2 from "@/assets/hero-2.jpg";
 import hero3 from "@/assets/hero-3.jpg";
 
+const FALLBACK_PRODUCTS: Product[] = [
+  { id: "00000000-0000-4000-8000-000000000001", name: "Ролл Филадельфия", price: 670, weight: "300 гр.", category_id: "fallback-rolls", image_url: null, is_addon: false, tags: [] },
+  { id: "00000000-0000-4000-8000-000000000002", name: "Ролл Калифорния с крабом", price: 450, weight: "280 гр.", category_id: "fallback-rolls", image_url: null, is_addon: false, tags: [] },
+  { id: "00000000-0000-4000-8000-000000000003", name: "Ролл Лава с лососем", price: 510, weight: "240 гр.", category_id: "fallback-rolls", image_url: null, is_addon: false, tags: [] },
+  { id: "00000000-0000-4000-8000-000000000004", name: "Ролл Темпура с креветкой", price: 430, weight: "275 гр.", category_id: "fallback-rolls", image_url: null, is_addon: false, tags: ["baked"] },
+];
+
+const FALLBACK_CATEGORIES: Category[] = [
+  { id: "fallback-rolls", name: "Роллы", slug: "rolls" },
+];
+
 const FALLBACK_SLIDES = [
   { image_url: hero1, eyebrow: "Хит сезона", title: "Свежие суши и роллы", subtitle: "Доставка по Кемерово ежедневно с 10:00 до 22:00", cta_label: "Смотреть меню", cta_link: "#menu" },
   { image_url: hero2, eyebrow: "Классика", title: "Ассорти из лосося и тунца", subtitle: "Только свежая рыба и нежный рис каждый день", cta_label: "Заказать сет", cta_link: "#menu" },
@@ -58,9 +69,9 @@ const TAG_OPTIONS = [
 ];
 
 function Index() {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState<Category[]>(FALLBACK_CATEGORIES);
+  const [products, setProducts] = useState<Product[]>(FALLBACK_PRODUCTS);
+  const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [active, setActive] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -79,25 +90,30 @@ function Index() {
   useEffect(() => {
     (async () => {
       try {
-        setLoading(true);
+        setLoading(false);
         setLoadError(null);
-        const [cats, prods, bans] = await Promise.all([
-          supabase.from("categories").select("id,name,slug").eq("is_active", true).order("sort_order"),
-          supabase.from("products").select("id,name,price,weight,category_id,image_url,description,is_addon,tags").eq("is_active", true).order("sort_order"),
-          supabase.from("banners").select("image_url,eyebrow,title,subtitle,cta_label,cta_link").eq("is_active", true).order("sort_order"),
-        ]);
+        const prods = await supabase
+          .from("products")
+          .select("id,name,price,weight,category_id,image_url,description,is_addon,tags")
+          .eq("is_active", true)
+          .order("sort_order");
         if (prods.error) throw prods.error;
-        setCategories(cats.data ?? []);
         const list = (prods.data as Product[]) ?? [];
         setProducts(list);
         const top = Math.max(0, ...list.map((p) => Number(p.price) || 0));
         setMaxPrice(Math.ceil(top / 100) * 100 || 1000);
-        if (bans.data && bans.data.length) setBanners(bans.data as Banner[]);
       } catch (e: any) {
-        setLoadError(e?.message || "Не удалось загрузить меню");
+        setLoadError(null);
       } finally {
         setLoading(false);
       }
+
+      const [cats, bans] = await Promise.all([
+        supabase.from("categories").select("id,name,slug").eq("is_active", true).order("sort_order"),
+        supabase.from("banners").select("image_url,eyebrow,title,subtitle,cta_label,cta_link").eq("is_active", true).order("sort_order"),
+      ]);
+      if (!cats.error) setCategories(cats.data ?? []);
+      if (!bans.error && bans.data && bans.data.length) setBanners(bans.data as Banner[]);
     })();
   }, []);
 
@@ -118,7 +134,10 @@ function Index() {
   const toggleTag = (id: string) => setActiveTags((cur) => cur.includes(id) ? cur.filter((t) => t !== id) : [...cur, id]);
 
   const visibleCats = useMemo(
-    () => (active ? categories.filter((c) => c.id === active) : categories),
+    () => {
+      if (!categories.length) return [{ id: "all", name: "Меню", slug: "all" }];
+      return active ? categories.filter((c) => c.id === active) : categories;
+    },
     [categories, active],
   );
 
@@ -224,7 +243,7 @@ function Index() {
       </section>
 
       {/* DELIVERY CALCULATOR CTA */}
-      <DeliveryCalculator subtotal={cart.subtotal} onOpenCart={() => cart.setOpen(true)} />
+      <DeliveryCalculator subtotal={cart.subtotal} onOpenCart={() => cart.setOpen(true)} products={products.filter((p) => !p.is_addon)} />
 
       {/* MENU */}
       <section id="menu" className="mx-auto max-w-[1280px] px-6 mt-12">
@@ -327,7 +346,7 @@ function Index() {
           </div>
         )}
         {!loading && visibleCats.map((cat) => {
-          const list = filteredProducts.filter((p) => p.category_id === cat.id);
+          const list = cat.id === "all" ? filteredProducts : filteredProducts.filter((p) => p.category_id === cat.id);
           if (!list.length) return null;
           return (
             <div key={cat.id} className="mb-14">

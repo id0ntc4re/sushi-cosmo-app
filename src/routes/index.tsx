@@ -8,7 +8,7 @@ import { ChevronLeft, ChevronRight, Truck, Fish, Sparkles, Clock } from "lucide-
 import { SiteHeader } from "@/components/SiteHeader";
 import { DeliveryCalculator } from "@/components/DeliveryCalculator";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { useNavigate } from "@tanstack/react-router";
+
 import logo from "@/assets/logo.svg";
 import hero1 from "@/assets/hero-1.jpg";
 import hero2 from "@/assets/hero-2.jpg";

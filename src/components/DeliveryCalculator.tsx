@@ -30,6 +30,7 @@ type Category = { id: string; name: string };
 type Props = {
   subtotal: number;
   onOpenCart: () => void;
+  products?: Product[];
 };
 
 const PERSONS: { n: number; label: string; Icon: LucideIcon; hint: string }[] = [
@@ -46,16 +47,20 @@ const OCCASIONS: { id: string; label: string; Icon: LucideIcon; boost: string[] 
   { id: "light", label: "Лёгкое и классика", Icon: Leaf, boost: ["филадельфия", "ролл", "суши"] },
 ];
 
-export function DeliveryCalculator({ subtotal, onOpenCart }: Props) {
+export function DeliveryCalculator({ subtotal, onOpenCart, products: providedProducts = [] }: Props) {
   const cart = useCart();
   const [freeFrom, setFreeFrom] = useState(1500);
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<Product[]>(providedProducts);
   const [categories, setCategories] = useState<Category[]>([]);
 
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [persons, setPersons] = useState<number | null>(null);
   const [occasion, setOccasion] = useState<string | null>(null);
   const [picks, setPicks] = useState<Record<string, number>>({});
+
+  useEffect(() => {
+    if (providedProducts.length) setProducts(providedProducts);
+  }, [providedProducts]);
 
   useEffect(() => {
     supabase

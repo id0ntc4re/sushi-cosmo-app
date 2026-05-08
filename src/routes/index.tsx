@@ -69,9 +69,9 @@ const TAG_OPTIONS = [
 ];
 
 function Index() {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState<Category[]>(FALLBACK_CATEGORIES);
+  const [products, setProducts] = useState<Product[]>(FALLBACK_PRODUCTS);
+  const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [active, setActive] = useState<string | null>(null);
   const [search, setSearch] = useState("");

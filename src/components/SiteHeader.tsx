@@ -15,11 +15,26 @@ export function SiteHeader() {
   const [active, setActive] = useState(BRANCHES[0]);
   const [open, setOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [authName, setAuthName] = useState<string | null>(null);
 
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [mobileOpen]);
+
+  useEffect(() => {
+    let mounted = true;
+    const load = async (userId: string | undefined) => {
+      if (!userId) { if (mounted) setAuthName(null); return; }
+      const { data } = await supabase.from("profiles").select("full_name, email").eq("id", userId).maybeSingle();
+      if (!mounted) return;
+      const name = (data?.full_name as string | null) || (data?.email as string | null) || "Профиль";
+      setAuthName(name);
+    };
+    supabase.auth.getSession().then(({ data }) => load(data.session?.user?.id));
+    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => load(session?.user?.id));
+    return () => { mounted = false; sub.subscription.unsubscribe(); };
+  }, []);
 
   return (
     <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-lg border-b shadow-sm">

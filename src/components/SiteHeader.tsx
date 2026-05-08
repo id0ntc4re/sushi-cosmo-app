@@ -85,7 +85,9 @@ export function SiteHeader() {
 
         <nav className="ml-auto hidden md:flex items-center gap-6 text-sm font-medium">
           <Link to="/" className="hover:text-primary transition-colors">Меню</Link>
-          <a href="#contacts" className="hover:text-primary transition-colors">Контакты</a>
+          <Link to="/news" className="hover:text-primary transition-colors">Акции и новости</Link>
+          <Link to="/about" className="hover:text-primary transition-colors">О компании</Link>
+          <Link to="/delivery" className="hover:text-primary transition-colors">Доставка и оплата</Link>
           <a
             href={`tel:${active.phone.replace(/\s/g, "")}`}
             className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-primary-foreground font-bold hover:shadow-lg hover:shadow-primary/30 transition-all"

@@ -15,6 +15,14 @@ type Reco = {
 export function CartDrawer() {
   const { items, open, setOpen, setQty, remove, subtotal, add } = useCart();
   const [recos, setRecos] = useState<Reco[]>([]);
+  const [freeFrom, setFreeFrom] = useState<number>(1500);
+
+  useEffect(() => {
+    supabase.from("settings").select("value").eq("key", "general").maybeSingle().then(({ data }) => {
+      const v: any = data?.value;
+      if (v?.free_delivery_from || v?.free_from) setFreeFrom(Number(v.free_delivery_from ?? v.free_from));
+    });
+  }, []);
 
   useEffect(() => {
     if (!open || recos.length) return;
@@ -29,6 +37,9 @@ export function CartDrawer() {
       setRecos((data as Reco[]) ?? []);
     })();
   }, [open, recos.length]);
+
+  const left = Math.max(0, freeFrom - subtotal);
+  const pct = Math.min(100, Math.round((subtotal / freeFrom) * 100));
 
   const inCartIds = new Set(items.map((i) => i.id));
   const recoFiltered = recos.filter((r) => !inCartIds.has(r.id)).slice(0, 6);

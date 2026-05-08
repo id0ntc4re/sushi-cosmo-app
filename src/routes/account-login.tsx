@@ -95,5 +95,7 @@ function AccountLogin() {
         </button>
       </div>
     </div>
+    </>
+
   );
 }

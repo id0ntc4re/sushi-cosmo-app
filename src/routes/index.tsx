@@ -465,8 +465,27 @@ function Index() {
   );
 }
 
+type Reco = { id: string; name: string; price: number; image_url: string | null; weight: string | null };
+
 function ProductModal({ product, onClose, onAdd }: { product: Product; onClose: () => void; onAdd: (qty: number) => void }) {
   const [qty, setQty] = useState(1);
+  const [recos, setRecos] = useState<Reco[]>([]);
+  const cart = useCart();
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("products")
+        .select("id,name,price,image_url,weight")
+        .eq("is_active", true)
+        .eq("in_stock", true)
+        .eq("is_recommended", true)
+        .neq("id", product.id)
+        .limit(8);
+      setRecos((data as Reco[]) ?? []);
+    })();
+  }, [product.id]);
+
   return (
     <div className="fixed inset-0 bg-black/60 z-50 grid place-items-center p-4 animate-fade-in" onClick={onClose}>
       <div
@@ -527,6 +546,33 @@ function ProductModal({ product, onClose, onAdd }: { product: Product; onClose: 
               </button>
             </div>
           </div>
+
+          {recos.length > 0 && (
+            <div className="mt-8 pt-6 border-t">
+              <div className="text-sm font-bold text-neutral-700 mb-3">С этим заказывают</div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {recos.map((r) => (
+                  <div key={r.id} className="rounded-2xl border border-neutral-100 p-2 flex flex-col">
+                    <div className="aspect-square rounded-xl bg-neutral-50 grid place-items-center overflow-hidden text-2xl mb-2">
+                      {r.image_url ? <img src={r.image_url} alt={r.name} className="w-full h-full object-cover" /> : "🍣"}
+                    </div>
+                    <div className="text-xs font-semibold line-clamp-2 leading-snug min-h-[2.4em]">{r.name}</div>
+                    <div className="mt-2 flex items-center justify-between">
+                      <span className="text-sm font-extrabold">{Number(r.price)} ₽</span>
+                      <button
+                        onClick={() => {
+                          cart.add({ id: r.id, name: r.name, price: Number(r.price), image_url: r.image_url, weight: r.weight });
+                          toast.success("Добавлено", { description: r.name });
+                        }}
+                        className="h-7 w-7 rounded-full bg-primary text-white font-bold grid place-items-center"
+                        aria-label="Добавить"
+                      >+</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

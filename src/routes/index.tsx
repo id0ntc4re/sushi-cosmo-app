@@ -461,3 +461,51 @@ function Index() {
     </div>
   );
 }
+
+function ProductModal({ product, onClose, onAdd }: { product: Product; onClose: () => void; onAdd: () => void }) {
+  return (
+    <div className="fixed inset-0 bg-black/60 z-50 grid place-items-center p-4 animate-fade-in" onClick={onClose}>
+      <div
+        className="bg-white rounded-3xl overflow-hidden max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="relative aspect-[16/10] bg-neutral-100 grid place-items-center text-7xl">
+          {product.image_url ? (
+            <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
+          ) : (
+            "🍣"
+          )}
+          <button
+            onClick={onClose}
+            className="absolute top-3 right-3 h-10 w-10 rounded-full bg-white/95 hover:bg-white grid place-items-center text-xl font-bold shadow"
+            aria-label="Закрыть"
+          >
+            ×
+          </button>
+        </div>
+        <div className="p-6 md:p-8">
+          <h2 className="text-2xl md:text-3xl font-extrabold mb-2">{product.name}</h2>
+          {product.weight && <div className="text-sm text-neutral-500 mb-4">{product.weight}</div>}
+          {product.description && (
+            <p className="text-foreground/90 leading-relaxed mb-5">{product.description}</p>
+          )}
+          {product.ingredients && (
+            <div className="mb-6">
+              <div className="text-xs uppercase tracking-wider font-bold text-primary mb-1">Состав</div>
+              <p className="text-sm text-foreground/80">{product.ingredients}</p>
+            </div>
+          )}
+          <div className="flex items-center justify-between gap-4 pt-4 border-t">
+            <span className="text-3xl font-extrabold">{Number(product.price)} ₽</span>
+            <button
+              onClick={onAdd}
+              className="px-6 py-3 rounded-full bg-primary text-primary-foreground font-bold hover:opacity-90 transition"
+            >
+              В корзину
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

@@ -46,7 +46,7 @@ function NewsDetail() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SiteHeader />
-      <main className="mx-auto max-w-3xl px-6 py-14">
+      <main className="mx-auto max-w-[1280px] px-6 py-14">
         <Link to="/news" className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary mb-6">
           <ArrowLeft className="h-4 w-4" /> Все акции и новости
         </Link>

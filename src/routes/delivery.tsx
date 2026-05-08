@@ -28,7 +28,7 @@ function DeliveryPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SiteHeader />
-      <main className="mx-auto max-w-4xl px-6 py-14">
+      <main className="mx-auto max-w-[1280px] px-6 py-14">
         <p className="text-sm text-muted-foreground mb-2">Главная — Доставка и оплата</p>
         <h1 className="text-4xl md:text-5xl font-extrabold mb-8">Доставка и оплата</h1>
 

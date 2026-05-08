@@ -14,6 +14,7 @@ import { CartDrawer } from "@/components/CartDrawer";
 import { Toaster } from "@/components/ui/sonner";
 import { FlashSaleBanner } from "@/components/FlashSaleBanner";
 import { NewsletterPopup } from "@/components/NewsletterPopup";
+import { FloatingCartButton } from "@/components/FloatingCartButton";
 
 function NotFoundComponent() {
   return (
@@ -126,6 +127,7 @@ function RootComponent() {
         <FlashSaleBanner />
         <Outlet />
         <CartDrawer />
+        <FloatingCartButton />
         <NewsletterPopup />
         <Toaster position="top-right" />
       </CartProvider>

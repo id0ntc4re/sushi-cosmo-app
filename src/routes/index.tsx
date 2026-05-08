@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,6 +7,8 @@ import { useFavorites, pushHistory } from "@/lib/favorites";
 import { ChevronLeft, ChevronRight, Truck, Fish, Sparkles, Clock } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
 import { DeliveryCalculator } from "@/components/DeliveryCalculator";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+
 import logo from "@/assets/logo.svg";
 import hero1 from "@/assets/hero-1.jpg";
 import hero2 from "@/assets/hero-2.jpg";
@@ -61,8 +63,10 @@ function Index() {
   const [slide, setSlide] = useState(0);
   const [banners, setBanners] = useState<Banner[]>(FALLBACK_SLIDES as any);
   const [openProduct, setOpenProduct] = useState<Product | null>(null);
+  const [authPromptOpen, setAuthPromptOpen] = useState(false);
   const cart = useCart();
   const fav = useFavorites();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const t = setInterval(() => setSlide((s) => (s + 1) % banners.length), 5000);
@@ -321,7 +325,11 @@ function Index() {
                         "🍣"
                       )}
                       <span
-                        onClick={(e) => { e.stopPropagation(); fav.toggle(p.id); }}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (!fav.isAuthenticated) { setAuthPromptOpen(true); return; }
+                          fav.toggle(p.id);
+                        }}
                         className="absolute top-2 right-2 h-9 w-9 rounded-full bg-white/90 backdrop-blur grid place-items-center text-lg shadow hover:scale-110 transition cursor-pointer"
                         aria-label="В избранное"
                       >
@@ -462,6 +470,23 @@ function Index() {
           }}
         />
       )}
+
+      <AlertDialog open={authPromptOpen} onOpenChange={setAuthPromptOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Войдите, чтобы добавить в избранное</AlertDialogTitle>
+            <AlertDialogDescription>
+              Для добавления товаров в избранное необходимо авторизоваться в аккаунте.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Отмена</AlertDialogCancel>
+            <AlertDialogAction onClick={() => navigate({ to: "/account-login" })}>
+              Войти
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -69,6 +69,22 @@ export function CartDrawer() {
         </div>
 
         <div className="flex-1 overflow-y-auto p-5 space-y-3">
+          {items.length > 0 && (
+            <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-3 mb-1 border border-amber-100">
+              {left > 0 ? (
+                <>
+                  <div className="text-xs font-semibold text-amber-900 mb-1.5">
+                    🚚 До бесплатной доставки осталось <b>{left} ₽</b>
+                  </div>
+                  <div className="h-2 bg-white rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-amber-400 to-orange-500 transition-all" style={{ width: `${pct}%` }} />
+                  </div>
+                </>
+              ) : (
+                <div className="text-xs font-semibold text-green-700">✓ Доставка бесплатно</div>
+              )}
+            </div>
+          )}
           {items.length === 0 && (
             <div className="py-20 text-center text-neutral-500">
               Корзина пуста

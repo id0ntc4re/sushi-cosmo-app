@@ -1,0 +1,1 @@
+UPDATE products SET image_url = REPLACE(image_url, '/small/', '/') WHERE image_url LIKE '%/small/%';

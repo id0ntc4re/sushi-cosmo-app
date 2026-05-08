@@ -12,17 +12,6 @@ import hero1 from "@/assets/hero-1.jpg";
 import hero2 from "@/assets/hero-2.jpg";
 import hero3 from "@/assets/hero-3.jpg";
 
-const FALLBACK_PRODUCTS: Product[] = [
-  { id: "00000000-0000-4000-8000-000000000001", name: "Ролл Филадельфия", price: 670, weight: "300 гр.", category_id: "fallback-rolls", image_url: null, is_addon: false, tags: [] },
-  { id: "00000000-0000-4000-8000-000000000002", name: "Ролл Калифорния с крабом", price: 450, weight: "280 гр.", category_id: "fallback-rolls", image_url: null, is_addon: false, tags: [] },
-  { id: "00000000-0000-4000-8000-000000000003", name: "Ролл Лава с лососем", price: 510, weight: "240 гр.", category_id: "fallback-rolls", image_url: null, is_addon: false, tags: [] },
-  { id: "00000000-0000-4000-8000-000000000004", name: "Ролл Темпура с креветкой", price: 430, weight: "275 гр.", category_id: "fallback-rolls", image_url: null, is_addon: false, tags: ["baked"] },
-];
-
-const FALLBACK_CATEGORIES: Category[] = [
-  { id: "fallback-rolls", name: "Роллы", slug: "rolls" },
-];
-
 const FALLBACK_SLIDES = [
   { image_url: hero1, eyebrow: "Хит сезона", title: "Свежие суши и роллы", subtitle: "Доставка по Кемерово ежедневно с 10:00 до 22:00", cta_label: "Смотреть меню", cta_link: "#menu" },
   { image_url: hero2, eyebrow: "Классика", title: "Ассорти из лосося и тунца", subtitle: "Только свежая рыба и нежный рис каждый день", cta_label: "Заказать сет", cta_link: "#menu" },

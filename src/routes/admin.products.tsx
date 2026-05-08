@@ -12,6 +12,7 @@ type Product = {
   id: string;
   name: string;
   description: string | null;
+  ingredients: string | null;
   price: number;
   weight: string | null;
   category_id: string | null;

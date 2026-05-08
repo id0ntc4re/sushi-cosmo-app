@@ -465,7 +465,8 @@ function Index() {
   );
 }
 
-function ProductModal({ product, onClose, onAdd }: { product: Product; onClose: () => void; onAdd: () => void }) {
+function ProductModal({ product, onClose, onAdd }: { product: Product; onClose: () => void; onAdd: (qty: number) => void }) {
+  const [qty, setQty] = useState(1);
   return (
     <div className="fixed inset-0 bg-black/60 z-50 grid place-items-center p-4 animate-fade-in" onClick={onClose}>
       <div
@@ -480,10 +481,10 @@ function ProductModal({ product, onClose, onAdd }: { product: Product; onClose: 
           )}
           <button
             onClick={onClose}
-            className="absolute top-3 right-3 h-10 w-10 rounded-full bg-white/95 hover:bg-white grid place-items-center text-xl font-bold shadow"
+            className="absolute top-3 right-3 h-10 w-10 rounded-full bg-white/95 hover:bg-white grid place-items-center shadow leading-none"
             aria-label="Закрыть"
           >
-            ×
+            <span className="block text-2xl font-bold leading-none -mt-0.5">×</span>
           </button>
         </div>
         <div className="p-6 md:p-8">
@@ -499,13 +500,32 @@ function ProductModal({ product, onClose, onAdd }: { product: Product; onClose: 
             </div>
           )}
           <div className="flex items-center justify-between gap-4 pt-4 border-t">
-            <span className="text-3xl font-extrabold">{Number(product.price)} ₽</span>
-            <button
-              onClick={onAdd}
-              className="px-6 py-3 rounded-full bg-primary text-primary-foreground font-bold hover:opacity-90 transition"
-            >
-              В корзину
-            </button>
+            <span className="text-3xl font-extrabold">{Number(product.price) * qty} ₽</span>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 rounded-full border border-neutral-200 px-2 py-1">
+                <button
+                  onClick={() => setQty((q) => Math.max(1, q - 1))}
+                  className="h-8 w-8 rounded-full hover:bg-neutral-100 grid place-items-center text-lg font-bold"
+                  aria-label="Уменьшить"
+                >
+                  −
+                </button>
+                <span className="min-w-6 text-center font-bold">{qty}</span>
+                <button
+                  onClick={() => setQty((q) => q + 1)}
+                  className="h-8 w-8 rounded-full hover:bg-neutral-100 grid place-items-center text-lg font-bold"
+                  aria-label="Увеличить"
+                >
+                  +
+                </button>
+              </div>
+              <button
+                onClick={() => onAdd(qty)}
+                className="px-6 py-3 rounded-full bg-primary text-primary-foreground font-bold hover:opacity-90 transition"
+              >
+                В корзину
+              </button>
+            </div>
           </div>
         </div>
       </div>

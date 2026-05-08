@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { MapPin, Phone, Clock, ChevronDown } from "lucide-react";
+import { MapPin, Phone, Clock, ChevronDown, User } from "lucide-react";
 import { useState } from "react";
 import logo from "@/assets/logo.svg";
 

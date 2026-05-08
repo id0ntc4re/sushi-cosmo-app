@@ -208,14 +208,14 @@ function Index() {
             {/* arrows */}
             <button
               onClick={() => setSlide((s) => (s - 1 + banners.length) % banners.length)}
-              className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 h-11 w-11 rounded-full bg-white/20 hover:bg-white/40 backdrop-blur flex items-center justify-center text-white"
+              className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 z-30 h-11 w-11 rounded-full bg-white/20 hover:bg-white/40 backdrop-blur flex items-center justify-center text-white"
               aria-label="Назад"
             >
               <ChevronLeft className="h-6 w-6" />
             </button>
             <button
               onClick={() => setSlide((s) => (s + 1) % banners.length)}
-              className="absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 z-20 h-11 w-11 rounded-full bg-white/20 hover:bg-white/40 backdrop-blur flex items-center justify-center text-white"
+              className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 z-30 h-11 w-11 rounded-full bg-white/20 hover:bg-white/40 backdrop-blur flex items-center justify-center text-white"
               aria-label="Вперёд"
             >
               <ChevronRight className="h-6 w-6" />

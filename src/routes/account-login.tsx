@@ -41,7 +41,7 @@ function AccountLogin() {
         nav({ to: redirect || "/account" });
       }
     } catch (err: any) {
-      toast.error(err.message ?? "Ошибка входа");
+      toast.error(ruError(err, "Ошибка входа"));
     } finally {
       setLoading(false);
     }

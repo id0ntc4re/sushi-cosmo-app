@@ -266,13 +266,13 @@ function Index() {
         </div>
 
         {/* category pills */}
-        <div className="flex gap-2 overflow-x-auto pb-3 mb-8 -mx-6 px-6 sticky top-0 bg-white/95 backdrop-blur z-30">
+        <div className="flex gap-2 overflow-x-auto pb-3 mb-8 -mx-6 px-6 sticky top-0 bg-background/95 backdrop-blur z-30">
           <button
             onClick={() => setActive(null)}
-            className={`shrink-0 px-5 py-2.5 rounded-full text-sm font-semibold transition ${
+            className={`shrink-0 px-5 py-2.5 rounded-full text-sm font-semibold transition-all ${
               active === null
-                ? "bg-primary text-white"
-                : "bg-neutral-100 text-neutral-800 hover:bg-neutral-200"
+                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30"
+                : "bg-card border-2 border-dashed border-primary/30 hover:border-primary"
             }`}
           >
             Всё
@@ -281,10 +281,10 @@ function Index() {
             <button
               key={c.id}
               onClick={() => setActive(c.id)}
-              className={`shrink-0 px-5 py-2.5 rounded-full text-sm font-semibold transition ${
+              className={`shrink-0 px-5 py-2.5 rounded-full text-sm font-semibold transition-all ${
                 active === c.id
-                  ? "bg-primary text-white"
-                  : "bg-neutral-100 text-neutral-800 hover:bg-neutral-200"
+                  ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30"
+                  : "bg-card border-2 border-dashed border-primary/30 hover:border-primary"
               }`}
             >
               {c.name}
@@ -298,17 +298,17 @@ function Index() {
             const on = activeTags.includes(t.id);
             return (
               <button key={t.id} onClick={() => toggleTag(t.id)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition ${on ? "bg-primary text-white border-primary" : "bg-white text-neutral-700 border-neutral-200 hover:border-primary"}`}>
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold border-2 border-dashed transition ${on ? "bg-primary text-primary-foreground border-primary border-solid" : "bg-card text-foreground border-primary/30 hover:border-primary"}`}>
                 {t.label}
               </button>
             );
           })}
           {maxPrice > 0 && (
-            <div className="flex items-center gap-2 ml-auto bg-neutral-50 rounded-full px-4 py-1.5 text-xs">
-              <span className="text-neutral-600 whitespace-nowrap">Цена до</span>
+            <div className="flex items-center gap-2 ml-auto bg-card border-2 border-dashed border-primary/30 rounded-full px-4 py-1.5 text-xs">
+              <span className="text-muted-foreground whitespace-nowrap">Цена до</span>
               <input type="range" min={100} max={maxPrice} step={50} value={priceCap ?? maxPrice}
-                onChange={(e) => setPriceCap(Number(e.target.value))} className="w-32 sm:w-44" />
-              <span className="font-bold tabular-nums w-14 text-right">{priceCap ?? maxPrice} ₽</span>
+                onChange={(e) => setPriceCap(Number(e.target.value))} className="w-32 sm:w-44 accent-primary" />
+              <span className="font-bold tabular-nums w-14 text-right text-primary">{priceCap ?? maxPrice} ₽</span>
             </div>
           )}
           {(activeTags.length > 0 || (priceCap !== null && priceCap < maxPrice)) && (
@@ -350,12 +350,15 @@ function Index() {
           if (!list.length) return null;
           return (
             <div key={cat.id} className="mb-14">
-              <h3 className="text-2xl md:text-3xl font-extrabold mb-6">{cat.name}</h3>
+              <div className="flex items-center gap-3 mb-6">
+                <span className="h-8 w-1.5 rounded-full bg-gradient-to-b from-primary to-primary/40" />
+                <h3 className="text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">{cat.name}</h3>
+              </div>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
                 {list.map((p) => (
                   <article
                     key={p.id}
-                    className="bg-white rounded-3xl overflow-hidden border border-neutral-100 hover:shadow-lg transition flex flex-col"
+                    className="group bg-card rounded-3xl overflow-hidden border-2 border-dashed border-primary/20 hover:border-primary hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1 transition-all flex flex-col"
                   >
                     <div className="relative aspect-square bg-neutral-50 grid place-items-center text-6xl">
                       {p.image_url ? (

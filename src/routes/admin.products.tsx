@@ -178,7 +178,37 @@ function ProductsAdmin() {
               </select>
             </Field>
             <Field label="Сортировка"><input type="number" className={inp} value={editing.sort_order ?? 0} onChange={(e) => setEditing({ ...editing, sort_order: Number(e.target.value) })} /></Field>
-            <div className="md:col-span-2"><Field label="URL изображения"><input className={inp} value={editing.image_url ?? ""} onChange={(e) => setEditing({ ...editing, image_url: e.target.value })} placeholder="https://…" /></Field></div>
+            <div className="md:col-span-2">
+              <Field label="Изображение">
+                <div className="flex items-start gap-3">
+                  <div className="h-24 w-24 rounded-xl bg-neutral-100 grid place-items-center overflow-hidden text-3xl shrink-0">
+                    {editing.image_url ? <img src={editing.image_url} className="w-full h-full object-cover" alt="" /> : "🍣"}
+                  </div>
+                  <div className="flex-1 space-y-2">
+                    <input className={inp} value={editing.image_url ?? ""} onChange={(e) => setEditing({ ...editing, image_url: e.target.value })} placeholder="URL или загрузите файл ниже" />
+                    <div className="flex items-center gap-2">
+                      <label className="px-3 py-2 rounded-lg bg-neutral-100 hover:bg-neutral-200 text-sm font-semibold cursor-pointer">
+                        📤 Загрузить
+                        <input type="file" accept="image/*" className="hidden" onChange={async (e) => {
+                          const file = e.target.files?.[0]; if (!file) return;
+                          const ext = file.name.split(".").pop() || "jpg";
+                          const path = `${Date.now()}-${Math.random().toString(36).slice(2,8)}.${ext}`;
+                          const up = await supabase.storage.from("product-images").upload(path, file, { upsert: false, contentType: file.type });
+                          if (up.error) return toast.error(up.error.message);
+                          const { data } = supabase.storage.from("product-images").getPublicUrl(path);
+                          setEditing((prev) => ({ ...(prev ?? {}), image_url: data.publicUrl }));
+                          toast.success("Изображение загружено");
+                          e.target.value = "";
+                        }} />
+                      </label>
+                      {editing.image_url && (
+                        <button type="button" onClick={() => setEditing({ ...editing, image_url: "" })} className="px-3 py-2 rounded-lg hover:bg-red-50 text-red-600 text-sm font-semibold">Удалить</button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </Field>
+            </div>
             <div className="md:col-span-2"><Field label="Описание"><textarea className={`${inp} min-h-[80px]`} value={editing.description ?? ""} onChange={(e) => setEditing({ ...editing, description: e.target.value })} /></Field></div>
             <div className="md:col-span-2"><Field label="Состав"><textarea className={`${inp} min-h-[60px]`} value={editing.ingredients ?? ""} onChange={(e) => setEditing({ ...editing, ingredients: e.target.value })} placeholder="Рис, нори, лосось, огурец…" /></Field></div>
             <label className="flex items-center gap-2"><input type="checkbox" checked={editing.is_active ?? true} onChange={(e) => setEditing({ ...editing, is_active: e.target.checked })} /> Активен</label>

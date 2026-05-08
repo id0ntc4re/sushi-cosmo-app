@@ -439,6 +439,25 @@ function Index() {
           </div>
         </div>
       </footer>
+
+      {openProduct && (
+        <ProductModal
+          product={openProduct}
+          onClose={() => setOpenProduct(null)}
+          onAdd={() => {
+            cart.add({
+              id: openProduct.id,
+              name: openProduct.name,
+              price: Number(openProduct.price),
+              image_url: openProduct.image_url,
+              weight: openProduct.weight,
+            });
+            pushHistory(openProduct.id);
+            toast.success("Добавлено в корзину", { description: openProduct.name });
+            setOpenProduct(null);
+          }}
+        />
+      )}
     </div>
   );
 }

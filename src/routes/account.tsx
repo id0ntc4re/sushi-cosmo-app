@@ -48,9 +48,11 @@ function Account() {
       const u = session?.user;
       init(u ? { id: u.id, email: u.email ?? null } : null);
     });
-    const { data: sub } = supabase.auth.onAuthStateChange((_e, session) => {
-      const u = session?.user;
-      if (!u) nav({ to: "/account-login", search: { redirect: "/account" } } as any);
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "INITIAL_SESSION" || event === "TOKEN_REFRESHED" || event === "USER_UPDATED") return;
+      if (event === "SIGNED_OUT" || !session?.user) {
+        nav({ to: "/account-login", search: { redirect: "/account" } } as any);
+      }
     });
     return () => { cancelled = true; sub.subscription.unsubscribe(); };
   }, [nav]);

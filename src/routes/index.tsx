@@ -335,7 +335,7 @@ function Index() {
           </div>
         )}
         {!loading && visibleCats.map((cat) => {
-          const list = filteredProducts.filter((p) => p.category_id === cat.id);
+          const list = cat.id === "all" ? filteredProducts : filteredProducts.filter((p) => p.category_id === cat.id);
           if (!list.length) return null;
           return (
             <div key={cat.id} className="mb-14">

@@ -182,7 +182,7 @@ function OrdersTab({ userId }: { userId: string }) {
   async function cancel(id: string) {
     if (!confirm("Отменить заказ?")) return;
     const { error } = await supabase.from("orders").update({ status: "cancelled" }).eq("id", id);
-    if (error) toast.error(error.message); else { toast.success("Заказ отменён"); load(); }
+    if (error) toast.error(ruError(error)); else { toast.success("Заказ отменён"); load(); }
   }
 
   function printReceipt(o: any) {
@@ -292,7 +292,7 @@ function ReviewForm({ orderId, userId, onDone }: { orderId: string; userId: stri
         <button onClick={async () => {
           if (!rating) return toast.error("Поставьте оценку");
           const { error } = await supabase.from("reviews").insert({ order_id: orderId, user_id: userId, rating, comment: text || null });
-          if (error) toast.error(error.message); else { toast.success("Спасибо за отзыв!"); setOpen(false); onDone(); }
+          if (error) toast.error(ruError(error)); else { toast.success("Спасибо за отзыв!"); setOpen(false); onDone(); }
         }} className="px-5 py-2 rounded-full bg-primary text-white font-bold">Отправить</button>
         <button onClick={() => setOpen(false)} className="px-5 py-2 rounded-full bg-neutral-100 font-bold">Отмена</button>
       </div>
@@ -321,7 +321,7 @@ function ProfileTab({ profile, email, onSaved }: { profile: any; email: string |
       birth_date: f.birth_date || null,
     }).eq("id", profile.id).select().maybeSingle();
     setSaving(false);
-    if (error) return toast.error(error.message);
+    if (error) return toast.error(ruError(error));
     toast.success("Сохранено");
     onSaved(data);
   }
@@ -330,7 +330,7 @@ function ProfileTab({ profile, email, onSaved }: { profile: any; email: string |
     if (pwd.a.length < 6) return toast.error("Пароль минимум 6 символов");
     if (pwd.a !== pwd.b) return toast.error("Пароли не совпадают");
     const { error } = await supabase.auth.updateUser({ password: pwd.a });
-    if (error) return toast.error(error.message);
+    if (error) return toast.error(ruError(error));
     toast.success("Пароль изменён");
     setPwd({ a: "", b: "" });
   }
@@ -375,7 +375,7 @@ function AddressesTab({ userId }: { userId: string }) {
     const { error } = a.id
       ? await supabase.from("addresses").update(payload).eq("id", a.id)
       : await supabase.from("addresses").insert(payload);
-    if (error) return toast.error(error.message);
+    if (error) return toast.error(ruError(error));
     toast.success("Сохранено"); setEdit(null); load();
   }
   async function del(id: string) {
@@ -589,7 +589,7 @@ function CombosTab({ userId }: { userId: string }) {
     if (!name.trim()) return toast.error("Введите название");
     const items = cart.items.map((i) => ({ id: i.id, name: i.name, price: i.price, quantity: i.quantity, image_url: i.image_url, weight: i.weight }));
     const { error } = await supabase.from("combos").insert({ user_id: userId, name: name.trim(), items });
-    if (error) return toast.error(error.message);
+    if (error) return toast.error(ruError(error));
     toast.success("Набор сохранён"); setName(""); load();
   }
   async function del(id: string) {

@@ -208,14 +208,14 @@ function Index() {
             {/* arrows */}
             <button
               onClick={() => setSlide((s) => (s - 1 + banners.length) % banners.length)}
-              className="absolute left-0 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 h-11 w-11 rounded-full bg-white/20 hover:bg-white/40 backdrop-blur flex items-center justify-center text-white"
+              className="absolute left-3 md:left-4 top-1/2 -translate-y-1/2 z-30 h-11 w-11 rounded-full bg-white/20 hover:bg-white/40 backdrop-blur flex items-center justify-center text-white"
               aria-label="Назад"
             >
               <ChevronLeft className="h-6 w-6" />
             </button>
             <button
               onClick={() => setSlide((s) => (s + 1) % banners.length)}
-              className="absolute right-0 top-1/2 translate-x-1/2 -translate-y-1/2 z-20 h-11 w-11 rounded-full bg-white/20 hover:bg-white/40 backdrop-blur flex items-center justify-center text-white"
+              className="absolute right-3 md:right-4 top-1/2 -translate-y-1/2 z-30 h-11 w-11 rounded-full bg-white/20 hover:bg-white/40 backdrop-blur flex items-center justify-center text-white"
               aria-label="Вперёд"
             >
               <ChevronRight className="h-6 w-6" />
@@ -235,6 +235,24 @@ function Index() {
               ))}
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* FEATURES */}
+      <section className="mx-auto max-w-[1280px] px-6 mt-10">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+          {[
+            { icon: "🚚", title: "Бесплатно от 1500 ₽", text: "Доставим в течение часа" },
+            { icon: "🐟", title: "Свежая рыба", text: "Поставки каждый день" },
+            { icon: "⭐", title: "Бонусы за заказ", text: "Копите и оплачивайте" },
+            { icon: "🕒", title: "10:00 – 22:00", text: "Работаем без выходных" },
+          ].map((f) => (
+            <div key={f.title} className="rounded-2xl bg-neutral-100 p-4 md:p-5 hover:bg-neutral-200/70 transition">
+              <div className="text-3xl mb-2">{f.icon}</div>
+              <div className="font-bold leading-tight">{f.title}</div>
+              <div className="text-sm text-neutral-500 mt-1">{f.text}</div>
+            </div>
+          ))}
         </div>
       </section>
 

@@ -238,6 +238,24 @@ function Index() {
         </div>
       </section>
 
+      {/* FEATURES */}
+      <section className="mx-auto max-w-[1280px] px-6 mt-10">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+          {[
+            { icon: "🚚", title: "Бесплатно от 1500 ₽", text: "Доставим в течение часа" },
+            { icon: "🐟", title: "Свежая рыба", text: "Поставки каждый день" },
+            { icon: "⭐", title: "Бонусы за заказ", text: "Копите и оплачивайте" },
+            { icon: "🕒", title: "10:00 – 22:00", text: "Работаем без выходных" },
+          ].map((f) => (
+            <div key={f.title} className="rounded-2xl bg-neutral-100 p-4 md:p-5 hover:bg-neutral-200/70 transition">
+              <div className="text-3xl mb-2">{f.icon}</div>
+              <div className="font-bold leading-tight">{f.title}</div>
+              <div className="text-sm text-neutral-500 mt-1">{f.text}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* COME TO US BLOCK */}
       <section className="mx-auto max-w-[1280px] px-6 mt-10">
         <div className="flex items-center gap-3 mb-5">

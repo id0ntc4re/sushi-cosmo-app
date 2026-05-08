@@ -111,11 +111,14 @@ export function SiteHeader() {
           <Link to="/delivery" className="hover:text-primary transition-colors whitespace-nowrap">Доставка</Link>
           <Link to="/faq" className="hover:text-primary transition-colors whitespace-nowrap">Вопросы</Link>
           <Link
-            to="/account-login"
-            className="flex items-center gap-1.5 px-3 py-2 rounded-full border-2 border-primary text-primary font-semibold hover:bg-primary hover:text-primary-foreground transition-all whitespace-nowrap"
+            to={authName ? "/account" : "/account-login"}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-full border-2 font-semibold transition-all whitespace-nowrap ${authName ? "border-emerald-500 text-emerald-700 bg-emerald-50 hover:bg-emerald-500 hover:text-white" : "border-primary text-primary hover:bg-primary hover:text-primary-foreground"}`}
           >
-            <User className="h-4 w-4" />
-            <span className="hidden lg:inline">Личный кабинет</span>
+            <span className="relative">
+              <User className="h-4 w-4" />
+              {authName && <span className="absolute -top-0.5 -right-0.5 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-background" />}
+            </span>
+            <span className="hidden lg:inline max-w-[140px] truncate">{authName ?? "Личный кабинет"}</span>
           </Link>
           <a
             href={`tel:${active.phone.replace(/\s/g, "")}`}

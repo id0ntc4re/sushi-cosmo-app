@@ -138,7 +138,7 @@ export function DeliveryCalculator({ subtotal, onOpenCart }: Props) {
 
   return (
     <section className="mx-auto max-w-[1280px] px-6 mt-10">
-      <div className="relative overflow-hidden rounded-3xl border-2 border-dashed border-primary/40 bg-gradient-to-br from-primary/10 via-card to-card p-6 md:p-8">
+      <div className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary/10 via-card to-card p-6 md:p-8">
         <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-primary/20 blur-3xl pointer-events-none" />
         <div className="absolute -bottom-16 -left-16 h-48 w-48 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
 
@@ -175,7 +175,7 @@ export function DeliveryCalculator({ subtotal, onOpenCart }: Props) {
                         ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30"
                         : done
                         ? "bg-primary/15 text-primary hover:bg-primary/25"
-                        : "bg-card border-2 border-dashed border-primary/30 text-muted-foreground"
+                        : "bg-card border border-border text-muted-foreground"
                     }`}
                   >
                     <span
@@ -213,7 +213,7 @@ export function DeliveryCalculator({ subtotal, onOpenCart }: Props) {
                         setPersons(opt.n);
                         setTimeout(() => setStep(2), 200);
                       }}
-                      className={`group relative rounded-2xl p-5 text-left border-2 border-dashed transition-all ${
+                      className={`group relative rounded-2xl p-5 text-left border transition-all ${
                         on
                           ? "border-primary bg-primary/10 shadow-lg shadow-primary/20"
                           : "border-primary/30 bg-card hover:border-primary hover:-translate-y-0.5"
@@ -244,7 +244,7 @@ export function DeliveryCalculator({ subtotal, onOpenCart }: Props) {
                         setOccasion(opt.id);
                         setTimeout(() => setStep(3), 200);
                       }}
-                      className={`group rounded-2xl p-5 text-left border-2 border-dashed transition-all ${
+                      className={`group rounded-2xl p-5 text-left border transition-all ${
                         on
                           ? "border-primary bg-primary/10 shadow-lg shadow-primary/20"
                           : "border-primary/30 bg-card hover:border-primary hover:-translate-y-0.5"
@@ -287,10 +287,10 @@ export function DeliveryCalculator({ subtotal, onOpenCart }: Props) {
                     return (
                       <div
                         key={p.id}
-                        className={`rounded-2xl bg-card border-2 border-dashed transition-all overflow-hidden ${
+                        className={`rounded-2xl bg-card border transition-all overflow-hidden ${
                           qty > 0
                             ? "border-primary shadow-md shadow-primary/20"
-                            : "border-primary/20 hover:border-primary/60"
+                            : "border-primary/20 hover:border-foreground/30"
                         }`}
                       >
                         <div className="relative aspect-square bg-muted grid place-items-center text-3xl">
@@ -355,11 +355,11 @@ export function DeliveryCalculator({ subtotal, onOpenCart }: Props) {
               </div>
 
               {/* Summary */}
-              <div className="rounded-2xl bg-card border-2 border-dashed border-primary/30 p-5 h-fit lg:sticky lg:top-32">
+              <div className="rounded-2xl bg-card border border-border p-5 h-fit lg:sticky lg:top-32">
                 <div className="text-sm font-bold mb-3">Ваш заказ</div>
 
                 {Object.keys(picks).length === 0 ? (
-                  <div className="text-sm text-muted-foreground py-4 text-center border border-dashed border-primary/20 rounded-xl">
+                  <div className="text-sm text-muted-foreground py-4 text-center border border-border rounded-xl">
                     👉 Выберите блюда слева
                   </div>
                 ) : (
@@ -397,7 +397,7 @@ export function DeliveryCalculator({ subtotal, onOpenCart }: Props) {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between text-sm pt-3 border-t border-dashed border-primary/20">
+                <div className="flex items-center justify-between text-sm pt-3 border-t border-border">
                   <span className="text-muted-foreground">Итого:</span>
                   <span className="text-2xl font-extrabold text-primary">
                     {Math.round(draft)} ₽

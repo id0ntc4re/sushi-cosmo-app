@@ -49,7 +49,7 @@ export function SiteHeader() {
           <button
             onClick={() => setOpen((v) => !v)}
             onBlur={() => setTimeout(() => setOpen(false), 150)}
-            className="flex items-center gap-2 px-3 py-2 rounded-xl border-2 border-dashed border-primary/40 hover:border-primary hover:bg-primary/5 transition-all"
+            className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border hover:border-primary hover:bg-primary/5 transition-all"
           >
             <MapPin className="h-4 w-4 text-primary" />
             <div className="text-left leading-tight">

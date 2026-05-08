@@ -212,7 +212,7 @@ function Index() {
             { icon: "⭐", title: "Бонусы за заказ", text: "Копите и оплачивайте" },
             { icon: "🕒", title: "10:00 – 22:00", text: "Работаем без выходных" },
           ].map((f) => (
-            <div key={f.title} className="group relative rounded-2xl bg-card p-4 md:p-5 border-2 border-dashed border-primary/30 hover:border-primary hover:shadow-lg hover:shadow-primary/10 transition-all">
+            <div key={f.title} className="group relative rounded-2xl bg-card p-4 md:p-5 border border-border hover:border-primary hover:shadow-lg hover:shadow-primary/10 transition-all">
               <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               <div className="relative">
                 <div className="text-3xl mb-2">{f.icon}</div>
@@ -240,7 +240,7 @@ function Index() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Поиск по меню…"
-              className="w-full pl-11 pr-4 py-3 rounded-full bg-card border-2 border-dashed border-primary/30 focus:border-primary focus:border-solid outline-none transition"
+              className="w-full pl-11 pr-4 py-3 rounded-full bg-card border border-border focus:border-primary focus:border-solid outline-none transition"
             />
             <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary">🔍</span>
 
@@ -254,7 +254,7 @@ function Index() {
             className={`shrink-0 px-5 py-2.5 rounded-full text-sm font-semibold transition-all ${
               active === null
                 ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30"
-                : "bg-card border-2 border-dashed border-primary/30 hover:border-primary"
+                : "bg-card border border-border hover:border-primary"
             }`}
           >
             Всё
@@ -266,7 +266,7 @@ function Index() {
               className={`shrink-0 px-5 py-2.5 rounded-full text-sm font-semibold transition-all ${
                 active === c.id
                   ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30"
-                  : "bg-card border-2 border-dashed border-primary/30 hover:border-primary"
+                  : "bg-card border border-border hover:border-primary"
               }`}
             >
               {c.name}
@@ -280,13 +280,13 @@ function Index() {
             const on = activeTags.includes(t.id);
             return (
               <button key={t.id} onClick={() => toggleTag(t.id)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold border-2 border-dashed transition ${on ? "bg-primary text-primary-foreground border-primary border-solid" : "bg-card text-foreground border-primary/30 hover:border-primary"}`}>
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition ${on ? "bg-primary text-primary-foreground border-primary border-solid" : "bg-card text-foreground border-primary/30 hover:border-primary"}`}>
                 {t.label}
               </button>
             );
           })}
           {maxPrice > 0 && (
-            <div className="flex items-center gap-2 ml-auto bg-card border-2 border-dashed border-primary/30 rounded-full px-4 py-1.5 text-xs">
+            <div className="flex items-center gap-2 ml-auto bg-card border border-border rounded-full px-4 py-1.5 text-xs">
               <span className="text-muted-foreground whitespace-nowrap">Цена до</span>
               <input type="range" min={100} max={maxPrice} step={50} value={priceCap ?? maxPrice}
                 onChange={(e) => setPriceCap(Number(e.target.value))} className="w-32 sm:w-44 accent-primary" />
@@ -340,7 +340,7 @@ function Index() {
                 {list.map((p) => (
                   <article
                     key={p.id}
-                    className="group bg-card rounded-3xl overflow-hidden border-2 border-dashed border-primary/20 hover:border-primary hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1 transition-all flex flex-col"
+                    className="group bg-card rounded-3xl overflow-hidden border border-border hover:border-primary hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1 transition-all flex flex-col"
                   >
                     <div className="relative aspect-square bg-neutral-50 grid place-items-center text-6xl">
                       {p.image_url ? (

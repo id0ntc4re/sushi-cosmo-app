@@ -197,7 +197,8 @@ function Checkout() {
       clear();
       nav({ to: "/order-success", search: { n: order.number } });
     } catch (err: any) {
-      setError(err?.message ?? "Не удалось оформить заказ");
+      const { ruError } = await import("@/lib/errors");
+      setError(ruError(err, "Не удалось оформить заказ"));
     } finally {
       setSubmitting(false);
     }

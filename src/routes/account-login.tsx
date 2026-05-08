@@ -47,7 +47,9 @@ function AccountLogin() {
   }
 
   return (
-    <div className="min-h-screen grid place-items-center bg-neutral-50 px-4">
+    <>
+    <SiteHeader />
+    <div className="min-h-[calc(100vh-7rem)] grid place-items-center bg-neutral-50 px-4 py-10">
       <div className="w-full max-w-md bg-white rounded-3xl p-8 shadow-sm">
         <Link to="/" className="flex items-center gap-2 justify-center mb-6">
           <img src={logo} className="h-10 w-10" alt="" />

@@ -88,6 +88,7 @@ export function SiteHeader() {
           <Link to="/news" className="hover:text-primary transition-colors whitespace-nowrap">Акции</Link>
           <Link to="/about" className="hover:text-primary transition-colors whitespace-nowrap">О компании</Link>
           <Link to="/delivery" className="hover:text-primary transition-colors whitespace-nowrap">Доставка</Link>
+          <Link to="/faq" className="hover:text-primary transition-colors whitespace-nowrap">Вопросы</Link>
           <Link
             to="/account-login"
             className="flex items-center gap-1.5 px-3 py-2 rounded-full border-2 border-primary text-primary font-semibold hover:bg-primary hover:text-primary-foreground transition-all whitespace-nowrap"

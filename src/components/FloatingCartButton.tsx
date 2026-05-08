@@ -9,7 +9,7 @@ export function FloatingCartButton() {
   return (
     <button
       onClick={() => setOpen(true)}
-      className="fixed bottom-6 right-6 z-40 group flex items-center gap-3 pl-4 pr-5 py-3 rounded-full bg-primary text-primary-foreground shadow-2xl shadow-primary/40 hover:scale-105 active:scale-95 transition-all"
+      className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 group flex items-center gap-2 sm:gap-3 pl-3 pr-4 sm:pl-4 sm:pr-5 py-2.5 sm:py-3 rounded-full bg-primary text-primary-foreground shadow-2xl shadow-primary/40 hover:scale-105 active:scale-95 transition-all"
       aria-label="Открыть корзину"
     >
       <div className="relative">

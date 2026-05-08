@@ -62,6 +62,7 @@ function ProductsAdmin() {
     const payload: any = {
       name: editing.name?.trim(),
       description: editing.description || null,
+      ingredients: editing.ingredients || null,
       price: Number(editing.price ?? 0),
       weight: editing.weight || null,
       category_id: editing.category_id || null,

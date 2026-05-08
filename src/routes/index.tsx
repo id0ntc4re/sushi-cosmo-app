@@ -37,6 +37,7 @@ type Product = {
   category_id: string | null;
   image_url: string | null;
   description?: string | null;
+  ingredients?: string | null;
   is_addon?: boolean;
   tags?: string[];
 };

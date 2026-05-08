@@ -232,7 +232,7 @@ function Index() {
         <div className="flex items-center justify-between gap-4 flex-wrap mb-6">
           <div className="flex items-center gap-3">
             <span className="h-10 w-1.5 rounded-full bg-gradient-to-b from-primary to-primary/40" />
-            <h2 className="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">Меню</h2>
+            <h2 className="text-3xl md:text-4xl font-extrabold text-foreground">Меню</h2>
           </div>
           <div className="relative w-full sm:w-80">
             <input
@@ -334,7 +334,7 @@ function Index() {
             <div key={cat.id} className="mb-14">
               <div className="flex items-center gap-3 mb-6">
                 <span className="h-8 w-1.5 rounded-full bg-gradient-to-b from-primary to-primary/40" />
-                <h3 className="text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">{cat.name}</h3>
+                <h3 className="text-2xl md:text-3xl font-extrabold text-foreground">{cat.name}</h3>
               </div>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
                 {list.map((p) => (
@@ -431,10 +431,10 @@ function Index() {
           <div>
             <div className="flex items-center gap-3 mb-4">
               <div className="relative">
-                <div className="absolute inset-0 bg-primary/40 rounded-full blur-xl" />
+                <div className="absolute inset-0 bg-muted rounded-full blur-xl" />
                 <img src={logo} alt="" className="h-10 w-10 relative" />
               </div>
-              <div className="text-2xl font-extrabold bg-gradient-to-r from-background to-primary bg-clip-text text-transparent">КосмоСуши</div>
+              <div className="text-2xl font-extrabold text-background">КосмоСуши</div>
             </div>
             <p className="opacity-70 text-sm">Доставка суши и роллов в Кемерово ежедневно.</p>
           </div>

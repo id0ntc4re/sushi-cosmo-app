@@ -138,17 +138,17 @@ export function DeliveryCalculator({ subtotal, onOpenCart }: Props) {
 
   return (
     <section className="mx-auto max-w-[1280px] px-6 mt-10">
-      <div className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-primary/10 via-card to-card p-6 md:p-8">
-        <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-primary/20 blur-3xl pointer-events-none" />
-        <div className="absolute -bottom-16 -left-16 h-48 w-48 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
+      <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 md:p-8">
+        <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-muted blur-3xl pointer-events-none" />
+        <div className="absolute -bottom-16 -left-16 h-48 w-48 rounded-full bg-muted blur-3xl pointer-events-none" />
 
         <div className="relative">
           <div className="flex items-center justify-between gap-4 flex-wrap mb-4">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/15 text-primary text-xs font-bold uppercase tracking-wider">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted text-foreground text-xs font-bold uppercase tracking-wider">
                 ✨ Помощник заказа · 30 секунд
               </div>
-              <h2 className="mt-3 text-3xl md:text-4xl font-extrabold leading-tight bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
+              <h2 className="mt-3 text-3xl md:text-4xl font-extrabold leading-tight text-foreground">
                 Соберём идеальный заказ за 3 шага
               </h2>
               <p className="mt-1 text-muted-foreground text-sm md:text-base">
@@ -174,7 +174,7 @@ export function DeliveryCalculator({ subtotal, onOpenCart }: Props) {
                       active
                         ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30"
                         : done
-                        ? "bg-primary/15 text-primary hover:bg-primary/25"
+                        ? "bg-muted text-foreground hover:bg-muted"
                         : "bg-card border border-border text-muted-foreground"
                     }`}
                   >
@@ -215,7 +215,7 @@ export function DeliveryCalculator({ subtotal, onOpenCart }: Props) {
                       }}
                       className={`group relative rounded-2xl p-5 text-left border transition-all ${
                         on
-                          ? "border-primary bg-primary/10 shadow-lg shadow-primary/20"
+                          ? "border-primary bg-muted shadow-lg shadow-primary/20"
                           : "border-primary/30 bg-card hover:border-primary hover:-translate-y-0.5"
                       }`}
                     >
@@ -246,7 +246,7 @@ export function DeliveryCalculator({ subtotal, onOpenCart }: Props) {
                       }}
                       className={`group rounded-2xl p-5 text-left border transition-all ${
                         on
-                          ? "border-primary bg-primary/10 shadow-lg shadow-primary/20"
+                          ? "border-primary bg-muted shadow-lg shadow-primary/20"
                           : "border-primary/30 bg-card hover:border-primary hover:-translate-y-0.5"
                       }`}
                     >

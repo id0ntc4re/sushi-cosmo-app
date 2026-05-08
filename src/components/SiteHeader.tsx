@@ -16,7 +16,7 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-40 bg-background/95 backdrop-blur-lg border-b shadow-sm">
       {/* Top strip */}
-      <div className="bg-gradient-to-r from-primary via-primary to-primary/80 text-primary-foreground text-xs">
+      <div className="bg-foreground text-primary-foreground text-xs">
         <div className="mx-auto max-w-7xl px-4 h-8 flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <Clock className="h-3.5 w-3.5" />
@@ -33,11 +33,11 @@ export function SiteHeader() {
       <div className="mx-auto max-w-7xl px-4 h-20 flex items-center gap-6">
         <Link to="/" className="flex items-center gap-3 group">
           <div className="relative">
-            <div className="absolute inset-0 bg-primary/30 rounded-full blur-xl group-hover:blur-2xl transition-all" />
+            <div className="absolute inset-0 bg-muted rounded-full blur-xl group-hover:blur-2xl transition-all" />
             <img src={logo} alt="КосмоСуши" className="h-12 w-12 relative" />
           </div>
           <div className="leading-tight">
-            <div className="text-xl font-bold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">
+            <div className="text-xl font-bold text-foreground">
               КосмоСуши
             </div>
             <div className="text-xs text-muted-foreground">г. Кемерово</div>
@@ -49,7 +49,7 @@ export function SiteHeader() {
           <button
             onClick={() => setOpen((v) => !v)}
             onBlur={() => setTimeout(() => setOpen(false), 150)}
-            className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border hover:border-primary hover:bg-primary/5 transition-all"
+            className="flex items-center gap-2 px-3 py-2 rounded-xl border border-border hover:border-primary hover:bg-muted transition-all"
           >
             <MapPin className="h-4 w-4 text-primary" />
             <div className="text-left leading-tight">

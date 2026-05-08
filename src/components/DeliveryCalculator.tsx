@@ -233,7 +233,9 @@ export function DeliveryCalculator({ subtotal, onOpenCart }: Props) {
                           : "border border-border bg-card hover:border-primary hover:-translate-y-0.5"
                       }`}
                     >
-                      <div className="text-3xl mb-2">{opt.emoji}</div>
+                      <div className="h-11 w-11 rounded-xl bg-muted grid place-items-center mb-3 group-hover:bg-primary/10 transition-colors">
+                        <opt.Icon className="h-5 w-5 text-primary" strokeWidth={2} />
+                      </div>
                       <div className="font-extrabold">{opt.label}</div>
                       <div className="text-xs text-muted-foreground mt-1">{opt.hint}</div>
                       <div className="text-xs font-bold text-primary mt-2">от {opt.n * 600} ₽</div>
@@ -264,7 +266,9 @@ export function DeliveryCalculator({ subtotal, onOpenCart }: Props) {
                           : "border border-border bg-card hover:border-primary hover:-translate-y-0.5"
                       }`}
                     >
-                      <div className="text-3xl mb-2">{opt.emoji}</div>
+                      <div className="h-11 w-11 rounded-xl bg-muted grid place-items-center mb-3 group-hover:bg-primary/10 transition-colors">
+                        <opt.Icon className="h-5 w-5 text-primary" strokeWidth={2} />
+                      </div>
                       <div className="font-extrabold leading-tight">{opt.label}</div>
                     </button>
                   );

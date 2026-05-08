@@ -191,6 +191,24 @@ export type Database = {
         }
         Relationships: []
       }
+      newsletter_subscribers: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+        }
+        Relationships: []
+      }
       order_items: {
         Row: {
           id: string
@@ -332,6 +350,7 @@ export type Database = {
           price: number
           sku: string | null
           sort_order: number
+          tags: string[]
           unit: string | null
           updated_at: string
           weight: string | null
@@ -350,6 +369,7 @@ export type Database = {
           price?: number
           sku?: string | null
           sort_order?: number
+          tags?: string[]
           unit?: string | null
           updated_at?: string
           weight?: string | null
@@ -368,6 +388,7 @@ export type Database = {
           price?: number
           sku?: string | null
           sort_order?: number
+          tags?: string[]
           unit?: string | null
           updated_at?: string
           weight?: string | null

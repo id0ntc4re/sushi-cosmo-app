@@ -15,6 +15,14 @@ type Reco = {
 export function CartDrawer() {
   const { items, open, setOpen, setQty, remove, subtotal, add } = useCart();
   const [recos, setRecos] = useState<Reco[]>([]);
+  const [freeFrom, setFreeFrom] = useState<number>(1500);
+
+  useEffect(() => {
+    supabase.from("settings").select("value").eq("key", "general").maybeSingle().then(({ data }) => {
+      const v: any = data?.value;
+      if (v?.free_delivery_from || v?.free_from) setFreeFrom(Number(v.free_delivery_from ?? v.free_from));
+    });
+  }, []);
 
   useEffect(() => {
     if (!open || recos.length) return;
@@ -29,6 +37,9 @@ export function CartDrawer() {
       setRecos((data as Reco[]) ?? []);
     })();
   }, [open, recos.length]);
+
+  const left = Math.max(0, freeFrom - subtotal);
+  const pct = Math.min(100, Math.round((subtotal / freeFrom) * 100));
 
   const inCartIds = new Set(items.map((i) => i.id));
   const recoFiltered = recos.filter((r) => !inCartIds.has(r.id)).slice(0, 6);
@@ -58,6 +69,22 @@ export function CartDrawer() {
         </div>
 
         <div className="flex-1 overflow-y-auto p-5 space-y-3">
+          {items.length > 0 && (
+            <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-3 mb-1 border border-amber-100">
+              {left > 0 ? (
+                <>
+                  <div className="text-xs font-semibold text-amber-900 mb-1.5">
+                    🚚 До бесплатной доставки осталось <b>{left} ₽</b>
+                  </div>
+                  <div className="h-2 bg-white rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-amber-400 to-orange-500 transition-all" style={{ width: `${pct}%` }} />
+                  </div>
+                </>
+              ) : (
+                <div className="text-xs font-semibold text-green-700">✓ Доставка бесплатно</div>
+              )}
+            </div>
+          )}
           {items.length === 0 && (
             <div className="py-20 text-center text-neutral-500">
               Корзина пуста

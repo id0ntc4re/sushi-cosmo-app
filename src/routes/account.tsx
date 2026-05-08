@@ -51,7 +51,7 @@ function Account() {
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "INITIAL_SESSION" || event === "TOKEN_REFRESHED" || event === "USER_UPDATED") return;
       if (event === "SIGNED_OUT" || !session?.user) {
-        nav({ to: "/account-login", search: { redirect: "/account" } } as any);
+        setTimeout(() => nav({ to: "/account-login", search: { redirect: "/account" } } as any), 0);
       }
     });
     return () => { cancelled = true; sub.subscription.unsubscribe(); };

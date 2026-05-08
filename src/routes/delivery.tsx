@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { SiteHeader } from "@/components/SiteHeader";
-import { Truck, Clock, MapPin, CreditCard, Banknote } from "lucide-react";
+import { Truck, Clock, MapPin, CreditCard, Banknote, Phone } from "lucide-react";
 
 export const Route = createFileRoute("/delivery")({
   head: () => ({

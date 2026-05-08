@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as OrderSuccessRouteImport } from './routes/order-success'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as DeliveryRouteImport } from './routes/delivery'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AccountLoginRouteImport } from './routes/account-login'
@@ -33,6 +34,11 @@ const OrderSuccessRoute = OrderSuccessRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DeliveryRoute = DeliveryRouteImport.update({
+  id: '/delivery',
+  path: '/delivery',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CheckoutRoute = CheckoutRouteImport.update({
@@ -108,6 +114,7 @@ export interface FileRoutesByFullPath {
   '/account-login': typeof AccountLoginRoute
   '/admin': typeof AdminRouteWithChildren
   '/checkout': typeof CheckoutRoute
+  '/delivery': typeof DeliveryRoute
   '/login': typeof LoginRoute
   '/order-success': typeof OrderSuccessRoute
   '/admin/banners': typeof AdminBannersRoute
@@ -124,6 +131,7 @@ export interface FileRoutesByTo {
   '/account': typeof AccountRoute
   '/account-login': typeof AccountLoginRoute
   '/checkout': typeof CheckoutRoute
+  '/delivery': typeof DeliveryRoute
   '/login': typeof LoginRoute
   '/order-success': typeof OrderSuccessRoute
   '/admin/banners': typeof AdminBannersRoute
@@ -142,6 +150,7 @@ export interface FileRoutesById {
   '/account-login': typeof AccountLoginRoute
   '/admin': typeof AdminRouteWithChildren
   '/checkout': typeof CheckoutRoute
+  '/delivery': typeof DeliveryRoute
   '/login': typeof LoginRoute
   '/order-success': typeof OrderSuccessRoute
   '/admin/banners': typeof AdminBannersRoute
@@ -161,6 +170,7 @@ export interface FileRouteTypes {
     | '/account-login'
     | '/admin'
     | '/checkout'
+    | '/delivery'
     | '/login'
     | '/order-success'
     | '/admin/banners'
@@ -177,6 +187,7 @@ export interface FileRouteTypes {
     | '/account'
     | '/account-login'
     | '/checkout'
+    | '/delivery'
     | '/login'
     | '/order-success'
     | '/admin/banners'
@@ -194,6 +205,7 @@ export interface FileRouteTypes {
     | '/account-login'
     | '/admin'
     | '/checkout'
+    | '/delivery'
     | '/login'
     | '/order-success'
     | '/admin/banners'
@@ -212,6 +224,7 @@ export interface RootRouteChildren {
   AccountLoginRoute: typeof AccountLoginRoute
   AdminRoute: typeof AdminRouteWithChildren
   CheckoutRoute: typeof CheckoutRoute
+  DeliveryRoute: typeof DeliveryRoute
   LoginRoute: typeof LoginRoute
   OrderSuccessRoute: typeof OrderSuccessRoute
 }
@@ -230,6 +243,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/delivery': {
+      id: '/delivery'
+      path: '/delivery'
+      fullPath: '/delivery'
+      preLoaderRoute: typeof DeliveryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/checkout': {
@@ -355,6 +375,7 @@ const rootRouteChildren: RootRouteChildren = {
   AccountLoginRoute: AccountLoginRoute,
   AdminRoute: AdminRouteWithChildren,
   CheckoutRoute: CheckoutRoute,
+  DeliveryRoute: DeliveryRoute,
   LoginRoute: LoginRoute,
   OrderSuccessRoute: OrderSuccessRoute,
 }

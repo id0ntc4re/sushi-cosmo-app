@@ -61,6 +61,7 @@ function Index() {
   const [slide, setSlide] = useState(0);
   const [banners, setBanners] = useState<Banner[]>(FALLBACK_SLIDES as any);
   const [openProduct, setOpenProduct] = useState<Product | null>(null);
+  const [authPromptOpen, setAuthPromptOpen] = useState(false);
   const cart = useCart();
   const fav = useFavorites();
 

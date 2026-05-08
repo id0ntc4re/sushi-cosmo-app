@@ -2,6 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { MapPin, Phone, Clock, ChevronDown, User, Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
+import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/logo.svg";
 
 const BRANCHES = [

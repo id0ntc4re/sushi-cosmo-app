@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { ruError } from "@/lib/errors";
 
 const KEY = "kosmosushi_newsletter_v1";
 

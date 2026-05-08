@@ -444,14 +444,17 @@ function Index() {
         <ProductModal
           product={openProduct}
           onClose={() => setOpenProduct(null)}
-          onAdd={() => {
-            cart.add({
-              id: openProduct.id,
-              name: openProduct.name,
-              price: Number(openProduct.price),
-              image_url: openProduct.image_url,
-              weight: openProduct.weight,
-            });
+          onAdd={(qty) => {
+            cart.add(
+              {
+                id: openProduct.id,
+                name: openProduct.name,
+                price: Number(openProduct.price),
+                image_url: openProduct.image_url,
+                weight: openProduct.weight,
+              },
+              qty,
+            );
             pushHistory(openProduct.id);
             toast.success("Добавлено в корзину", { description: openProduct.name });
             setOpenProduct(null);

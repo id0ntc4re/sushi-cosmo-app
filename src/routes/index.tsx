@@ -513,9 +513,9 @@ function ProductModal({ product, onClose, onAdd }: { product: Product; onClose: 
   }, [product.id]);
 
   return (
-    <div className="fixed inset-0 bg-black/60 z-50 grid sm:place-items-center sm:p-4 animate-fade-in" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/60 z-50 grid place-items-center p-4 animate-fade-in" onClick={onClose}>
       <div
-        className="bg-white sm:rounded-3xl rounded-t-3xl overflow-hidden max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto shadow-2xl mt-auto sm:mt-0"
+        className="bg-white rounded-3xl overflow-hidden max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="relative h-64 sm:h-80 bg-neutral-100 grid place-items-center text-5xl overflow-hidden">

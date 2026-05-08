@@ -6,6 +6,7 @@ import { useCart } from "@/lib/cart";
 import { useFavorites, pushHistory } from "@/lib/favorites";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { SiteHeader } from "@/components/SiteHeader";
+import { DeliveryCalculator } from "@/components/DeliveryCalculator";
 import logo from "@/assets/logo.svg";
 import hero1 from "@/assets/hero-1.jpg";
 import hero2 from "@/assets/hero-2.jpg";
@@ -223,27 +224,8 @@ function Index() {
         </div>
       </section>
 
-      {/* COME TO US BLOCK */}
-      <section className="mx-auto max-w-[1280px] px-6 mt-10">
-        <div className="flex items-center gap-3 mb-5">
-          <span className="h-8 w-1.5 rounded-full bg-gradient-to-b from-primary to-primary/40" />
-          <h2 className="text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">Приходи к нам!</h2>
-        </div>
-        <div className="grid md:grid-cols-2 gap-4">
-          {[
-            { name: "Центр", address: "пр-т Шахтёров, 68", hours: "10:00–22:00" },
-            { name: "ФПК", address: "Бр Строителей, 21", hours: "10:00–23:00" },
-          ].map((b) => (
-            <div key={b.address} className="group rounded-2xl bg-card p-5 border-2 border-dashed border-primary/30 hover:border-primary transition-all hover:shadow-lg hover:shadow-primary/10">
-              <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-primary font-bold">
-                <span>📍</span>{b.name}
-              </div>
-              <div className="font-extrabold text-lg mt-1">{b.address}</div>
-              <div className="text-sm text-muted-foreground mt-1">Ежедневно {b.hours}</div>
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* DELIVERY CALCULATOR CTA */}
+      <DeliveryCalculator subtotal={cart.subtotal} onOpenCart={() => cart.setOpen(true)} />
 
       {/* MENU */}
       <section id="menu" className="mx-auto max-w-[1280px] px-6 mt-12">

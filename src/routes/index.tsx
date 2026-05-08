@@ -211,10 +211,13 @@ function Index() {
             { icon: "⭐", title: "Бонусы за заказ", text: "Копите и оплачивайте" },
             { icon: "🕒", title: "10:00 – 22:00", text: "Работаем без выходных" },
           ].map((f) => (
-            <div key={f.title} className="rounded-2xl bg-neutral-100 p-4 md:p-5 hover:bg-neutral-200/70 transition">
-              <div className="text-3xl mb-2">{f.icon}</div>
-              <div className="font-bold leading-tight">{f.title}</div>
-              <div className="text-sm text-neutral-500 mt-1">{f.text}</div>
+            <div key={f.title} className="group relative rounded-2xl bg-card p-4 md:p-5 border-2 border-dashed border-primary/30 hover:border-primary hover:shadow-lg hover:shadow-primary/10 transition-all">
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative">
+                <div className="text-3xl mb-2">{f.icon}</div>
+                <div className="font-bold leading-tight">{f.title}</div>
+                <div className="text-sm text-muted-foreground mt-1">{f.text}</div>
+              </div>
             </div>
           ))}
         </div>
@@ -223,18 +226,22 @@ function Index() {
       {/* COME TO US BLOCK */}
       <section className="mx-auto max-w-[1280px] px-6 mt-10">
         <div className="flex items-center gap-3 mb-5">
-          <img src={logo} alt="" className="h-7 w-7" />
-          <h2 className="text-2xl md:text-3xl font-extrabold">Приходи к нам!</h2>
+          <span className="h-8 w-1.5 rounded-full bg-gradient-to-b from-primary to-primary/40" />
+          <h2 className="text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">Приходи к нам!</h2>
         </div>
         <div className="grid md:grid-cols-2 gap-4">
-          <div className="rounded-2xl bg-neutral-100 p-5">
-            <div className="text-sm text-neutral-500">Адрес</div>
-            <div className="font-bold text-lg">пр-т Шахтёров, 68</div>
-          </div>
-          <div className="rounded-2xl bg-neutral-100 p-5">
-            <div className="text-sm text-neutral-500">Адрес</div>
-            <div className="font-bold text-lg">Бр Строителей, 21</div>
-          </div>
+          {[
+            { name: "Центр", address: "пр-т Шахтёров, 68", hours: "10:00–22:00" },
+            { name: "ФПК", address: "Бр Строителей, 21", hours: "10:00–23:00" },
+          ].map((b) => (
+            <div key={b.address} className="group rounded-2xl bg-card p-5 border-2 border-dashed border-primary/30 hover:border-primary transition-all hover:shadow-lg hover:shadow-primary/10">
+              <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-primary font-bold">
+                <span>📍</span>{b.name}
+              </div>
+              <div className="font-extrabold text-lg mt-1">{b.address}</div>
+              <div className="text-sm text-muted-foreground mt-1">Ежедневно {b.hours}</div>
+            </div>
+          ))}
         </div>
       </section>
 

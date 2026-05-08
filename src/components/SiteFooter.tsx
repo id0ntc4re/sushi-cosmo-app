@@ -34,6 +34,9 @@ export function SiteFooter() {
           <a href="tel:+79132869284" className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-primary text-primary-foreground text-lg font-extrabold hover:shadow-lg hover:shadow-primary/40 transition-all">
             📞 +7 913 286 92-84
           </a>
+          <div className="mt-4 text-sm opacity-80">
+            <a href="/faq" className="hover:text-primary underline-offset-4 hover:underline">Вопросы и ответы</a>
+          </div>
         </div>
       </div>
       <div className="border-t border-background/10">

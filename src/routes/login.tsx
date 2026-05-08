@@ -39,7 +39,7 @@ function Login() {
       }
       nav({ to: redirect || "/admin" });
     } catch (err: any) {
-      toast.error(err.message ?? "Ошибка");
+      toast.error(ruError(err, "Ошибка"));
     } finally {
       setLoading(false);
     }

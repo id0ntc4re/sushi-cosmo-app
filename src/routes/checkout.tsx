@@ -157,12 +157,13 @@ function Checkout() {
 
     setSubmitting(true);
     try {
-      const { data: user } = await supabase.auth.getUser();
+      const { data: sessionData } = await supabase.auth.getSession();
+      const sessionUserId = sessionData.session?.user?.id ?? null;
       const totalDiscount = discount + tierDiscount;
       const { data: order, error: orderErr } = await supabase
         .from("orders")
         .insert({
-          user_id: user.user?.id ?? null,
+          user_id: sessionUserId,
           customer_name: parsed.data.customer_name,
           phone: parsed.data.phone,
           delivery_type: parsed.data.delivery_type,

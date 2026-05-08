@@ -81,23 +81,28 @@ function Index() {
       try {
         setLoading(true);
         setLoadError(null);
-        const [cats, prods, bans] = await Promise.all([
-          supabase.from("categories").select("id,name,slug").eq("is_active", true).order("sort_order"),
-          supabase.from("products").select("id,name,price,weight,category_id,image_url,description,is_addon,tags").eq("is_active", true).order("sort_order"),
-          supabase.from("banners").select("image_url,eyebrow,title,subtitle,cta_label,cta_link").eq("is_active", true).order("sort_order"),
-        ]);
+        const prods = await supabase
+          .from("products")
+          .select("id,name,price,weight,category_id,image_url,description,is_addon,tags")
+          .eq("is_active", true)
+          .order("sort_order");
         if (prods.error) throw prods.error;
-        setCategories(cats.data ?? []);
         const list = (prods.data as Product[]) ?? [];
         setProducts(list);
         const top = Math.max(0, ...list.map((p) => Number(p.price) || 0));
         setMaxPrice(Math.ceil(top / 100) * 100 || 1000);
-        if (bans.data && bans.data.length) setBanners(bans.data as Banner[]);
       } catch (e: any) {
         setLoadError(e?.message || "Не удалось загрузить меню");
       } finally {
         setLoading(false);
       }
+
+      const [cats, bans] = await Promise.all([
+        supabase.from("categories").select("id,name,slug").eq("is_active", true).order("sort_order"),
+        supabase.from("banners").select("image_url,eyebrow,title,subtitle,cta_label,cta_link").eq("is_active", true).order("sort_order"),
+      ]);
+      if (!cats.error) setCategories(cats.data ?? []);
+      if (!bans.error && bans.data && bans.data.length) setBanners(bans.data as Banner[]);
     })();
   }, []);
 
@@ -118,7 +123,10 @@ function Index() {
   const toggleTag = (id: string) => setActiveTags((cur) => cur.includes(id) ? cur.filter((t) => t !== id) : [...cur, id]);
 
   const visibleCats = useMemo(
-    () => (active ? categories.filter((c) => c.id === active) : categories),
+    () => {
+      if (!categories.length) return [{ id: "all", name: "Меню", slug: "all" }];
+      return active ? categories.filter((c) => c.id === active) : categories;
+    },
     [categories, active],
   );
 
@@ -224,7 +232,7 @@ function Index() {
       </section>
 
       {/* DELIVERY CALCULATOR CTA */}
-      <DeliveryCalculator subtotal={cart.subtotal} onOpenCart={() => cart.setOpen(true)} />
+      <DeliveryCalculator subtotal={cart.subtotal} onOpenCart={() => cart.setOpen(true)} products={products.filter((p) => !p.is_addon)} />
 
       {/* MENU */}
       <section id="menu" className="mx-auto max-w-[1280px] px-6 mt-12">

@@ -45,7 +45,7 @@ export function SiteHeader() {
         </Link>
 
         {/* Branch selector */}
-        <div className="relative hidden md:block">
+        <div className="relative hidden xl:block">
           <button
             onClick={() => setOpen((v) => !v)}
             onBlur={() => setTimeout(() => setOpen(false), 150)}
@@ -54,7 +54,7 @@ export function SiteHeader() {
             <MapPin className="h-4 w-4 text-primary" />
             <div className="text-left leading-tight">
               <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Филиал</div>
-              <div className="text-sm font-semibold">{active.name} · {active.address}</div>
+              <div className="text-sm font-semibold">{active.name}</div>
             </div>
             <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${open ? "rotate-180" : ""}`} />
           </button>
@@ -83,24 +83,24 @@ export function SiteHeader() {
           )}
         </div>
 
-        <nav className="ml-auto hidden md:flex items-center gap-6 text-sm font-medium">
-          <Link to="/" hash="menu" className="hover:text-primary transition-colors">Меню</Link>
-          <Link to="/news" className="hover:text-primary transition-colors">Акции и новости</Link>
-          <Link to="/about" className="hover:text-primary transition-colors">О компании</Link>
-          <Link to="/delivery" className="hover:text-primary transition-colors">Доставка и оплата</Link>
+        <nav className="ml-auto hidden md:flex items-center gap-4 lg:gap-5 text-sm font-medium">
+          <Link to="/" hash="menu" className="hover:text-primary transition-colors whitespace-nowrap">Меню</Link>
+          <Link to="/news" className="hover:text-primary transition-colors whitespace-nowrap">Акции</Link>
+          <Link to="/about" className="hover:text-primary transition-colors whitespace-nowrap">О компании</Link>
+          <Link to="/delivery" className="hover:text-primary transition-colors whitespace-nowrap">Доставка</Link>
           <Link
             to="/account-login"
-            className="flex items-center gap-1.5 px-3 py-2 rounded-full border-2 border-primary text-primary font-semibold hover:bg-primary hover:text-primary-foreground transition-all"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-full border-2 border-primary text-primary font-semibold hover:bg-primary hover:text-primary-foreground transition-all whitespace-nowrap"
           >
             <User className="h-4 w-4" />
-            Личный кабинет
+            <span className="hidden lg:inline">Личный кабинет</span>
           </Link>
           <a
             href={`tel:${active.phone.replace(/\s/g, "")}`}
-            className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-primary-foreground font-bold hover:shadow-lg hover:shadow-primary/30 transition-all"
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-primary text-primary-foreground font-bold hover:shadow-lg hover:shadow-primary/30 transition-all whitespace-nowrap"
           >
             <Phone className="h-4 w-4" />
-            {active.phone}
+            <span className="hidden lg:inline">{active.phone}</span>
           </a>
         </nav>
       </div>

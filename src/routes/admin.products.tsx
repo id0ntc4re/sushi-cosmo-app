@@ -22,12 +22,21 @@ type Product = {
   sku: string | null;
   is_addon: boolean;
   is_recommended: boolean;
+  tags: string[];
 };
+
+const TAGS = [
+  { id: "spicy", label: "🌶 Острое" },
+  { id: "vegan", label: "🌱 Веган" },
+  { id: "no_fish", label: "🚫🐟 Без рыбы" },
+  { id: "baked", label: "🔥 Запечённые" },
+  { id: "new", label: "✨ Новинка" },
+];
 
 const empty: Partial<Product> = {
   name: "", price: 0, weight: "", description: "", image_url: "",
   category_id: null, is_active: true, in_stock: true, sort_order: 0, sku: "",
-  is_addon: false, is_recommended: false,
+  is_addon: false, is_recommended: false, tags: [],
 };
 
 function ProductsAdmin() {
@@ -62,6 +71,7 @@ function ProductsAdmin() {
       sku: editing.sku || null,
       is_addon: editing.is_addon ?? false,
       is_recommended: editing.is_recommended ?? false,
+      tags: editing.tags ?? [],
     };
     if (!payload.name) return toast.error("Укажите название");
     const res = editing.id
@@ -172,6 +182,21 @@ function ProductsAdmin() {
             <label className="flex items-center gap-2"><input type="checkbox" checked={editing.in_stock ?? true} onChange={(e) => setEditing({ ...editing, in_stock: e.target.checked })} /> В наличии</label>
             <label className="flex items-center gap-2"><input type="checkbox" checked={editing.is_addon ?? false} onChange={(e) => setEditing({ ...editing, is_addon: e.target.checked })} /> Доп. товар (соус/палочки)</label>
             <label className="flex items-center gap-2"><input type="checkbox" checked={editing.is_recommended ?? false} onChange={(e) => setEditing({ ...editing, is_recommended: e.target.checked })} /> Рекомендуемый («с этим заказывают»)</label>
+            <div className="md:col-span-2">
+              <span className="text-xs text-neutral-600 block mb-1">Теги</span>
+              <div className="flex flex-wrap gap-2">
+                {TAGS.map((t) => {
+                  const on = (editing.tags ?? []).includes(t.id);
+                  return (
+                    <button key={t.id} type="button"
+                      onClick={() => setEditing({ ...editing, tags: on ? (editing.tags ?? []).filter((x) => x !== t.id) : [...(editing.tags ?? []), t.id] })}
+                      className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${on ? "bg-primary text-white border-primary" : "bg-white border-neutral-200 hover:border-primary"}`}>
+                      {t.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
           <div className="flex gap-2 mt-6 justify-end">
             <button onClick={() => setEditing(null)} className="px-5 py-2.5 rounded-full bg-neutral-100 font-semibold">Отмена</button>

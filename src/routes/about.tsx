@@ -18,7 +18,7 @@ function AboutPage() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SiteHeader />
-      <main className="mx-auto max-w-4xl px-6 py-14">
+      <main className="mx-auto max-w-[1280px] px-6 py-14">
         <p className="text-sm text-muted-foreground mb-2">Главная — О компании</p>
         <h1 className="text-4xl md:text-5xl font-extrabold mb-3">О компании</h1>
         <p className="text-xl text-primary font-semibold mb-8">«Cosmo Sushi» — ресторан быстрого обслуживания.</p>

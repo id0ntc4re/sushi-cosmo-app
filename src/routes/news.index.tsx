@@ -38,7 +38,7 @@ function NewsList() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SiteHeader />
-      <main className="mx-auto max-w-6xl px-6 py-14">
+      <main className="mx-auto max-w-[1280px] px-6 py-14">
         <p className="text-sm text-muted-foreground mb-2">Главная — Акции и новости</p>
         <h1 className="text-4xl md:text-5xl font-extrabold mb-8">Акции и новости</h1>
 

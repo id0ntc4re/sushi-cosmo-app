@@ -156,8 +156,8 @@ export function DeliveryCalculator({ subtotal, onOpenCart, products: providedPro
   ];
 
   return (
-    <section className="mx-auto max-w-[1280px] px-6 mt-10">
-      <div className="relative overflow-hidden rounded-3xl border border-border bg-card p-6 md:p-8">
+    <section className="mx-auto max-w-[1280px] px-3 sm:px-6 mt-6 sm:mt-10">
+      <div className="relative overflow-hidden rounded-2xl sm:rounded-3xl border border-border bg-card p-4 sm:p-6 md:p-8">
         <div className="absolute -top-20 -right-20 h-64 w-64 rounded-full bg-muted blur-3xl pointer-events-none" />
         <div className="absolute -bottom-16 -left-16 h-48 w-48 rounded-full bg-muted blur-3xl pointer-events-none" />
 
@@ -168,7 +168,7 @@ export function DeliveryCalculator({ subtotal, onOpenCart, products: providedPro
                 <Sparkles className="h-3.5 w-3.5 text-primary" strokeWidth={2.5} />
                 Помощник заказа · 30 секунд
               </div>
-              <h2 className="mt-3 text-3xl md:text-4xl font-extrabold leading-tight text-foreground">
+              <h2 className="mt-3 text-2xl sm:text-3xl md:text-4xl font-extrabold leading-tight text-foreground">
                 Соберём идеальный заказ за 3 шага
               </h2>
               <p className="mt-1 text-muted-foreground text-sm md:text-base">

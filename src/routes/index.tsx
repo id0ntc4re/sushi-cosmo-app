@@ -120,8 +120,8 @@ function Index() {
 
       {/* HERO SLIDER */}
       <section className="bg-white">
-        <div className="mx-auto max-w-[1280px] px-6 pt-6">
-          <div className="relative rounded-[32px] overflow-hidden aspect-[16/7] md:aspect-[16/6] bg-neutral-900 text-white">
+        <div className="mx-auto max-w-[1280px] px-3 sm:px-6 pt-3 sm:pt-6">
+          <div className="relative rounded-2xl sm:rounded-[32px] overflow-hidden aspect-[4/5] sm:aspect-[16/7] md:aspect-[16/6] bg-neutral-900 text-white">
             {banners.map((s, i) => (
               <div
                 key={i}
@@ -137,22 +137,22 @@ function Index() {
                     loading={i === 0 ? "eager" : "lazy"}
                   />
                 )}
-                <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent" />
-                <div className="relative z-10 h-full flex items-center">
-                  <div className="px-8 md:px-14 max-w-2xl animate-fade-in" key={`c-${i}-${slide}`}>
+                <div className="absolute inset-0 bg-gradient-to-t sm:bg-gradient-to-r from-black/80 via-black/50 to-black/10 sm:to-transparent" />
+                <div className="relative z-10 h-full flex items-end sm:items-center">
+                  <div className="px-5 pb-8 sm:px-8 md:px-14 sm:pb-0 max-w-2xl animate-fade-in" key={`c-${i}-${slide}`}>
                     {s.eyebrow && (
-                      <span className="inline-block px-3 py-1 rounded-full bg-primary/90 text-white text-xs font-bold uppercase tracking-wider">
+                      <span className="inline-block px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-primary/90 text-white text-[10px] sm:text-xs font-bold uppercase tracking-wider">
                         {s.eyebrow}
                       </span>
                     )}
-                    <h1 className="mt-4 text-3xl md:text-5xl lg:text-6xl font-extrabold leading-tight drop-shadow-lg">
+                    <h1 className="mt-2 sm:mt-4 text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-extrabold leading-tight drop-shadow-lg">
                       {s.title}
                     </h1>
-                    {s.subtitle && <p className="mt-3 md:text-xl opacity-95 max-w-lg">{s.subtitle}</p>}
+                    {s.subtitle && <p className="mt-2 sm:mt-3 text-sm sm:text-base md:text-xl opacity-95 max-w-lg">{s.subtitle}</p>}
                     {s.cta_label && (
                       <a
                         href={s.cta_link || "#menu"}
-                        className="inline-block mt-6 px-8 py-3.5 rounded-full bg-primary text-white font-bold shadow-xl hover:bg-primary/90 transition"
+                        className="inline-block mt-4 sm:mt-6 px-5 py-2.5 sm:px-8 sm:py-3.5 rounded-full bg-primary text-white font-bold text-sm sm:text-base shadow-xl hover:bg-primary/90 transition"
                       >
                         {s.cta_label} →
                       </a>
@@ -196,7 +196,7 @@ function Index() {
       </section>
 
       {/* FEATURES */}
-      <section className="mx-auto max-w-[1280px] px-6 mt-10">
+      <section className="mx-auto max-w-[1280px] px-3 sm:px-6 mt-6 sm:mt-10">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           {[
             { Icon: Truck, title: "Бесплатно от 1500 ₽", text: "Доставим в течение часа" },
@@ -204,12 +204,12 @@ function Index() {
             { Icon: Sparkles, title: "Бонусы за заказ", text: "Копите и оплачивайте" },
             { Icon: Clock, title: "10:00 – 22:00", text: "Работаем без выходных" },
           ].map(({ Icon, title, text }) => (
-            <div key={title} className="group rounded-2xl bg-card p-5 border border-border hover:border-foreground/20 hover:shadow-md transition-all">
-              <div className="h-11 w-11 rounded-xl bg-muted grid place-items-center mb-3 group-hover:bg-primary/10 transition-colors">
-                <Icon className="h-5 w-5 text-primary" strokeWidth={2} />
+            <div key={title} className="group rounded-2xl bg-card p-3 sm:p-5 border border-border hover:border-foreground/20 hover:shadow-md transition-all">
+              <div className="h-9 w-9 sm:h-11 sm:w-11 rounded-xl bg-muted grid place-items-center mb-2 sm:mb-3 group-hover:bg-primary/10 transition-colors">
+                <Icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" strokeWidth={2} />
               </div>
-              <div className="font-bold leading-tight">{title}</div>
-              <div className="text-sm text-muted-foreground mt-1">{text}</div>
+              <div className="font-bold leading-tight text-sm sm:text-base">{title}</div>
+              <div className="text-xs sm:text-sm text-muted-foreground mt-0.5 sm:mt-1">{text}</div>
             </div>
           ))}
         </div>
@@ -219,11 +219,11 @@ function Index() {
       <DeliveryCalculator subtotal={cart.subtotal} onOpenCart={() => cart.setOpen(true)} products={products.filter((p) => !p.is_addon)} />
 
       {/* MENU */}
-      <section id="menu" className="mx-auto max-w-[1280px] px-6 mt-12">
-        <div className="flex items-center justify-between gap-4 flex-wrap mb-6">
-          <div className="flex items-center gap-3">
-            <span className="h-10 w-1.5 rounded-full bg-gradient-to-b from-primary to-primary/40" />
-            <h2 className="text-3xl md:text-4xl font-extrabold text-foreground">Меню</h2>
+      <section id="menu" className="mx-auto max-w-[1280px] px-3 sm:px-6 mt-8 sm:mt-12">
+        <div className="flex items-center justify-between gap-3 flex-wrap mb-4 sm:mb-6">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <span className="h-8 sm:h-10 w-1.5 rounded-full bg-gradient-to-b from-primary to-primary/40" />
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-foreground">Меню</h2>
           </div>
           <div className="relative w-full sm:w-80">
             <input
@@ -239,7 +239,7 @@ function Index() {
         </div>
 
         {/* category pills */}
-        <div className="flex gap-2 overflow-x-auto pb-3 mb-8 -mx-6 px-6 sticky top-0 bg-background/95 backdrop-blur z-30">
+        <div className="flex gap-2 overflow-x-auto pb-3 mb-6 sm:mb-8 -mx-3 sm:-mx-6 px-3 sm:px-6 sticky top-16 md:top-20 bg-background/95 backdrop-blur z-30">
           <button
             onClick={() => setActive(null)}
             className={`shrink-0 px-5 py-2.5 rounded-full text-sm font-semibold transition-all ${
@@ -303,7 +303,7 @@ function Index() {
                 <span className="h-8 w-1.5 rounded-full bg-gradient-to-b from-primary to-primary/40" />
                 <h3 className="text-2xl md:text-3xl font-extrabold text-foreground">{cat.name}</h3>
               </div>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
                 {list.map((p) => (
                   <article
                     key={p.id}
@@ -328,15 +328,15 @@ function Index() {
                         {fav.has(p.id) ? "❤️" : "🤍"}
                       </span>
                     </button>
-                    <div className="p-4 flex flex-col flex-1">
+                    <div className="p-3 sm:p-4 flex flex-col flex-1">
                       <button type="button" onClick={() => setOpenProduct(p)} className="text-left">
-                        <h4 className="font-bold leading-snug line-clamp-2 hover:text-primary transition">{p.name}</h4>
+                        <h4 className="font-bold text-sm sm:text-base leading-snug line-clamp-2 hover:text-primary transition">{p.name}</h4>
                         {p.weight && (
-                          <div className="text-xs text-neutral-500 mt-1">{p.weight}</div>
+                          <div className="text-[11px] sm:text-xs text-neutral-500 mt-1">{p.weight}</div>
                         )}
                       </button>
-                      <div className="mt-auto pt-4 flex items-center justify-between gap-2">
-                        <span className="text-xl font-extrabold">{Number(p.price)} ₽</span>
+                      <div className="mt-auto pt-3 sm:pt-4 flex items-center justify-between gap-1.5">
+                        <span className="text-base sm:text-xl font-extrabold">{Number(p.price)} ₽</span>
                         {(() => {
                           const inCart = cart.items.find((i) => i.id === p.id);
                           if (inCart) {
@@ -344,15 +344,15 @@ function Index() {
                               <div className="flex items-center gap-1">
                                 <button
                                   onClick={() => cart.setQty(p.id, inCart.quantity - 1)}
-                                  className="h-8 w-8 rounded-full bg-neutral-100 hover:bg-neutral-200 font-bold"
+                                  className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-neutral-100 hover:bg-neutral-200 font-bold"
                                   aria-label="Уменьшить"
                                 >
                                   −
                                 </button>
-                                <span className="w-7 text-center font-bold">{inCart.quantity}</span>
+                                <span className="w-6 sm:w-7 text-center font-bold text-sm sm:text-base">{inCart.quantity}</span>
                                 <button
                                   onClick={() => cart.setQty(p.id, inCart.quantity + 1)}
-                                  className="h-8 w-8 rounded-full bg-primary text-white hover:opacity-90 font-bold"
+                                  className="h-7 w-7 sm:h-8 sm:w-8 rounded-full bg-primary text-white hover:opacity-90 font-bold"
                                   aria-label="Увеличить"
                                 >
                                   +
@@ -373,9 +373,10 @@ function Index() {
                                 pushHistory(p.id);
                                 toast.success("Добавлено в корзину", { description: p.name });
                               }}
-                              className="px-4 py-2 rounded-full bg-primary text-white font-semibold hover:opacity-90 text-sm"
+                              className="px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-primary text-white font-semibold hover:opacity-90 text-xs sm:text-sm"
                             >
-                              В корзину
+                              <span className="sm:hidden">+</span>
+                              <span className="hidden sm:inline">В корзину</span>
                             </button>
                           );
                         })()}
@@ -401,7 +402,7 @@ function Index() {
       {/* FOOTER */}
       <footer id="contacts" className="relative mt-16 bg-gradient-to-br from-foreground via-foreground to-foreground/90 text-background">
         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-primary via-primary to-primary/60" />
-        <div className="mx-auto max-w-[1280px] px-6 py-14 grid md:grid-cols-3 gap-8">
+        <div className="mx-auto max-w-[1280px] px-4 sm:px-6 py-10 sm:py-14 grid sm:grid-cols-2 md:grid-cols-3 gap-8">
           <div>
             <div className="flex items-center gap-3 mb-4">
               <div className="relative">
@@ -487,12 +488,12 @@ function ProductModal({ product, onClose, onAdd }: { product: Product; onClose: 
   }, [product.id]);
 
   return (
-    <div className="fixed inset-0 bg-black/60 z-50 grid place-items-center p-4 animate-fade-in" onClick={onClose}>
+    <div className="fixed inset-0 bg-black/60 z-50 grid sm:place-items-center sm:p-4 animate-fade-in" onClick={onClose}>
       <div
-        className="bg-white rounded-3xl overflow-hidden max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
+        className="bg-white sm:rounded-3xl rounded-t-3xl overflow-hidden max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto shadow-2xl mt-auto sm:mt-0"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="relative aspect-[16/10] bg-neutral-100 grid place-items-center text-7xl">
+        <div className="relative aspect-[4/3] sm:aspect-[16/10] bg-neutral-100 grid place-items-center text-7xl">
           {product.image_url ? (
             <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
           ) : (
@@ -500,27 +501,27 @@ function ProductModal({ product, onClose, onAdd }: { product: Product; onClose: 
           )}
           <button
             onClick={onClose}
-            className="absolute top-3 right-3 h-10 w-10 rounded-full bg-white/95 hover:bg-white grid place-items-center shadow leading-none"
+            className="absolute top-3 right-3 h-10 w-10 rounded-full bg-white/95 hover:bg-white grid place-items-center shadow"
             aria-label="Закрыть"
           >
             <span className="block text-2xl font-bold leading-none -mt-0.5">×</span>
           </button>
         </div>
-        <div className="p-6 md:p-8">
-          <h2 className="text-2xl md:text-3xl font-extrabold mb-2">{product.name}</h2>
-          {product.weight && <div className="text-sm text-neutral-500 mb-4">{product.weight}</div>}
+        <div className="p-4 sm:p-6 md:p-8">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-extrabold mb-2">{product.name}</h2>
+          {product.weight && <div className="text-sm text-neutral-500 mb-3 sm:mb-4">{product.weight}</div>}
           {product.description && (
-            <p className="text-foreground/90 leading-relaxed mb-5">{product.description}</p>
+            <p className="text-sm sm:text-base text-foreground/90 leading-relaxed mb-4 sm:mb-5">{product.description}</p>
           )}
           {product.ingredients && (
-            <div className="mb-6">
+            <div className="mb-5 sm:mb-6">
               <div className="text-xs uppercase tracking-wider font-bold text-primary mb-1">Состав</div>
               <p className="text-sm text-foreground/80">{product.ingredients}</p>
             </div>
           )}
-          <div className="flex items-center justify-between gap-4 pt-4 border-t">
-            <span className="text-3xl font-extrabold">{Number(product.price) * qty} ₽</span>
-            <div className="flex items-center gap-3">
+          <div className="flex items-center justify-between gap-3 pt-4 border-t flex-wrap">
+            <span className="text-2xl sm:text-3xl font-extrabold">{Number(product.price) * qty} ₽</span>
+            <div className="flex items-center gap-2 sm:gap-3">
               <div className="flex items-center gap-2 rounded-full border border-neutral-200 px-2 py-1">
                 <button
                   onClick={() => setQty((q) => Math.max(1, q - 1))}
@@ -540,7 +541,7 @@ function ProductModal({ product, onClose, onAdd }: { product: Product; onClose: 
               </div>
               <button
                 onClick={() => onAdd(qty)}
-                className="px-6 py-3 rounded-full bg-primary text-primary-foreground font-bold hover:opacity-90 transition"
+                className="px-4 py-2.5 sm:px-6 sm:py-3 rounded-full bg-primary text-primary-foreground font-bold hover:opacity-90 transition text-sm sm:text-base"
               >
                 В корзину
               </button>

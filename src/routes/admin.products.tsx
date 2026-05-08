@@ -35,7 +35,7 @@ const TAGS = [
 ];
 
 const empty: Partial<Product> = {
-  name: "", price: 0, weight: "", description: "", image_url: "",
+  name: "", price: 0, weight: "", description: "", ingredients: "", image_url: "",
   category_id: null, is_active: true, in_stock: true, sort_order: 0, sku: "",
   is_addon: false, is_recommended: false, tags: [],
 };

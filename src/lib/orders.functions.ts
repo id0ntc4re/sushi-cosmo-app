@@ -2,41 +2,39 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
-const checkoutOrderInputSchema = z.object({
-  accessToken: z.string().nullable().optional(),
-  order: z.object({
-    customer_name: z.string().trim().min(2).max(100),
-    phone: z.string().trim().min(10).max(20),
-    delivery_type: z.enum(["delivery", "pickup"]),
-    address: z.string().max(300).nullable(),
-    pickup_point: z.string().max(200).nullable(),
-    payment_method: z.enum(["cash", "card_courier", "card_online"]),
-    change_from: z.number().nullable(),
-    persons: z.number().int().min(1).max(20),
-    delivery_time: z.string().max(50).nullable(),
-    comment: z.string().max(500).nullable(),
-    subtotal: z.number().min(0),
-    delivery_cost: z.number().min(0),
-    discount: z.number().min(0),
-    promo_code: z.string().nullable(),
-    bonus_used: z.number().min(0),
-    bonus_earned: z.number().min(0),
-    total: z.number().min(0),
-  }),
-  items: z.array(z.object({
-    product_id: z.string().uuid().nullable(),
-    name: z.string().min(1).max(200),
-    price: z.number().min(0),
-    quantity: z.number().int().min(1).max(99),
-  })).min(1),
-  promo: z.object({
-    id: z.string().uuid(),
-    used_count: z.number().int().min(0),
-  }).nullable(),
-});
-
 export const createCheckoutOrder = createServerFn({ method: "POST" })
-  .inputValidator((data) => checkoutOrderInputSchema.parse(data))
+  .inputValidator((data) => z.object({
+    accessToken: z.string().nullable().optional(),
+    order: z.object({
+      customer_name: z.string().trim().min(2).max(100),
+      phone: z.string().trim().min(10).max(20),
+      delivery_type: z.enum(["delivery", "pickup"]),
+      address: z.string().max(300).nullable(),
+      pickup_point: z.string().max(200).nullable(),
+      payment_method: z.enum(["cash", "card_courier", "card_online"]),
+      change_from: z.number().nullable(),
+      persons: z.number().int().min(1).max(20),
+      delivery_time: z.string().max(50).nullable(),
+      comment: z.string().max(500).nullable(),
+      subtotal: z.number().min(0),
+      delivery_cost: z.number().min(0),
+      discount: z.number().min(0),
+      promo_code: z.string().nullable(),
+      bonus_used: z.number().min(0),
+      bonus_earned: z.number().min(0),
+      total: z.number().min(0),
+    }),
+    items: z.array(z.object({
+      product_id: z.string().uuid().nullable(),
+      name: z.string().min(1).max(200),
+      price: z.number().min(0),
+      quantity: z.number().int().min(1).max(99),
+    })).min(1),
+    promo: z.object({
+      id: z.string().uuid(),
+      used_count: z.number().int().min(0),
+    }).nullable(),
+  }).parse(data))
   .handler(async ({ data }) => {
     let userId: string | null = null;
 

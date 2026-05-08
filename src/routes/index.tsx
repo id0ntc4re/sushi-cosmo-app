@@ -265,30 +265,6 @@ function Index() {
           ))}
         </div>
 
-        {/* tag filters + price */}
-        <div className="flex flex-wrap gap-2 items-center mb-6">
-          {TAG_OPTIONS.map((t) => {
-            const on = activeTags.includes(t.id);
-            return (
-              <button key={t.id} onClick={() => toggleTag(t.id)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition ${on ? "bg-primary text-primary-foreground border-primary border-solid" : "bg-card text-foreground border-primary/30 hover:border-primary"}`}>
-                {t.label}
-              </button>
-            );
-          })}
-          {maxPrice > 0 && (
-            <div className="flex items-center gap-2 ml-auto bg-card border border-border rounded-full px-4 py-1.5 text-xs">
-              <span className="text-muted-foreground whitespace-nowrap">Цена до</span>
-              <input type="range" min={100} max={maxPrice} step={50} value={priceCap ?? maxPrice}
-                onChange={(e) => setPriceCap(Number(e.target.value))} className="w-32 sm:w-44 accent-primary" />
-              <span className="font-bold tabular-nums w-14 text-right text-primary">{priceCap ?? maxPrice} ₽</span>
-            </div>
-          )}
-          {(activeTags.length > 0 || (priceCap !== null && priceCap < maxPrice)) && (
-            <button onClick={() => { setActiveTags([]); setPriceCap(maxPrice); }}
-              className="text-xs text-primary font-semibold hover:underline">Сбросить</button>
-          )}
-        </div>
 
         {loading && (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">

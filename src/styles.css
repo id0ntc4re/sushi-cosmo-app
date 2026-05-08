@@ -2,6 +2,11 @@
 @source "../src";
 @import "tw-animate-css";
 
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 7rem;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

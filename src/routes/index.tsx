@@ -211,10 +211,13 @@ function Index() {
             { icon: "⭐", title: "Бонусы за заказ", text: "Копите и оплачивайте" },
             { icon: "🕒", title: "10:00 – 22:00", text: "Работаем без выходных" },
           ].map((f) => (
-            <div key={f.title} className="rounded-2xl bg-neutral-100 p-4 md:p-5 hover:bg-neutral-200/70 transition">
-              <div className="text-3xl mb-2">{f.icon}</div>
-              <div className="font-bold leading-tight">{f.title}</div>
-              <div className="text-sm text-neutral-500 mt-1">{f.text}</div>
+            <div key={f.title} className="group relative rounded-2xl bg-card p-4 md:p-5 border-2 border-dashed border-primary/30 hover:border-primary hover:shadow-lg hover:shadow-primary/10 transition-all">
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative">
+                <div className="text-3xl mb-2">{f.icon}</div>
+                <div className="font-bold leading-tight">{f.title}</div>
+                <div className="text-sm text-muted-foreground mt-1">{f.text}</div>
+              </div>
             </div>
           ))}
         </div>
@@ -223,45 +226,53 @@ function Index() {
       {/* COME TO US BLOCK */}
       <section className="mx-auto max-w-[1280px] px-6 mt-10">
         <div className="flex items-center gap-3 mb-5">
-          <img src={logo} alt="" className="h-7 w-7" />
-          <h2 className="text-2xl md:text-3xl font-extrabold">Приходи к нам!</h2>
+          <span className="h-8 w-1.5 rounded-full bg-gradient-to-b from-primary to-primary/40" />
+          <h2 className="text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">Приходи к нам!</h2>
         </div>
         <div className="grid md:grid-cols-2 gap-4">
-          <div className="rounded-2xl bg-neutral-100 p-5">
-            <div className="text-sm text-neutral-500">Адрес</div>
-            <div className="font-bold text-lg">пр-т Шахтёров, 68</div>
-          </div>
-          <div className="rounded-2xl bg-neutral-100 p-5">
-            <div className="text-sm text-neutral-500">Адрес</div>
-            <div className="font-bold text-lg">Бр Строителей, 21</div>
-          </div>
+          {[
+            { name: "Центр", address: "пр-т Шахтёров, 68", hours: "10:00–22:00" },
+            { name: "ФПК", address: "Бр Строителей, 21", hours: "10:00–23:00" },
+          ].map((b) => (
+            <div key={b.address} className="group rounded-2xl bg-card p-5 border-2 border-dashed border-primary/30 hover:border-primary transition-all hover:shadow-lg hover:shadow-primary/10">
+              <div className="flex items-center gap-2 text-xs uppercase tracking-wider text-primary font-bold">
+                <span>📍</span>{b.name}
+              </div>
+              <div className="font-extrabold text-lg mt-1">{b.address}</div>
+              <div className="text-sm text-muted-foreground mt-1">Ежедневно {b.hours}</div>
+            </div>
+          ))}
         </div>
       </section>
 
       {/* MENU */}
       <section id="menu" className="mx-auto max-w-[1280px] px-6 mt-12">
         <div className="flex items-center justify-between gap-4 flex-wrap mb-6">
-          <h2 className="text-3xl md:text-4xl font-extrabold">Меню</h2>
+          <div className="flex items-center gap-3">
+            <span className="h-10 w-1.5 rounded-full bg-gradient-to-b from-primary to-primary/40" />
+            <h2 className="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">Меню</h2>
+          </div>
           <div className="relative w-full sm:w-80">
             <input
               type="search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Поиск по меню…"
-              className="w-full pl-11 pr-4 py-3 rounded-full bg-neutral-100 focus:bg-white border border-transparent focus:border-primary outline-none transition"
+              className="w-full pl-11 pr-4 py-3 rounded-full bg-card border-2 border-dashed border-primary/30 focus:border-primary focus:border-solid outline-none transition"
             />
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400">🔍</span>
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary">🔍</span>
+
           </div>
         </div>
 
         {/* category pills */}
-        <div className="flex gap-2 overflow-x-auto pb-3 mb-8 -mx-6 px-6 sticky top-0 bg-white/95 backdrop-blur z-30">
+        <div className="flex gap-2 overflow-x-auto pb-3 mb-8 -mx-6 px-6 sticky top-0 bg-background/95 backdrop-blur z-30">
           <button
             onClick={() => setActive(null)}
-            className={`shrink-0 px-5 py-2.5 rounded-full text-sm font-semibold transition ${
+            className={`shrink-0 px-5 py-2.5 rounded-full text-sm font-semibold transition-all ${
               active === null
-                ? "bg-primary text-white"
-                : "bg-neutral-100 text-neutral-800 hover:bg-neutral-200"
+                ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30"
+                : "bg-card border-2 border-dashed border-primary/30 hover:border-primary"
             }`}
           >
             Всё
@@ -270,10 +281,10 @@ function Index() {
             <button
               key={c.id}
               onClick={() => setActive(c.id)}
-              className={`shrink-0 px-5 py-2.5 rounded-full text-sm font-semibold transition ${
+              className={`shrink-0 px-5 py-2.5 rounded-full text-sm font-semibold transition-all ${
                 active === c.id
-                  ? "bg-primary text-white"
-                  : "bg-neutral-100 text-neutral-800 hover:bg-neutral-200"
+                  ? "bg-primary text-primary-foreground shadow-lg shadow-primary/30"
+                  : "bg-card border-2 border-dashed border-primary/30 hover:border-primary"
               }`}
             >
               {c.name}
@@ -287,17 +298,17 @@ function Index() {
             const on = activeTags.includes(t.id);
             return (
               <button key={t.id} onClick={() => toggleTag(t.id)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition ${on ? "bg-primary text-white border-primary" : "bg-white text-neutral-700 border-neutral-200 hover:border-primary"}`}>
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold border-2 border-dashed transition ${on ? "bg-primary text-primary-foreground border-primary border-solid" : "bg-card text-foreground border-primary/30 hover:border-primary"}`}>
                 {t.label}
               </button>
             );
           })}
           {maxPrice > 0 && (
-            <div className="flex items-center gap-2 ml-auto bg-neutral-50 rounded-full px-4 py-1.5 text-xs">
-              <span className="text-neutral-600 whitespace-nowrap">Цена до</span>
+            <div className="flex items-center gap-2 ml-auto bg-card border-2 border-dashed border-primary/30 rounded-full px-4 py-1.5 text-xs">
+              <span className="text-muted-foreground whitespace-nowrap">Цена до</span>
               <input type="range" min={100} max={maxPrice} step={50} value={priceCap ?? maxPrice}
-                onChange={(e) => setPriceCap(Number(e.target.value))} className="w-32 sm:w-44" />
-              <span className="font-bold tabular-nums w-14 text-right">{priceCap ?? maxPrice} ₽</span>
+                onChange={(e) => setPriceCap(Number(e.target.value))} className="w-32 sm:w-44 accent-primary" />
+              <span className="font-bold tabular-nums w-14 text-right text-primary">{priceCap ?? maxPrice} ₽</span>
             </div>
           )}
           {(activeTags.length > 0 || (priceCap !== null && priceCap < maxPrice)) && (
@@ -339,12 +350,15 @@ function Index() {
           if (!list.length) return null;
           return (
             <div key={cat.id} className="mb-14">
-              <h3 className="text-2xl md:text-3xl font-extrabold mb-6">{cat.name}</h3>
+              <div className="flex items-center gap-3 mb-6">
+                <span className="h-8 w-1.5 rounded-full bg-gradient-to-b from-primary to-primary/40" />
+                <h3 className="text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">{cat.name}</h3>
+              </div>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
                 {list.map((p) => (
                   <article
                     key={p.id}
-                    className="bg-white rounded-3xl overflow-hidden border border-neutral-100 hover:shadow-lg transition flex flex-col"
+                    className="group bg-card rounded-3xl overflow-hidden border-2 border-dashed border-primary/20 hover:border-primary hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-1 transition-all flex flex-col"
                   >
                     <div className="relative aspect-square bg-neutral-50 grid place-items-center text-6xl">
                       {p.image_url ? (
@@ -429,28 +443,43 @@ function Index() {
       </section>
 
       {/* FOOTER */}
-      <footer id="contacts" className="bg-neutral-900 text-white mt-16">
-        <div className="mx-auto max-w-[1280px] px-6 py-12 grid md:grid-cols-3 gap-8">
+      <footer id="contacts" className="relative mt-16 bg-gradient-to-br from-foreground via-foreground to-foreground/90 text-background">
+        <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-primary via-primary to-primary/60" />
+        <div className="mx-auto max-w-[1280px] px-6 py-14 grid md:grid-cols-3 gap-8">
           <div>
-            <div className="flex items-center gap-2 mb-3">
-              <img src={logo} alt="" className="h-8 w-8" />
-              <div className="text-xl font-extrabold">КосмоСуши</div>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="relative">
+                <div className="absolute inset-0 bg-primary/40 rounded-full blur-xl" />
+                <img src={logo} alt="" className="h-10 w-10 relative" />
+              </div>
+              <div className="text-2xl font-extrabold bg-gradient-to-r from-background to-primary bg-clip-text text-transparent">КосмоСуши</div>
             </div>
-            <p className="opacity-70 text-sm">Доставка суши и роллов в Кемерово.</p>
+            <p className="opacity-70 text-sm">Доставка суши и роллов в Кемерово ежедневно.</p>
           </div>
           <div id="delivery">
-            <div className="font-bold mb-3">Адреса и доставка</div>
-            <p className="opacity-80 text-sm leading-7">
-              г. Кемерово, пр-т Шахтёров, 68<br />
-              г. Кемерово, Бр Строителей, 21<br />
-              Ежедневно с 10:00 до 22:00
-            </p>
+            <div className="flex items-center gap-2 font-bold mb-4 text-primary">
+              <span className="h-1.5 w-6 rounded-full bg-primary" />
+              Адреса и доставка
+            </div>
+            <ul className="space-y-2 text-sm opacity-90">
+              <li className="flex items-start gap-2"><span className="text-primary">📍</span>пр-т Шахтёров, 68</li>
+              <li className="flex items-start gap-2"><span className="text-primary">📍</span>Бр Строителей, 21</li>
+              <li className="flex items-start gap-2"><span className="text-primary">🕒</span>Ежедневно 10:00–22:00</li>
+            </ul>
           </div>
           <div>
-            <div className="font-bold mb-3">Контакты</div>
-            <a href="tel:+79132869284" className="text-primary text-2xl font-extrabold">
-              +7 913 286 92-84
+            <div className="flex items-center gap-2 font-bold mb-4 text-primary">
+              <span className="h-1.5 w-6 rounded-full bg-primary" />
+              Контакты
+            </div>
+            <a href="tel:+79132869284" className="inline-flex items-center gap-2 px-5 py-3 rounded-full bg-primary text-primary-foreground text-lg font-extrabold hover:shadow-lg hover:shadow-primary/40 transition-all">
+              📞 +7 913 286 92-84
             </a>
+          </div>
+        </div>
+        <div className="border-t border-background/10">
+          <div className="mx-auto max-w-[1280px] px-6 py-4 text-xs opacity-60 text-center">
+            © {new Date().getFullYear()} КосмоСуши · Все права защищены
           </div>
         </div>
       </footer>

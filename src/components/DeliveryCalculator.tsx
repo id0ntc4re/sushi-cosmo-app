@@ -2,6 +2,20 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/lib/cart";
 import { toast } from "sonner";
+import {
+  User,
+  Users,
+  UsersRound,
+  PartyPopper,
+  Utensils,
+  Cake,
+  Flame,
+  Leaf,
+  Truck,
+  CreditCard,
+  Sparkles,
+  type LucideIcon,
+} from "lucide-react";
 
 type Product = {
   id: string;
@@ -18,18 +32,18 @@ type Props = {
   onOpenCart: () => void;
 };
 
-const PERSONS = [
-  { n: 1, label: "1 человек", emoji: "🙂", hint: "лёгкий перекус" },
-  { n: 2, label: "2 человека", emoji: "💑", hint: "ужин на двоих" },
-  { n: 4, label: "3-4 человека", emoji: "👨‍👩‍👧", hint: "семейный заказ" },
-  { n: 6, label: "5+ человек", emoji: "🎉", hint: "вечеринка" },
+const PERSONS: { n: number; label: string; Icon: LucideIcon; hint: string }[] = [
+  { n: 1, label: "1 человек", Icon: User, hint: "лёгкий перекус" },
+  { n: 2, label: "2 человека", Icon: Users, hint: "ужин на двоих" },
+  { n: 4, label: "3-4 человека", Icon: UsersRound, hint: "семейный заказ" },
+  { n: 6, label: "5+ человек", Icon: PartyPopper, hint: "вечеринка" },
 ];
 
-const OCCASIONS = [
-  { id: "dinner", label: "Просто поужинать", emoji: "🍽️", boost: ["Филадельфия", "Калифорния"] },
-  { id: "party", label: "Вечеринка / День рождения", emoji: "🎂", boost: ["сет", "ассорти"] },
-  { id: "spicy", label: "Хочу остренького 🌶", emoji: "🔥", boost: ["острый", "спайси", "запечён"] },
-  { id: "light", label: "Лёгкое и классика", emoji: "🌿", boost: ["филадельфия", "ролл", "суши"] },
+const OCCASIONS: { id: string; label: string; Icon: LucideIcon; boost: string[] }[] = [
+  { id: "dinner", label: "Просто поужинать", Icon: Utensils, boost: ["Филадельфия", "Калифорния"] },
+  { id: "party", label: "Вечеринка / День рождения", Icon: Cake, boost: ["сет", "ассорти"] },
+  { id: "spicy", label: "Хочу остренького", Icon: Flame, boost: ["острый", "спайси", "запечён"] },
+  { id: "light", label: "Лёгкое и классика", Icon: Leaf, boost: ["филадельфия", "ролл", "суши"] },
 ];
 
 export function DeliveryCalculator({ subtotal, onOpenCart }: Props) {

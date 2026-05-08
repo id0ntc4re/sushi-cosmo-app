@@ -404,7 +404,7 @@ export function DeliveryCalculator({ subtotal, onOpenCart }: Props) {
                 <div className="mb-3">
                   <div className="flex justify-between text-[11px] font-semibold mb-1">
                     <span className="text-muted-foreground">
-                      {free ? "🎉 Бесплатная доставка!" : `До бесплатной доставки ${left} ₽`}
+                      {free ? "Бесплатная доставка включена" : `До бесплатной доставки ${left} ₽`}
                     </span>
                     <span className="text-primary">{freeFrom} ₽</span>
                   </div>
@@ -430,10 +430,10 @@ export function DeliveryCalculator({ subtotal, onOpenCart }: Props) {
                 >
                   В корзину →
                 </button>
-                <div className="mt-2 flex items-center gap-1.5 text-[11px] text-muted-foreground justify-center">
-                  <span>🚚 Доставка 60 мин</span>
-                  <span>·</span>
-                  <span>💳 Оплата при получении</span>
+                <div className="mt-2 flex items-center gap-2 text-[11px] text-muted-foreground justify-center">
+                  <span className="inline-flex items-center gap-1"><Truck className="h-3 w-3" /> 60 мин</span>
+                  <span className="opacity-40">·</span>
+                  <span className="inline-flex items-center gap-1"><CreditCard className="h-3 w-3" /> Оплата при получении</span>
                 </div>
               </div>
             </div>

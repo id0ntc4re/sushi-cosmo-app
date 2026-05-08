@@ -584,6 +584,23 @@ function ProductModal({ product, onClose, onAdd }: { product: Product; onClose: 
           )}
         </div>
       </div>
+
+      <AlertDialog open={authPromptOpen} onOpenChange={setAuthPromptOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Войдите, чтобы добавить в избранное</AlertDialogTitle>
+            <AlertDialogDescription>
+              Для добавления товаров в избранное необходимо авторизоваться в аккаунте.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Отмена</AlertDialogCancel>
+            <AlertDialogAction onClick={() => navigate({ to: "/account-login" })}>
+              Войти
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

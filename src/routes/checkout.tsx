@@ -1,9 +1,11 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/lib/cart";
+import { createCheckoutOrder } from "@/lib/orders.functions";
 import { validatePromo, type PromoCode } from "@/lib/promo";
 import { getDeliverySlots } from "@/lib/timeSlots";
 import logo from "@/assets/logo.svg";
@@ -51,6 +53,7 @@ function Checkout() {
   const cart = useCart();
   const { items, subtotal, clear, add, setQty } = cart;
   const nav = useNavigate();
+  const createOrder = useServerFn(createCheckoutOrder);
   const [step, setStep] = useState<1 | 2>(1);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);

@@ -92,7 +92,7 @@ function DeliveryPage() {
   );
 }
 
-function Phone(props: any) { return <CreditCard {...props} className="hidden" />; }
+
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (

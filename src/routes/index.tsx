@@ -76,14 +76,12 @@ function Index() {
         setLoadError(null);
         const prods = await supabase
           .from("products")
-          .select("id,name,price,weight,category_id,image_url,description,is_addon,tags")
+          .select("id,name,price,weight,category_id,image_url,description,ingredients,is_addon,tags")
           .eq("is_active", true)
           .order("sort_order");
         if (prods.error) throw prods.error;
         const list = (prods.data as Product[]) ?? [];
         setProducts(list);
-        const top = Math.max(0, ...list.map((p) => Number(p.price) || 0));
-        setMaxPrice(Math.ceil(top / 100) * 100 || 1000);
       } catch (e: any) {
         setLoadError(e?.message ?? "Не удалось загрузить меню");
       } finally {
@@ -99,21 +97,14 @@ function Index() {
     })();
   }, []);
 
-  const [priceCap, setPriceCap] = useState<number | null>(null);
-  useEffect(() => { if (maxPrice && priceCap === null) setPriceCap(maxPrice); }, [maxPrice, priceCap]);
-
   const filteredProducts = useMemo(() => {
     const q = search.trim().toLowerCase();
     return products.filter((p) => {
       if (p.is_addon) return false;
       if (q && !p.name.toLowerCase().includes(q) && !(p.description ?? "").toLowerCase().includes(q)) return false;
-      if (activeTags.length && !activeTags.every((t) => (p.tags ?? []).includes(t))) return false;
-      if (priceCap !== null && Number(p.price) > priceCap) return false;
       return true;
     });
-  }, [products, search, activeTags, priceCap]);
-
-  const toggleTag = (id: string) => setActiveTags((cur) => cur.includes(id) ? cur.filter((t) => t !== id) : [...cur, id]);
+  }, [products, search]);
 
   const visibleCats = useMemo(
     () => {

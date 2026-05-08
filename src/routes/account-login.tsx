@@ -3,6 +3,7 @@ import { useState, type FormEvent } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { ruError } from "@/lib/errors";
 import { SiteHeader } from "@/components/SiteHeader";
 import logo from "@/assets/logo.svg";
 
@@ -40,7 +41,7 @@ function AccountLogin() {
         nav({ to: redirect || "/account" });
       }
     } catch (err: any) {
-      toast.error(err.message ?? "Ошибка входа");
+      toast.error(ruError(err, "Ошибка входа"));
     } finally {
       setLoading(false);
     }

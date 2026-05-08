@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { ruError } from "@/lib/errors";
 
 const KEY = "kosmosushi_newsletter_v1";
 
@@ -27,7 +28,7 @@ export function NewsletterPopup() {
     setBusy(true);
     const { error } = await supabase.from("newsletter_subscribers").insert({ email });
     setBusy(false);
-    if (error && !error.message.includes("duplicate")) return toast.error(error.message);
+    if (error && !error.message.includes("duplicate")) return toast.error(ruError(error));
     const code = "WELCOME10";
     toast.success(`Промокод ${code} — −10% на первый заказ`, { duration: 8000 });
     close(true);

@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
+import { ruError } from "@/lib/errors";
 import { toast } from "sonner";
 import logo from "@/assets/logo.svg";
 
@@ -38,7 +39,7 @@ function Login() {
       }
       nav({ to: redirect || "/admin" });
     } catch (err: any) {
-      toast.error(err.message ?? "Ошибка");
+      toast.error(ruError(err, "Ошибка"));
     } finally {
       setLoading(false);
     }

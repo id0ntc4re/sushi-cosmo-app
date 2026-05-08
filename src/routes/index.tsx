@@ -79,7 +79,7 @@ function Index() {
   useEffect(() => {
     (async () => {
       try {
-        setLoading(false);
+        setLoading(true);
         setLoadError(null);
         const prods = await supabase
           .from("products")
@@ -92,7 +92,7 @@ function Index() {
         const top = Math.max(0, ...list.map((p) => Number(p.price) || 0));
         setMaxPrice(Math.ceil(top / 100) * 100 || 1000);
       } catch (e: any) {
-        setLoadError(null);
+        setLoadError(e?.message ?? "Не удалось загрузить меню");
       } finally {
         setLoading(false);
       }

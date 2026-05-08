@@ -90,12 +90,6 @@ function AccountLogin() {
         >
           {mode === "login" ? "Зарегистрироваться" : "Уже есть аккаунт? Войти"}
         </button>
-        <Link
-          to="/login"
-          className="block w-full text-center mt-3 text-sm font-semibold text-primary hover:opacity-80"
-        >
-          Вход для сотрудников
-        </Link>
       </div>
     </div>
   );

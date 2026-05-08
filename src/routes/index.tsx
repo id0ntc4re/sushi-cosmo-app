@@ -66,6 +66,7 @@ function Index() {
   const [authPromptOpen, setAuthPromptOpen] = useState(false);
   const cart = useCart();
   const fav = useFavorites();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const t = setInterval(() => setSlide((s) => (s + 1) % banners.length), 5000);

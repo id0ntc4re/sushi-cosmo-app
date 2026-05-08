@@ -181,7 +181,9 @@ export function SiteHeader() {
                 { to: "/about", label: "О компании" },
                 { to: "/delivery", label: "Доставка" },
                 { to: "/faq", label: "Вопросы и ответы" },
-                { to: "/account-login", label: "Личный кабинет" },
+                authName
+                  ? { to: "/account", label: `👤 ${authName}` }
+                  : { to: "/account-login", label: "Личный кабинет" },
               ].map((l) => (
                 <Link
                   key={l.label}

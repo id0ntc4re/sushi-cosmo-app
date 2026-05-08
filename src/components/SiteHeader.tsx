@@ -129,12 +129,12 @@ export function SiteHeader() {
         </div>
       </div>
 
-      {/* Mobile drawer */}
-      {mobileOpen && (
-        <div className="fixed inset-0 z-50 md:hidden">
+      {/* Mobile drawer — rendered via portal so backdrop-filter on header doesn't trap fixed positioning */}
+      {mobileOpen && typeof document !== "undefined" && createPortal(
+        <div className="fixed inset-0 z-[100] md:hidden">
           <div className="absolute inset-0 bg-black/50" onClick={() => setMobileOpen(false)} />
           <aside className="absolute right-0 top-0 h-full w-[82%] max-w-sm bg-background shadow-2xl flex flex-col">
-            <div className="flex items-center justify-between px-4 h-16 border-b">
+            <div className="flex items-center justify-between px-4 h-16 border-b shrink-0">
               <div className="flex items-center gap-2">
                 <img src={logo} alt="" className="h-9 w-9" />
                 <span className="font-extrabold">КосмоСуши</span>
@@ -185,12 +185,13 @@ export function SiteHeader() {
             </nav>
             <a
               href={`tel:${active.phone.replace(/\s/g, "")}`}
-              className="m-3 py-3 text-center rounded-full bg-primary text-primary-foreground font-bold"
+              className="m-3 py-3 text-center rounded-full bg-primary text-primary-foreground font-bold shrink-0"
             >
               📞 {active.phone}
             </a>
           </aside>
-        </div>
+        </div>,
+        document.body
       )}
     </header>
   );

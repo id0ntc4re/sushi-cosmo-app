@@ -35,6 +35,7 @@ type Product = {
   image_url: string | null;
   description?: string | null;
   is_addon?: boolean;
+  tags?: string[];
 };
 type Banner = {
   image_url: string | null;
@@ -45,6 +46,14 @@ type Banner = {
   cta_link: string | null;
 };
 
+const TAG_OPTIONS = [
+  { id: "spicy", label: "🌶 Острое" },
+  { id: "vegan", label: "🌱 Веган" },
+  { id: "no_fish", label: "🚫🐟 Без рыбы" },
+  { id: "baked", label: "🔥 Запечённые" },
+  { id: "new", label: "✨ Новинка" },
+];
+
 function Index() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
@@ -52,6 +61,8 @@ function Index() {
   const [search, setSearch] = useState("");
   const [slide, setSlide] = useState(0);
   const [banners, setBanners] = useState<Banner[]>(FALLBACK_SLIDES as any);
+  const [activeTags, setActiveTags] = useState<string[]>([]);
+  const [maxPrice, setMaxPrice] = useState<number>(0);
   const cart = useCart();
   const fav = useFavorites();
 
@@ -64,23 +75,33 @@ function Index() {
     (async () => {
       const [cats, prods, bans] = await Promise.all([
         supabase.from("categories").select("id,name,slug").eq("is_active", true).order("sort_order"),
-        supabase.from("products").select("id,name,price,weight,category_id,image_url,description,is_addon").eq("is_active", true).order("sort_order"),
+        supabase.from("products").select("id,name,price,weight,category_id,image_url,description,is_addon,tags").eq("is_active", true).order("sort_order"),
         supabase.from("banners").select("image_url,eyebrow,title,subtitle,cta_label,cta_link").eq("is_active", true).order("sort_order"),
       ]);
       setCategories(cats.data ?? []);
-      setProducts((prods.data as Product[]) ?? []);
+      const list = (prods.data as Product[]) ?? [];
+      setProducts(list);
+      const top = Math.max(0, ...list.map((p) => Number(p.price) || 0));
+      setMaxPrice(Math.ceil(top / 100) * 100 || 1000);
       if (bans.data && bans.data.length) setBanners(bans.data as Banner[]);
     })();
   }, []);
+
+  const [priceCap, setPriceCap] = useState<number | null>(null);
+  useEffect(() => { if (maxPrice && priceCap === null) setPriceCap(maxPrice); }, [maxPrice, priceCap]);
 
   const filteredProducts = useMemo(() => {
     const q = search.trim().toLowerCase();
     return products.filter((p) => {
       if (p.is_addon) return false;
       if (q && !p.name.toLowerCase().includes(q) && !(p.description ?? "").toLowerCase().includes(q)) return false;
+      if (activeTags.length && !activeTags.every((t) => (p.tags ?? []).includes(t))) return false;
+      if (priceCap !== null && Number(p.price) > priceCap) return false;
       return true;
     });
-  }, [products, search]);
+  }, [products, search, activeTags, priceCap]);
+
+  const toggleTag = (id: string) => setActiveTags((cur) => cur.includes(id) ? cur.filter((t) => t !== id) : [...cur, id]);
 
   const visibleCats = useMemo(
     () => (active ? categories.filter((c) => c.id === active) : categories),

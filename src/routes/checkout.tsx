@@ -161,12 +161,11 @@ function Checkout() {
     setSubmitting(true);
     try {
       const { data: sessionData } = await supabase.auth.getSession();
-      const sessionUserId = sessionData.session?.user?.id ?? null;
       const totalDiscount = discount + tierDiscount;
-      const { data: order, error: orderErr } = await supabase
-        .from("orders")
-        .insert({
-          user_id: sessionUserId,
+      const order = await createOrder({
+        data: {
+          accessToken: sessionData.session?.access_token ?? null,
+          order: {
           customer_name: parsed.data.customer_name,
           phone: parsed.data.phone,
           delivery_type: parsed.data.delivery_type,
@@ -184,42 +183,16 @@ function Checkout() {
           bonus_used: bonusApplied,
           bonus_earned: bonusEarn,
           total,
-        })
-        .select("id, number")
-        .single();
-      if (orderErr || !order) throw orderErr ?? new Error("order error");
-
-      const { error: itemsErr } = await supabase.from("order_items").insert(
-        items.map((it) => ({
-          order_id: order.id,
-          product_id: it.id,
-          name: it.name,
-          price: it.price,
-          quantity: it.quantity,
-          total: it.quantity * Number(it.price),
-        })),
-      );
-      if (itemsErr) throw itemsErr;
-
-      if (promo) {
-        await supabase
-          .from("promo_codes")
-          .update({ used_count: promo.promo.used_count + 1 })
-          .eq("id", promo.promo.id);
-      }
-
-      // bonuses & total spent
-      if (sessionUserId && profile) {
-        const newBalance = bonusBalance - bonusApplied + bonusEarn;
-        const newSpent = Number(profile.total_spent || 0) + total;
-        await supabase.from("profiles").update({ bonus_balance: newBalance, total_spent: newSpent }).eq("id", sessionUserId);
-        if (bonusApplied > 0) {
-          await supabase.from("bonus_transactions").insert({ user_id: sessionUserId, order_id: order.id, amount: -bonusApplied, reason: `Списание · заказ №${order.number}` });
-        }
-        if (bonusEarn > 0) {
-          await supabase.from("bonus_transactions").insert({ user_id: sessionUserId, order_id: order.id, amount: bonusEarn, reason: `Кэшбэк · заказ №${order.number}` });
-        }
-      }
+          },
+          items: items.map((it) => ({
+            product_id: it.id,
+            name: it.name,
+            price: Number(it.price),
+            quantity: it.quantity,
+          })),
+          promo: promo ? { id: promo.promo.id, used_count: promo.promo.used_count } : null,
+        },
+      });
 
       clear();
       nav({ to: "/order-success", search: { n: order.number } });

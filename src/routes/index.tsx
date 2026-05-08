@@ -402,7 +402,7 @@ function Index() {
       {/* FOOTER */}
       <footer id="contacts" className="relative mt-16 bg-gradient-to-br from-foreground via-foreground to-foreground/90 text-background">
         <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-primary via-primary to-primary/60" />
-        <div className="mx-auto max-w-[1280px] px-6 py-14 grid md:grid-cols-3 gap-8">
+        <div className="mx-auto max-w-[1280px] px-4 sm:px-6 py-10 sm:py-14 grid sm:grid-cols-2 md:grid-cols-3 gap-8">
           <div>
             <div className="flex items-center gap-3 mb-4">
               <div className="relative">

@@ -1,3 +1,4 @@
+import { SiteFooter } from "@/components/SiteFooter";
 import { createFileRoute } from "@tanstack/react-router";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Mail, Phone, Sparkles, Users } from "lucide-react";
@@ -65,6 +66,7 @@ function AboutPage() {
           <p className="text-sm">Для нас важно ваше мнение — оно помогает становиться лучше каждый день.</p>
         </div>
       </main>
+      <SiteFooter />
     </div>
   );
 }

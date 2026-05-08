@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/lib/cart";
 import { validatePromo, type PromoCode } from "@/lib/promo";
+import { getDeliverySlots } from "@/lib/timeSlots";
 import logo from "@/assets/logo.svg";
 
 export const Route = createFileRoute("/checkout")({
@@ -355,10 +356,14 @@ function Checkout() {
                   )}
 
                   <div className="grid grid-cols-2 gap-3">
-                    <Field label="Время">
-                      <input className={inputCls} value={form.delivery_time}
-                        onChange={(e) => set("delivery_time", e.target.value)}
-                        placeholder="Как можно скорее" />
+                    <Field label="Время доставки">
+                      <select className={inputCls} value={form.delivery_time}
+                        onChange={(e) => set("delivery_time", e.target.value)}>
+                        <option value="">Как можно скорее</option>
+                        {getDeliverySlots().map((s) => (
+                          <option key={s.value} value={s.value}>{s.label}</option>
+                        ))}
+                      </select>
                     </Field>
                     <Field label="Персон">
                       <input type="number" min={1} max={20} className={inputCls} value={form.persons}

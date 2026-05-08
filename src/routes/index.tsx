@@ -50,13 +50,6 @@ type Banner = {
   cta_link: string | null;
 };
 
-const TAG_OPTIONS = [
-  { id: "spicy", label: "🌶 Острое" },
-  { id: "vegan", label: "🌱 Веган" },
-  { id: "no_fish", label: "🚫🐟 Без рыбы" },
-  { id: "baked", label: "🔥 Запечённые" },
-  { id: "new", label: "✨ Новинка" },
-];
 
 function Index() {
   const [categories, setCategories] = useState<Category[]>([]);

@@ -10,7 +10,6 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as OrderSuccessRouteImport } from './routes/order-success'
-import { Route as NewsRouteImport } from './routes/news'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as DeliveryRouteImport } from './routes/delivery'
 import { Route as CheckoutRouteImport } from './routes/checkout'
@@ -19,6 +18,7 @@ import { Route as AccountLoginRouteImport } from './routes/account-login'
 import { Route as AccountRouteImport } from './routes/account'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as NewsIndexRouteImport } from './routes/news.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
 import { Route as AdminPromosRouteImport } from './routes/admin.promos'
@@ -30,11 +30,6 @@ import { Route as AdminBannersRouteImport } from './routes/admin.banners'
 const OrderSuccessRoute = OrderSuccessRouteImport.update({
   id: '/order-success',
   path: '/order-success',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const NewsRoute = NewsRouteImport.update({
-  id: '/news',
-  path: '/news',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -75,6 +70,11 @@ const AboutRoute = AboutRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NewsIndexRoute = NewsIndexRouteImport.update({
+  id: '/news/',
+  path: '/news/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AdminIndexRoute = AdminIndexRouteImport.update({
@@ -122,7 +122,6 @@ export interface FileRoutesByFullPath {
   '/checkout': typeof CheckoutRoute
   '/delivery': typeof DeliveryRoute
   '/login': typeof LoginRoute
-  '/news': typeof NewsRoute
   '/order-success': typeof OrderSuccessRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/categories': typeof AdminCategoriesRoute
@@ -131,6 +130,7 @@ export interface FileRoutesByFullPath {
   '/admin/promos': typeof AdminPromosRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/': typeof AdminIndexRoute
+  '/news/': typeof NewsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -140,7 +140,6 @@ export interface FileRoutesByTo {
   '/checkout': typeof CheckoutRoute
   '/delivery': typeof DeliveryRoute
   '/login': typeof LoginRoute
-  '/news': typeof NewsRoute
   '/order-success': typeof OrderSuccessRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/categories': typeof AdminCategoriesRoute
@@ -149,6 +148,7 @@ export interface FileRoutesByTo {
   '/admin/promos': typeof AdminPromosRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin': typeof AdminIndexRoute
+  '/news': typeof NewsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -160,7 +160,6 @@ export interface FileRoutesById {
   '/checkout': typeof CheckoutRoute
   '/delivery': typeof DeliveryRoute
   '/login': typeof LoginRoute
-  '/news': typeof NewsRoute
   '/order-success': typeof OrderSuccessRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/categories': typeof AdminCategoriesRoute
@@ -169,6 +168,7 @@ export interface FileRoutesById {
   '/admin/promos': typeof AdminPromosRoute
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/': typeof AdminIndexRoute
+  '/news/': typeof NewsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -181,7 +181,6 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/delivery'
     | '/login'
-    | '/news'
     | '/order-success'
     | '/admin/banners'
     | '/admin/categories'
@@ -190,6 +189,7 @@ export interface FileRouteTypes {
     | '/admin/promos'
     | '/admin/settings'
     | '/admin/'
+    | '/news/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -199,7 +199,6 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/delivery'
     | '/login'
-    | '/news'
     | '/order-success'
     | '/admin/banners'
     | '/admin/categories'
@@ -208,6 +207,7 @@ export interface FileRouteTypes {
     | '/admin/promos'
     | '/admin/settings'
     | '/admin'
+    | '/news'
   id:
     | '__root__'
     | '/'
@@ -218,7 +218,6 @@ export interface FileRouteTypes {
     | '/checkout'
     | '/delivery'
     | '/login'
-    | '/news'
     | '/order-success'
     | '/admin/banners'
     | '/admin/categories'
@@ -227,6 +226,7 @@ export interface FileRouteTypes {
     | '/admin/promos'
     | '/admin/settings'
     | '/admin/'
+    | '/news/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -238,8 +238,8 @@ export interface RootRouteChildren {
   CheckoutRoute: typeof CheckoutRoute
   DeliveryRoute: typeof DeliveryRoute
   LoginRoute: typeof LoginRoute
-  NewsRoute: typeof NewsRoute
   OrderSuccessRoute: typeof OrderSuccessRoute
+  NewsIndexRoute: typeof NewsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -249,13 +249,6 @@ declare module '@tanstack/react-router' {
       path: '/order-success'
       fullPath: '/order-success'
       preLoaderRoute: typeof OrderSuccessRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/news': {
-      id: '/news'
-      path: '/news'
-      fullPath: '/news'
-      preLoaderRoute: typeof NewsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -312,6 +305,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/news/': {
+      id: '/news/'
+      path: '/news'
+      fullPath: '/news/'
+      preLoaderRoute: typeof NewsIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/admin/': {
@@ -397,8 +397,8 @@ const rootRouteChildren: RootRouteChildren = {
   CheckoutRoute: CheckoutRoute,
   DeliveryRoute: DeliveryRoute,
   LoginRoute: LoginRoute,
-  NewsRoute: NewsRoute,
   OrderSuccessRoute: OrderSuccessRoute,
+  NewsIndexRoute: NewsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

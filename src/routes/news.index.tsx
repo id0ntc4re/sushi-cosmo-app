@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { SiteHeader } from "@/components/SiteHeader";
 import { Sparkles } from "lucide-react";
 
-export const Route = createFileRoute("/news")({
+export const Route = createFileRoute("/news/")({
   head: () => ({
     meta: [
       { title: "Акции и новости — КосмоСуши" },

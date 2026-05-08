@@ -248,16 +248,20 @@ function Index() {
       {/* MENU */}
       <section id="menu" className="mx-auto max-w-[1280px] px-6 mt-12">
         <div className="flex items-center justify-between gap-4 flex-wrap mb-6">
-          <h2 className="text-3xl md:text-4xl font-extrabold">Меню</h2>
+          <div className="flex items-center gap-3">
+            <span className="h-10 w-1.5 rounded-full bg-gradient-to-b from-primary to-primary/40" />
+            <h2 className="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-foreground to-primary bg-clip-text text-transparent">Меню</h2>
+          </div>
           <div className="relative w-full sm:w-80">
             <input
               type="search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Поиск по меню…"
-              className="w-full pl-11 pr-4 py-3 rounded-full bg-neutral-100 focus:bg-white border border-transparent focus:border-primary outline-none transition"
+              className="w-full pl-11 pr-4 py-3 rounded-full bg-card border-2 border-dashed border-primary/30 focus:border-primary focus:border-solid outline-none transition"
             />
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-neutral-400">🔍</span>
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-primary">🔍</span>
+
           </div>
         </div>
 

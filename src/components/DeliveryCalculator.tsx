@@ -216,7 +216,7 @@ export function DeliveryCalculator({ subtotal, onOpenCart }: Props) {
                       className={`group relative rounded-2xl p-5 text-left border transition-all ${
                         on
                           ? "border-primary bg-muted shadow-lg shadow-primary/20"
-                          : "border-primary/30 bg-card hover:border-primary hover:-translate-y-0.5"
+                          : "border border-border bg-card hover:border-primary hover:-translate-y-0.5"
                       }`}
                     >
                       <div className="text-3xl mb-2">{opt.emoji}</div>
@@ -247,7 +247,7 @@ export function DeliveryCalculator({ subtotal, onOpenCart }: Props) {
                       className={`group rounded-2xl p-5 text-left border transition-all ${
                         on
                           ? "border-primary bg-muted shadow-lg shadow-primary/20"
-                          : "border-primary/30 bg-card hover:border-primary hover:-translate-y-0.5"
+                          : "border border-border bg-card hover:border-primary hover:-translate-y-0.5"
                       }`}
                     >
                       <div className="text-3xl mb-2">{opt.emoji}</div>
@@ -290,7 +290,7 @@ export function DeliveryCalculator({ subtotal, onOpenCart }: Props) {
                         className={`rounded-2xl bg-card border transition-all overflow-hidden ${
                           qty > 0
                             ? "border-primary shadow-md shadow-primary/20"
-                            : "border-primary/20 hover:border-foreground/30"
+                            : "border-border hover:border-foreground/30"
                         }`}
                       >
                         <div className="relative aspect-square bg-muted grid place-items-center text-3xl">

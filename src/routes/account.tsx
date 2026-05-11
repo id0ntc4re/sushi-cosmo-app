@@ -310,6 +310,7 @@ function ProfileTab({ profile, email, onSaved }: { profile: any; email: string |
     birth_date: profile?.birth_date ?? "",
   });
   const [pwd, setPwd] = useState({ a: "", b: "" });
+  const [pwdOpen, setPwdOpen] = useState(false);
   const [saving, setSaving] = useState(false);
 
   async function save() {

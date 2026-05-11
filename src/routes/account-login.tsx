@@ -2,6 +2,7 @@ import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useState, type FormEvent } from "react";
 import { z } from "zod";
 import { toast } from "sonner";
+import { Eye, EyeOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ruError } from "@/lib/errors";
 import { SiteHeader } from "@/components/SiteHeader";
@@ -20,6 +21,7 @@ function AccountLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   async function submit(e: FormEvent) {
     e.preventDefault();
@@ -71,15 +73,25 @@ function AccountLogin() {
             placeholder="Email"
             className="w-full px-4 py-3 rounded-xl border border-neutral-200 focus:border-primary outline-none"
           />
-          <input
-            type="password"
-            required
-            minLength={6}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Пароль"
-            className="w-full px-4 py-3 rounded-xl border border-neutral-200 focus:border-primary outline-none"
-          />
+          <div className="relative">
+            <input
+              type={showPassword ? "text" : "password"}
+              required
+              minLength={6}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Пароль"
+              className="w-full px-4 py-3 pr-12 rounded-xl border border-neutral-200 focus:border-primary outline-none"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              aria-label={showPassword ? "Скрыть пароль" : "Показать пароль"}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-neutral-500 hover:text-neutral-800"
+            >
+              {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+            </button>
+          </div>
           <button
             type="submit"
             disabled={loading}

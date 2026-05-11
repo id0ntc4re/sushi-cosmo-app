@@ -20,7 +20,6 @@ function AccountLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
 
   async function submit(e: FormEvent) {
     e.preventDefault();

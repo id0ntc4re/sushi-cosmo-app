@@ -223,7 +223,7 @@ function Index() {
       <DeliveryCalculator subtotal={cart.subtotal} onOpenCart={() => cart.setOpen(true)} products={products.filter((p) => !p.is_addon)} />
 
       {/* MENU */}
-      <section id="menu" className="mx-auto max-w-[1280px] px-3 sm:px-6 mt-8 sm:mt-12 scroll-mt-24 md:scroll-mt-32">
+      <section id="menu" className="mx-auto max-w-[1280px] px-3 sm:px-6 mt-8 sm:mt-12 scroll-mt-32 md:scroll-mt-40">
         <div className="flex items-center justify-between gap-3 flex-wrap mb-4 sm:mb-6">
           <div className="flex items-center gap-2 sm:gap-3">
             <span className="h-8 sm:h-10 w-1.5 rounded-full bg-gradient-to-b from-primary to-primary/40" />
@@ -243,7 +243,7 @@ function Index() {
         </div>
 
         {/* category pills */}
-        <div className="scrollbar-fancy flex gap-2 overflow-x-auto pb-2.5 mb-6 sm:mb-8 -mx-3 sm:-mx-6 px-3 sm:px-6 sticky top-16 md:top-20 bg-background/95 backdrop-blur z-30">
+        <div className="scrollbar-fancy flex gap-2 overflow-x-auto pb-2.5 mb-6 sm:mb-8 -mx-3 sm:-mx-6 px-3 sm:px-6 sticky top-24 md:top-28 bg-background/95 backdrop-blur z-30">
           <button
             onClick={() => setActive(null)}
             className={`shrink-0 px-5 py-2.5 rounded-full text-sm font-semibold transition-all ${

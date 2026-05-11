@@ -243,7 +243,7 @@ function Index() {
         </div>
 
         {/* category pills */}
-        <div className="scrollbar-fancy flex gap-2 overflow-x-auto pb-2.5 mb-6 sm:mb-8 -mx-3 sm:-mx-6 px-3 sm:px-6 sticky top-16 md:top-20 bg-background/95 backdrop-blur z-30">
+        <div className="scrollbar-fancy flex gap-2 overflow-x-auto pb-2.5 mb-6 sm:mb-8 -mx-3 sm:-mx-6 px-3 sm:px-6 sticky top-24 md:top-28 bg-background/95 backdrop-blur z-30">
           <button
             onClick={() => setActive(null)}
             className={`shrink-0 px-5 py-2.5 rounded-full text-sm font-semibold transition-all ${

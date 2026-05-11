@@ -310,6 +310,7 @@ function ProfileTab({ profile, email, onSaved }: { profile: any; email: string |
     birth_date: profile?.birth_date ?? "",
   });
   const [pwd, setPwd] = useState({ a: "", b: "" });
+  const [pwdOpen, setPwdOpen] = useState(false);
   const [saving, setSaving] = useState(false);
 
   async function save() {
@@ -346,10 +347,22 @@ function ProfileTab({ profile, email, onSaved }: { profile: any; email: string |
         <button onClick={save} disabled={saving} className="px-6 py-3 rounded-full bg-primary text-white font-bold disabled:opacity-50">Сохранить</button>
       </div>
       <div className="bg-white rounded-2xl p-6 space-y-4">
-        <h3 className="font-extrabold text-lg">Смена пароля</h3>
-        <Field label="Новый пароль"><input type="password" className={inp} value={pwd.a} onChange={(e) => setPwd({ ...pwd, a: e.target.value })} /></Field>
-        <Field label="Повторите пароль"><input type="password" className={inp} value={pwd.b} onChange={(e) => setPwd({ ...pwd, b: e.target.value })} /></Field>
-        <button onClick={changePassword} className="px-6 py-3 rounded-full bg-primary text-white font-bold">Изменить пароль</button>
+        <button
+          type="button"
+          onClick={() => setPwdOpen((v) => !v)}
+          className="w-full flex items-center justify-between text-left"
+          aria-expanded={pwdOpen}
+        >
+          <h3 className="font-extrabold text-lg">Смена пароля</h3>
+          <span className={`text-2xl text-neutral-400 transition-transform ${pwdOpen ? "rotate-180" : ""}`}>⌄</span>
+        </button>
+        {pwdOpen && (
+          <div className="space-y-4">
+            <Field label="Новый пароль"><input type="password" className={inp} value={pwd.a} onChange={(e) => setPwd({ ...pwd, a: e.target.value })} /></Field>
+            <Field label="Повторите пароль"><input type="password" className={inp} value={pwd.b} onChange={(e) => setPwd({ ...pwd, b: e.target.value })} /></Field>
+            <button onClick={changePassword} className="px-6 py-3 rounded-full bg-primary text-white font-bold">Изменить пароль</button>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -223,7 +223,7 @@ function Index() {
       <DeliveryCalculator subtotal={cart.subtotal} onOpenCart={() => cart.setOpen(true)} products={products.filter((p) => !p.is_addon)} />
 
       {/* MENU */}
-      <section id="menu" className="mx-auto max-w-[1280px] px-3 sm:px-6 mt-8 sm:mt-12">
+      <section id="menu" className="mx-auto max-w-[1280px] px-3 sm:px-6 mt-8 sm:mt-12 scroll-mt-24 md:scroll-mt-32">
         <div className="flex items-center justify-between gap-3 flex-wrap mb-4 sm:mb-6">
           <div className="flex items-center gap-2 sm:gap-3">
             <span className="h-8 sm:h-10 w-1.5 rounded-full bg-gradient-to-b from-primary to-primary/40" />

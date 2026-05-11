@@ -73,9 +73,10 @@ function DeliveryPage() {
         </Section>
 
         <Section title="Способы оплаты">
-          <div className="grid sm:grid-cols-2 gap-3">
+          <div className="grid sm:grid-cols-3 gap-3">
             <Highlight Icon={Banknote} title="Наличными" text="При получении заказа" />
             <Highlight Icon={CreditCard} title="Картой курьеру" text="Безналичная оплата" />
+            <Highlight Icon={CreditCard} title="Онлайн" text="Картой на сайте" />
           </div>
           <p className="text-sm text-muted-foreground mt-4">
             Способ оплаты обязательно уточняйте у оператора при оформлении заказа.

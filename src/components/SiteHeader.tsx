@@ -6,9 +6,8 @@ import { supabase } from "@/integrations/supabase/client";
 import logo from "@/assets/logo.svg";
 
 const BRANCHES = [
-  { name: "Центр", address: "ул. Весенняя, 12", phone: "+7 913 286 92-84", hours: "10:00–22:00" },
-  { name: "Ленинский", address: "пр. Ленина, 87", phone: "+7 913 286 92-85", hours: "10:00–23:00" },
-  { name: "ФПК", address: "б-р Строителей, 32", phone: "+7 913 286 92-86", hours: "11:00–22:00" },
+  { name: "Шахтёров", address: "г. Кемерово, пр-т Шахтёров, 68", phone: "+7 913 286 92-84", hours: "10:00–22:00" },
+  { name: "Строителей", address: "г. Кемерово, б-р Строителей, 21", phone: "+7 913 286 92-85", hours: "10:00–22:00" },
 ];
 
 export function SiteHeader() {

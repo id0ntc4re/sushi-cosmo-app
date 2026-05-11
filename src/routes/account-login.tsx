@@ -81,7 +81,6 @@ function AccountLogin() {
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Пароль"
             className="w-full px-4 py-3 rounded-xl border border-neutral-200 focus:border-primary outline-none"
-            style={{ WebkitTextSecurity: "disc" } as React.CSSProperties}
           />
           <button
             type="submit"

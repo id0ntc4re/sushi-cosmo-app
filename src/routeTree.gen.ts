@@ -30,6 +30,7 @@ import { Route as AdminNewsRouteImport } from './routes/admin.news'
 import { Route as AdminKanbanRouteImport } from './routes/admin.kanban'
 import { Route as AdminInventoryRouteImport } from './routes/admin.inventory'
 import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
+import { Route as AdminCouriersRouteImport } from './routes/admin.couriers'
 import { Route as AdminCategoriesRouteImport } from './routes/admin.categories'
 import { Route as AdminBannersRouteImport } from './routes/admin.banners'
 
@@ -138,6 +139,11 @@ const AdminCustomersRoute = AdminCustomersRouteImport.update({
   path: '/customers',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminCouriersRoute = AdminCouriersRouteImport.update({
+  id: '/couriers',
+  path: '/couriers',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminCategoriesRoute = AdminCategoriesRouteImport.update({
   id: '/categories',
   path: '/categories',
@@ -162,6 +168,7 @@ export interface FileRoutesByFullPath {
   '/order-success': typeof OrderSuccessRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/couriers': typeof AdminCouriersRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/inventory': typeof AdminInventoryRoute
   '/admin/kanban': typeof AdminKanbanRoute
@@ -186,6 +193,7 @@ export interface FileRoutesByTo {
   '/order-success': typeof OrderSuccessRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/couriers': typeof AdminCouriersRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/inventory': typeof AdminInventoryRoute
   '/admin/kanban': typeof AdminKanbanRoute
@@ -212,6 +220,7 @@ export interface FileRoutesById {
   '/order-success': typeof OrderSuccessRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/couriers': typeof AdminCouriersRoute
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/inventory': typeof AdminInventoryRoute
   '/admin/kanban': typeof AdminKanbanRoute
@@ -239,6 +248,7 @@ export interface FileRouteTypes {
     | '/order-success'
     | '/admin/banners'
     | '/admin/categories'
+    | '/admin/couriers'
     | '/admin/customers'
     | '/admin/inventory'
     | '/admin/kanban'
@@ -263,6 +273,7 @@ export interface FileRouteTypes {
     | '/order-success'
     | '/admin/banners'
     | '/admin/categories'
+    | '/admin/couriers'
     | '/admin/customers'
     | '/admin/inventory'
     | '/admin/kanban'
@@ -288,6 +299,7 @@ export interface FileRouteTypes {
     | '/order-success'
     | '/admin/banners'
     | '/admin/categories'
+    | '/admin/couriers'
     | '/admin/customers'
     | '/admin/inventory'
     | '/admin/kanban'
@@ -465,6 +477,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCustomersRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/couriers': {
+      id: '/admin/couriers'
+      path: '/couriers'
+      fullPath: '/admin/couriers'
+      preLoaderRoute: typeof AdminCouriersRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/categories': {
       id: '/admin/categories'
       path: '/categories'
@@ -485,6 +504,7 @@ declare module '@tanstack/react-router' {
 interface AdminRouteChildren {
   AdminBannersRoute: typeof AdminBannersRoute
   AdminCategoriesRoute: typeof AdminCategoriesRoute
+  AdminCouriersRoute: typeof AdminCouriersRoute
   AdminCustomersRoute: typeof AdminCustomersRoute
   AdminInventoryRoute: typeof AdminInventoryRoute
   AdminKanbanRoute: typeof AdminKanbanRoute
@@ -499,6 +519,7 @@ interface AdminRouteChildren {
 const AdminRouteChildren: AdminRouteChildren = {
   AdminBannersRoute: AdminBannersRoute,
   AdminCategoriesRoute: AdminCategoriesRoute,
+  AdminCouriersRoute: AdminCouriersRoute,
   AdminCustomersRoute: AdminCustomersRoute,
   AdminInventoryRoute: AdminInventoryRoute,
   AdminKanbanRoute: AdminKanbanRoute,

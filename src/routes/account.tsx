@@ -76,6 +76,11 @@ function Account() {
             <span className="font-extrabold text-xl">КосмоСуши</span>
           </Link>
           <Link to="/" className="ml-auto text-sm text-neutral-600 hover:text-primary">← В меню</Link>
+          {isAdmin && (
+            <Link to="/admin" className="text-sm font-bold px-4 py-2 rounded-full bg-primary text-white hover:opacity-90">
+              ⚙️ Админ-панель
+            </Link>
+          )}
           <button onClick={async () => { await supabase.auth.signOut(); nav({ to: "/" }); }}
             className="text-sm text-neutral-600 hover:text-primary">Выйти</button>
         </div>

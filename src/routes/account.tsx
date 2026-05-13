@@ -30,6 +30,7 @@ function Account() {
   const [user, setUser] = useState<{ id: string; email: string | null } | null>(null);
   const [tab, setTab] = useState<TabKey>("orders");
   const [profile, setProfile] = useState<any>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -40,9 +41,13 @@ function Account() {
         return;
       }
       setUser(u);
-      const { data: p } = await supabase.from("profiles").select("*").eq("id", u.id).maybeSingle();
+      const [{ data: p }, { data: roles }] = await Promise.all([
+        supabase.from("profiles").select("*").eq("id", u.id).maybeSingle(),
+        supabase.from("user_roles").select("role").eq("user_id", u.id),
+      ]);
       if (cancelled) return;
       setProfile(p);
+      setIsAdmin((roles ?? []).some((r: any) => r.role === "admin"));
       setLoading(false);
     };
     supabase.auth.getSession().then(({ data: { session } }) => {

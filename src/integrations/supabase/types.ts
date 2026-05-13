@@ -119,6 +119,45 @@ export type Database = {
         }
         Relationships: []
       }
+      cash_shifts: {
+        Row: {
+          card_total: number
+          cash_total: number
+          closed_at: string | null
+          closing_cash: number | null
+          id: string
+          note: string | null
+          opened_at: string
+          opened_by: string
+          opening_cash: number
+          orders_count: number
+        }
+        Insert: {
+          card_total?: number
+          cash_total?: number
+          closed_at?: string | null
+          closing_cash?: number | null
+          id?: string
+          note?: string | null
+          opened_at?: string
+          opened_by: string
+          opening_cash?: number
+          orders_count?: number
+        }
+        Update: {
+          card_total?: number
+          cash_total?: number
+          closed_at?: string | null
+          closing_cash?: number | null
+          id?: string
+          note?: string | null
+          opened_at?: string
+          opened_by?: string
+          opening_cash?: number
+          orders_count?: number
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           created_at: string
@@ -173,6 +212,63 @@ export type Database = {
         }
         Relationships: []
       }
+      couriers: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          phone: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          phone?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          phone?: string | null
+        }
+        Relationships: []
+      }
+      delivery_zones: {
+        Row: {
+          cost: number
+          created_at: string
+          free_from: number | null
+          id: string
+          is_active: boolean
+          min_order: number
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          cost?: number
+          created_at?: string
+          free_from?: number | null
+          id?: string
+          is_active?: boolean
+          min_order?: number
+          name: string
+          sort_order?: number
+        }
+        Update: {
+          cost?: number
+          created_at?: string
+          free_from?: number | null
+          id?: string
+          is_active?: boolean
+          min_order?: number
+          name?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
       favorites: {
         Row: {
           created_at: string
@@ -188,6 +284,63 @@ export type Database = {
           created_at?: string
           product_id?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      ingredients: {
+        Row: {
+          cost_price: number
+          created_at: string
+          id: string
+          min_stock: number
+          name: string
+          stock: number
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          cost_price?: number
+          created_at?: string
+          id?: string
+          min_stock?: number
+          name: string
+          stock?: number
+          unit?: string
+          updated_at?: string
+        }
+        Update: {
+          cost_price?: number
+          created_at?: string
+          id?: string
+          min_stock?: number
+          name?: string
+          stock?: number
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      modifiers: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          price: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          price?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          price?: number
         }
         Relationships: []
       }
@@ -257,6 +410,7 @@ export type Database = {
       order_items: {
         Row: {
           id: string
+          modifiers: Json
           name: string
           order_id: string
           price: number
@@ -266,6 +420,7 @@ export type Database = {
         }
         Insert: {
           id?: string
+          modifiers?: Json
           name: string
           order_id: string
           price: number
@@ -275,6 +430,7 @@ export type Database = {
         }
         Update: {
           id?: string
+          modifiers?: Json
           name?: string
           order_id?: string
           price?: number
@@ -307,12 +463,15 @@ export type Database = {
           bonus_used: number
           change_from: number | null
           comment: string | null
+          confirmed_at: string | null
+          courier_id: string | null
           created_at: string
           customer_name: string
           delivery_cost: number
           delivery_time: string | null
           delivery_type: Database["public"]["Enums"]["delivery_type"]
           discount: number
+          done_at: string | null
           id: string
           number: number
           payment_method: Database["public"]["Enums"]["payment_method"]
@@ -320,6 +479,7 @@ export type Database = {
           phone: string
           pickup_point: string | null
           promo_code: string | null
+          shift_id: string | null
           status: Database["public"]["Enums"]["order_status"]
           subtotal: number
           total: number
@@ -333,12 +493,15 @@ export type Database = {
           bonus_used?: number
           change_from?: number | null
           comment?: string | null
+          confirmed_at?: string | null
+          courier_id?: string | null
           created_at?: string
           customer_name: string
           delivery_cost?: number
           delivery_time?: string | null
           delivery_type?: Database["public"]["Enums"]["delivery_type"]
           discount?: number
+          done_at?: string | null
           id?: string
           number?: number
           payment_method?: Database["public"]["Enums"]["payment_method"]
@@ -346,6 +509,7 @@ export type Database = {
           phone: string
           pickup_point?: string | null
           promo_code?: string | null
+          shift_id?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           subtotal?: number
           total?: number
@@ -359,12 +523,15 @@ export type Database = {
           bonus_used?: number
           change_from?: number | null
           comment?: string | null
+          confirmed_at?: string | null
+          courier_id?: string | null
           created_at?: string
           customer_name?: string
           delivery_cost?: number
           delivery_time?: string | null
           delivery_type?: Database["public"]["Enums"]["delivery_type"]
           discount?: number
+          done_at?: string | null
           id?: string
           number?: number
           payment_method?: Database["public"]["Enums"]["payment_method"]
@@ -372,11 +539,27 @@ export type Database = {
           phone?: string
           pickup_point?: string | null
           promo_code?: string | null
+          shift_id?: string | null
           status?: Database["public"]["Enums"]["order_status"]
           subtotal?: number
           total?: number
           updated_at?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      product_modifiers: {
+        Row: {
+          modifier_id: string
+          product_id: string
+        }
+        Insert: {
+          modifier_id: string
+          product_id: string
+        }
+        Update: {
+          modifier_id?: string
+          product_id?: string
         }
         Relationships: []
       }
@@ -535,6 +718,27 @@ export type Database = {
         }
         Relationships: []
       }
+      recipes: {
+        Row: {
+          id: string
+          ingredient_id: string
+          product_id: string
+          qty: number
+        }
+        Insert: {
+          id?: string
+          ingredient_id: string
+          product_id: string
+          qty?: number
+        }
+        Update: {
+          id?: string
+          ingredient_id?: string
+          product_id?: string
+          qty?: number
+        }
+        Relationships: []
+      }
       reviews: {
         Row: {
           comment: string | null
@@ -577,6 +781,33 @@ export type Database = {
           key?: string
           updated_at?: string
           value?: Json
+        }
+        Relationships: []
+      }
+      stock_movements: {
+        Row: {
+          created_at: string
+          delta: number
+          id: string
+          ingredient_id: string
+          order_id: string | null
+          reason: string
+        }
+        Insert: {
+          created_at?: string
+          delta: number
+          id?: string
+          ingredient_id: string
+          order_id?: string | null
+          reason: string
+        }
+        Update: {
+          created_at?: string
+          delta?: number
+          id?: string
+          ingredient_id?: string
+          order_id?: string | null
+          reason?: string
         }
         Relationships: []
       }

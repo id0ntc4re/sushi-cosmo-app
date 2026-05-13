@@ -142,7 +142,8 @@ function OrdersTab({ userId }: { userId: string }) {
   const [loading, setLoading] = useState(true);
 
   const load = async () => {
-    const { data: ord } = await supabase.from("orders").select("*").order("created_at", { ascending: false });
+    setLoading(true);
+    const { data: ord } = await supabase.from("orders").select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(50);
     setOrders(ord ?? []);
     if (ord?.length) {
       const ids = ord.map((o: any) => o.id);

@@ -27,6 +27,7 @@ import { Route as AdminPromosRouteImport } from './routes/admin.promos'
 import { Route as AdminProductsRouteImport } from './routes/admin.products'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as AdminNewsRouteImport } from './routes/admin.news'
+import { Route as AdminModifiersRouteImport } from './routes/admin.modifiers'
 import { Route as AdminKanbanRouteImport } from './routes/admin.kanban'
 import { Route as AdminInventoryRouteImport } from './routes/admin.inventory'
 import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
@@ -124,6 +125,11 @@ const AdminNewsRoute = AdminNewsRouteImport.update({
   path: '/news',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminModifiersRoute = AdminModifiersRouteImport.update({
+  id: '/modifiers',
+  path: '/modifiers',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminKanbanRoute = AdminKanbanRouteImport.update({
   id: '/kanban',
   path: '/kanban',
@@ -172,6 +178,7 @@ export interface FileRoutesByFullPath {
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/inventory': typeof AdminInventoryRoute
   '/admin/kanban': typeof AdminKanbanRoute
+  '/admin/modifiers': typeof AdminModifiersRoute
   '/admin/news': typeof AdminNewsRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRoute
@@ -197,6 +204,7 @@ export interface FileRoutesByTo {
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/inventory': typeof AdminInventoryRoute
   '/admin/kanban': typeof AdminKanbanRoute
+  '/admin/modifiers': typeof AdminModifiersRoute
   '/admin/news': typeof AdminNewsRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRoute
@@ -224,6 +232,7 @@ export interface FileRoutesById {
   '/admin/customers': typeof AdminCustomersRoute
   '/admin/inventory': typeof AdminInventoryRoute
   '/admin/kanban': typeof AdminKanbanRoute
+  '/admin/modifiers': typeof AdminModifiersRoute
   '/admin/news': typeof AdminNewsRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRoute
@@ -252,6 +261,7 @@ export interface FileRouteTypes {
     | '/admin/customers'
     | '/admin/inventory'
     | '/admin/kanban'
+    | '/admin/modifiers'
     | '/admin/news'
     | '/admin/orders'
     | '/admin/products'
@@ -277,6 +287,7 @@ export interface FileRouteTypes {
     | '/admin/customers'
     | '/admin/inventory'
     | '/admin/kanban'
+    | '/admin/modifiers'
     | '/admin/news'
     | '/admin/orders'
     | '/admin/products'
@@ -303,6 +314,7 @@ export interface FileRouteTypes {
     | '/admin/customers'
     | '/admin/inventory'
     | '/admin/kanban'
+    | '/admin/modifiers'
     | '/admin/news'
     | '/admin/orders'
     | '/admin/products'
@@ -456,6 +468,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminNewsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/modifiers': {
+      id: '/admin/modifiers'
+      path: '/modifiers'
+      fullPath: '/admin/modifiers'
+      preLoaderRoute: typeof AdminModifiersRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/kanban': {
       id: '/admin/kanban'
       path: '/kanban'
@@ -508,6 +527,7 @@ interface AdminRouteChildren {
   AdminCustomersRoute: typeof AdminCustomersRoute
   AdminInventoryRoute: typeof AdminInventoryRoute
   AdminKanbanRoute: typeof AdminKanbanRoute
+  AdminModifiersRoute: typeof AdminModifiersRoute
   AdminNewsRoute: typeof AdminNewsRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
   AdminProductsRoute: typeof AdminProductsRoute
@@ -523,6 +543,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminCustomersRoute: AdminCustomersRoute,
   AdminInventoryRoute: AdminInventoryRoute,
   AdminKanbanRoute: AdminKanbanRoute,
+  AdminModifiersRoute: AdminModifiersRoute,
   AdminNewsRoute: AdminNewsRoute,
   AdminOrdersRoute: AdminOrdersRoute,
   AdminProductsRoute: AdminProductsRoute,

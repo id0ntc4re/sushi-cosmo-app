@@ -22,11 +22,18 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as NewsIndexRouteImport } from './routes/news.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as NewsSlugRouteImport } from './routes/news.$slug'
+import { Route as AdminShiftsRouteImport } from './routes/admin.shifts'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
+import { Route as AdminReportsRouteImport } from './routes/admin.reports'
 import { Route as AdminPromosRouteImport } from './routes/admin.promos'
 import { Route as AdminProductsRouteImport } from './routes/admin.products'
 import { Route as AdminOrdersRouteImport } from './routes/admin.orders'
 import { Route as AdminNewsRouteImport } from './routes/admin.news'
+import { Route as AdminModifiersRouteImport } from './routes/admin.modifiers'
+import { Route as AdminKanbanRouteImport } from './routes/admin.kanban'
+import { Route as AdminInventoryRouteImport } from './routes/admin.inventory'
+import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
+import { Route as AdminCouriersRouteImport } from './routes/admin.couriers'
 import { Route as AdminCategoriesRouteImport } from './routes/admin.categories'
 import { Route as AdminBannersRouteImport } from './routes/admin.banners'
 
@@ -95,9 +102,19 @@ const NewsSlugRoute = NewsSlugRouteImport.update({
   path: '/news/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminShiftsRoute = AdminShiftsRouteImport.update({
+  id: '/shifts',
+  path: '/shifts',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminSettingsRoute = AdminSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminReportsRoute = AdminReportsRouteImport.update({
+  id: '/reports',
+  path: '/reports',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminPromosRoute = AdminPromosRouteImport.update({
@@ -118,6 +135,31 @@ const AdminOrdersRoute = AdminOrdersRouteImport.update({
 const AdminNewsRoute = AdminNewsRouteImport.update({
   id: '/news',
   path: '/news',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminModifiersRoute = AdminModifiersRouteImport.update({
+  id: '/modifiers',
+  path: '/modifiers',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminKanbanRoute = AdminKanbanRouteImport.update({
+  id: '/kanban',
+  path: '/kanban',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminInventoryRoute = AdminInventoryRouteImport.update({
+  id: '/inventory',
+  path: '/inventory',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCustomersRoute = AdminCustomersRouteImport.update({
+  id: '/customers',
+  path: '/customers',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminCouriersRoute = AdminCouriersRouteImport.update({
+  id: '/couriers',
+  path: '/couriers',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminCategoriesRoute = AdminCategoriesRouteImport.update({
@@ -144,11 +186,18 @@ export interface FileRoutesByFullPath {
   '/order-success': typeof OrderSuccessRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/couriers': typeof AdminCouriersRoute
+  '/admin/customers': typeof AdminCustomersRoute
+  '/admin/inventory': typeof AdminInventoryRoute
+  '/admin/kanban': typeof AdminKanbanRoute
+  '/admin/modifiers': typeof AdminModifiersRoute
   '/admin/news': typeof AdminNewsRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRoute
   '/admin/promos': typeof AdminPromosRoute
+  '/admin/reports': typeof AdminReportsRoute
   '/admin/settings': typeof AdminSettingsRoute
+  '/admin/shifts': typeof AdminShiftsRoute
   '/news/$slug': typeof NewsSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/news/': typeof NewsIndexRoute
@@ -165,11 +214,18 @@ export interface FileRoutesByTo {
   '/order-success': typeof OrderSuccessRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/couriers': typeof AdminCouriersRoute
+  '/admin/customers': typeof AdminCustomersRoute
+  '/admin/inventory': typeof AdminInventoryRoute
+  '/admin/kanban': typeof AdminKanbanRoute
+  '/admin/modifiers': typeof AdminModifiersRoute
   '/admin/news': typeof AdminNewsRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRoute
   '/admin/promos': typeof AdminPromosRoute
+  '/admin/reports': typeof AdminReportsRoute
   '/admin/settings': typeof AdminSettingsRoute
+  '/admin/shifts': typeof AdminShiftsRoute
   '/news/$slug': typeof NewsSlugRoute
   '/admin': typeof AdminIndexRoute
   '/news': typeof NewsIndexRoute
@@ -188,11 +244,18 @@ export interface FileRoutesById {
   '/order-success': typeof OrderSuccessRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/categories': typeof AdminCategoriesRoute
+  '/admin/couriers': typeof AdminCouriersRoute
+  '/admin/customers': typeof AdminCustomersRoute
+  '/admin/inventory': typeof AdminInventoryRoute
+  '/admin/kanban': typeof AdminKanbanRoute
+  '/admin/modifiers': typeof AdminModifiersRoute
   '/admin/news': typeof AdminNewsRoute
   '/admin/orders': typeof AdminOrdersRoute
   '/admin/products': typeof AdminProductsRoute
   '/admin/promos': typeof AdminPromosRoute
+  '/admin/reports': typeof AdminReportsRoute
   '/admin/settings': typeof AdminSettingsRoute
+  '/admin/shifts': typeof AdminShiftsRoute
   '/news/$slug': typeof NewsSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/news/': typeof NewsIndexRoute
@@ -212,11 +275,18 @@ export interface FileRouteTypes {
     | '/order-success'
     | '/admin/banners'
     | '/admin/categories'
+    | '/admin/couriers'
+    | '/admin/customers'
+    | '/admin/inventory'
+    | '/admin/kanban'
+    | '/admin/modifiers'
     | '/admin/news'
     | '/admin/orders'
     | '/admin/products'
     | '/admin/promos'
+    | '/admin/reports'
     | '/admin/settings'
+    | '/admin/shifts'
     | '/news/$slug'
     | '/admin/'
     | '/news/'
@@ -233,11 +303,18 @@ export interface FileRouteTypes {
     | '/order-success'
     | '/admin/banners'
     | '/admin/categories'
+    | '/admin/couriers'
+    | '/admin/customers'
+    | '/admin/inventory'
+    | '/admin/kanban'
+    | '/admin/modifiers'
     | '/admin/news'
     | '/admin/orders'
     | '/admin/products'
     | '/admin/promos'
+    | '/admin/reports'
     | '/admin/settings'
+    | '/admin/shifts'
     | '/news/$slug'
     | '/admin'
     | '/news'
@@ -255,11 +332,18 @@ export interface FileRouteTypes {
     | '/order-success'
     | '/admin/banners'
     | '/admin/categories'
+    | '/admin/couriers'
+    | '/admin/customers'
+    | '/admin/inventory'
+    | '/admin/kanban'
+    | '/admin/modifiers'
     | '/admin/news'
     | '/admin/orders'
     | '/admin/products'
     | '/admin/promos'
+    | '/admin/reports'
     | '/admin/settings'
+    | '/admin/shifts'
     | '/news/$slug'
     | '/admin/'
     | '/news/'
@@ -373,11 +457,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NewsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/shifts': {
+      id: '/admin/shifts'
+      path: '/shifts'
+      fullPath: '/admin/shifts'
+      preLoaderRoute: typeof AdminShiftsRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/settings': {
       id: '/admin/settings'
       path: '/settings'
       fullPath: '/admin/settings'
       preLoaderRoute: typeof AdminSettingsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/reports': {
+      id: '/admin/reports'
+      path: '/reports'
+      fullPath: '/admin/reports'
+      preLoaderRoute: typeof AdminReportsRouteImport
       parentRoute: typeof AdminRoute
     }
     '/admin/promos': {
@@ -408,6 +506,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminNewsRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/modifiers': {
+      id: '/admin/modifiers'
+      path: '/modifiers'
+      fullPath: '/admin/modifiers'
+      preLoaderRoute: typeof AdminModifiersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/kanban': {
+      id: '/admin/kanban'
+      path: '/kanban'
+      fullPath: '/admin/kanban'
+      preLoaderRoute: typeof AdminKanbanRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/inventory': {
+      id: '/admin/inventory'
+      path: '/inventory'
+      fullPath: '/admin/inventory'
+      preLoaderRoute: typeof AdminInventoryRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/customers': {
+      id: '/admin/customers'
+      path: '/customers'
+      fullPath: '/admin/customers'
+      preLoaderRoute: typeof AdminCustomersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/couriers': {
+      id: '/admin/couriers'
+      path: '/couriers'
+      fullPath: '/admin/couriers'
+      preLoaderRoute: typeof AdminCouriersRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/categories': {
       id: '/admin/categories'
       path: '/categories'
@@ -428,22 +561,36 @@ declare module '@tanstack/react-router' {
 interface AdminRouteChildren {
   AdminBannersRoute: typeof AdminBannersRoute
   AdminCategoriesRoute: typeof AdminCategoriesRoute
+  AdminCouriersRoute: typeof AdminCouriersRoute
+  AdminCustomersRoute: typeof AdminCustomersRoute
+  AdminInventoryRoute: typeof AdminInventoryRoute
+  AdminKanbanRoute: typeof AdminKanbanRoute
+  AdminModifiersRoute: typeof AdminModifiersRoute
   AdminNewsRoute: typeof AdminNewsRoute
   AdminOrdersRoute: typeof AdminOrdersRoute
   AdminProductsRoute: typeof AdminProductsRoute
   AdminPromosRoute: typeof AdminPromosRoute
+  AdminReportsRoute: typeof AdminReportsRoute
   AdminSettingsRoute: typeof AdminSettingsRoute
+  AdminShiftsRoute: typeof AdminShiftsRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminBannersRoute: AdminBannersRoute,
   AdminCategoriesRoute: AdminCategoriesRoute,
+  AdminCouriersRoute: AdminCouriersRoute,
+  AdminCustomersRoute: AdminCustomersRoute,
+  AdminInventoryRoute: AdminInventoryRoute,
+  AdminKanbanRoute: AdminKanbanRoute,
+  AdminModifiersRoute: AdminModifiersRoute,
   AdminNewsRoute: AdminNewsRoute,
   AdminOrdersRoute: AdminOrdersRoute,
   AdminProductsRoute: AdminProductsRoute,
   AdminPromosRoute: AdminPromosRoute,
+  AdminReportsRoute: AdminReportsRoute,
   AdminSettingsRoute: AdminSettingsRoute,
+  AdminShiftsRoute: AdminShiftsRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 

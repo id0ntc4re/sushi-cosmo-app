@@ -10,7 +10,14 @@ export const Route = createFileRoute("/admin")({
 
 const NAV = [
   { to: "/admin", label: "Дашборд", icon: "📊", exact: true },
+  { to: "/admin/kanban", label: "Канбан заказов", icon: "🟢" },
   { to: "/admin/orders", label: "Заказы", icon: "📦" },
+  { to: "/admin/customers", label: "Клиенты", icon: "👥" },
+  { to: "/admin/reports", label: "Отчёты", icon: "📈" },
+  { to: "/admin/shifts", label: "Кассовые смены", icon: "💵" },
+  { to: "/admin/couriers", label: "Курьеры и зоны", icon: "🛵" },
+  { to: "/admin/inventory", label: "Склад / Техкарты", icon: "📦" },
+  { to: "/admin/modifiers", label: "Модификаторы", icon: "🧩" },
   { to: "/admin/products", label: "Товары", icon: "🍣" },
   { to: "/admin/categories", label: "Категории", icon: "🗂️" },
   { to: "/admin/banners", label: "Баннеры", icon: "🖼️" },

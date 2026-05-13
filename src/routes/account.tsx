@@ -30,6 +30,7 @@ function Account() {
   const [user, setUser] = useState<{ id: string; email: string | null } | null>(null);
   const [tab, setTab] = useState<TabKey>("orders");
   const [profile, setProfile] = useState<any>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -40,9 +41,13 @@ function Account() {
         return;
       }
       setUser(u);
-      const { data: p } = await supabase.from("profiles").select("*").eq("id", u.id).maybeSingle();
+      const [{ data: p }, { data: roles }] = await Promise.all([
+        supabase.from("profiles").select("*").eq("id", u.id).maybeSingle(),
+        supabase.from("user_roles").select("role").eq("user_id", u.id),
+      ]);
       if (cancelled) return;
       setProfile(p);
+      setIsAdmin((roles ?? []).some((r: any) => r.role === "admin"));
       setLoading(false);
     };
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -71,6 +76,11 @@ function Account() {
             <span className="font-extrabold text-xl">КосмоСуши</span>
           </Link>
           <Link to="/" className="ml-auto text-sm text-neutral-600 hover:text-primary">← В меню</Link>
+          {isAdmin && (
+            <Link to="/admin" className="text-sm font-bold px-4 py-2 rounded-full bg-primary text-white hover:opacity-90">
+              ⚙️ Админ-панель
+            </Link>
+          )}
           <button onClick={async () => { await supabase.auth.signOut(); nav({ to: "/" }); }}
             className="text-sm text-neutral-600 hover:text-primary">Выйти</button>
         </div>

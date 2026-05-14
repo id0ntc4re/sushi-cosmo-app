@@ -125,14 +125,11 @@ function Checkout() {
         : settings.delivery_cost
       : 0;
   const discount = promo?.discount ?? 0;
-  const tier = profile ? (Number(profile.total_spent) >= 30000 ? "gold" : Number(profile.total_spent) >= 10000 ? "silver" : "bronze") : null;
-  const tierDiscount = tier === "gold" ? Math.round(subtotal * 0.07) : tier === "silver" ? Math.round(subtotal * 0.03) : 0;
-  const cashbackPct = tier === "gold" ? 10 : tier === "silver" ? 5 : 3;
   const bonusBalance = Math.floor(Number(profile?.bonus_balance || 0));
   const maxBonus = Math.min(bonusBalance, Math.floor(subtotal * 0.3));
   const bonusApplied = Math.min(bonusUse, maxBonus);
-  const total = Math.max(0, subtotal - discount - tierDiscount - bonusApplied + deliveryCost);
-  const bonusEarn = profile ? Math.floor((subtotal - bonusApplied) * cashbackPct / 100) : 0;
+  const total = Math.max(0, subtotal - discount - bonusApplied + deliveryCost);
+  const bonusEarn = profile ? Math.floor((subtotal - bonusApplied) * 0.03) : 0;
   const belowMin = settings.min_order > 0 && subtotal < settings.min_order;
 
   async function applyPromo() {
@@ -161,7 +158,7 @@ function Checkout() {
     setSubmitting(true);
     try {
       const { data: sessionData } = await supabase.auth.getSession();
-      const totalDiscount = discount + tierDiscount;
+      const totalDiscount = discount;
       const order = await createOrder({
         data: {
           accessToken: sessionData.session?.access_token ?? null,
@@ -471,7 +468,7 @@ function Checkout() {
                 <div className="space-y-1 text-sm border-t pt-4">
                   <Row k="Товары" v={`${subtotal} ₽`} />
                   {discount > 0 && <Row k={`Промо ${promo?.code ?? ""}`} v={`−${discount} ₽`} accent />}
-                  {tierDiscount > 0 && <Row k="Скидка уровня" v={`−${tierDiscount} ₽`} accent />}
+                  
                   {bonusApplied > 0 && <Row k="Бонусы" v={`−${bonusApplied} ₽`} accent />}
                   <Row k="Доставка" v={deliveryCost === 0 ? "Бесплатно" : `${deliveryCost} ₽`} />
                 </div>

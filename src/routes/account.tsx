@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ruError } from "@/lib/errors";
 import { useCart } from "@/lib/cart";
-import { TIERS, tierFromTotal, nextTier, type Tier } from "@/lib/loyalty";
+import { CASHBACK_PCT } from "@/lib/loyalty";
 import logo from "@/assets/logo.svg";
 
 export const Route = createFileRoute("/account")({
@@ -18,7 +18,7 @@ const TABS: { key: TabKey; label: string; icon: string }[] = [
   { key: "orders", label: "Заказы", icon: "📦" },
   { key: "profile", label: "Профиль", icon: "👤" },
   { key: "addresses", label: "Адреса", icon: "📍" },
-  { key: "loyalty", label: "Бонусы и уровни", icon: "⭐" },
+  { key: "loyalty", label: "Бонусы", icon: "⭐" },
   { key: "favorites", label: "Избранное", icon: "❤️" },
   { key: "combos", label: "Мои наборы", icon: "🍱" },
   { key: "referrals", label: "Пригласить друга", icon: "🎁" },
@@ -65,8 +65,6 @@ function Account() {
 
   if (loading || !user) return <div className="min-h-screen grid place-items-center text-neutral-500">Загружаем…</div>;
 
-  const tier: Tier = tierFromTotal(Number(profile?.total_spent || 0));
-
   return (
     <div className="min-h-screen bg-neutral-50">
       <header className="bg-white border-b">
@@ -93,9 +91,6 @@ function Account() {
             <p className="text-neutral-500 mt-1">{profile?.full_name || user.email}</p>
           </div>
           <div className="ml-auto flex items-center gap-3">
-            <div className="px-4 py-2 rounded-full font-bold text-white text-sm" style={{ background: TIERS[tier].color }}>
-              {TIERS[tier].label}
-            </div>
             <div className="px-4 py-2 rounded-full bg-amber-50 text-amber-700 font-bold text-sm">
               {Math.floor(Number(profile?.bonus_balance || 0))} ₽ бонусов
             </div>
@@ -463,10 +458,6 @@ function AddressesTab({ userId }: { userId: string }) {
 function LoyaltyTab({ profile, userId }: { profile: any; userId: string }) {
   const [tx, setTx] = useState<any[]>([]);
   const [promos, setPromos] = useState<any[]>([]);
-  const tier = tierFromTotal(Number(profile?.total_spent || 0));
-  const next = nextTier(tier);
-  const total = Number(profile?.total_spent || 0);
-  const progress = next ? Math.min(100, (total / next.need) * 100) : 100;
 
   useEffect(() => {
     (async () => {
@@ -487,29 +478,12 @@ function LoyaltyTab({ profile, userId }: { profile: any; userId: string }) {
       </div>
 
       <div className="bg-white rounded-2xl p-6">
-        <div className="flex items-center gap-3 mb-3">
-          <div className="text-2xl font-extrabold">Уровень: {TIERS[tier].label}</div>
-          <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-800 font-bold text-sm">{TIERS[tier].cashback}% кэшбэк</span>
-          {TIERS[tier].discount > 0 && <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 font-bold text-sm">−{TIERS[tier].discount}% скидка</span>}
-        </div>
-        {next && (
-          <>
-            <div className="h-3 bg-neutral-100 rounded-full overflow-hidden">
-              <div className="h-full bg-primary" style={{ width: `${progress}%` }} />
-            </div>
-            <div className="text-sm text-neutral-500 mt-2">До уровня «{TIERS[next.tier].label}» осталось {Math.max(0, next.need - total)} ₽</div>
-          </>
-        )}
-        <div className="grid grid-cols-3 gap-3 mt-5">
-          {(["bronze", "silver", "gold"] as Tier[]).map((t) => (
-            <div key={t} className={`p-3 rounded-xl border-2 ${tier === t ? "border-primary" : "border-neutral-100"}`}>
-              <div className="font-bold" style={{ color: TIERS[t].color }}>{TIERS[t].label}</div>
-              <div className="text-xs text-neutral-500">от {TIERS[t].min} ₽</div>
-              <div className="text-xs mt-1">кэшбэк {TIERS[t].cashback}%</div>
-              {TIERS[t].discount > 0 && <div className="text-xs">скидка {TIERS[t].discount}%</div>}
-            </div>
-          ))}
-        </div>
+        <div className="text-xl font-extrabold mb-2">Как это работает</div>
+        <ul className="text-sm text-neutral-700 space-y-1 list-disc pl-5">
+          <li>Кэшбэк <b>{CASHBACK_PCT}%</b> от суммы заказа возвращается бонусами</li>
+          <li>Бонусами можно оплатить до <b>30%</b> стоимости заказа</li>
+          <li>1 бонус = 1 ₽</li>
+        </ul>
       </div>
 
       {promos.length > 0 && (

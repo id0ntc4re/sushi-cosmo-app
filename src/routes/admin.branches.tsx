@@ -90,14 +90,14 @@ function BranchesPage() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-extrabold">Филиалы</h1>
+      <div className="flex justify-between items-center gap-3 mb-6 flex-wrap">
+        <h1 className="text-2xl sm:text-3xl font-extrabold">Филиалы</h1>
         <button onClick={() => setEditing({ is_active: true, sort_order: list.length })}
-          className="px-5 py-2.5 rounded-full bg-primary text-white font-bold">+ Добавить филиал</button>
+          className="h-9 px-3 text-sm rounded-full bg-primary text-white font-semibold whitespace-nowrap">+ Добавить</button>
       </div>
 
-      <div className="bg-white rounded-3xl overflow-hidden mb-8">
-        <table className="w-full text-sm">
+      <div className="bg-white rounded-3xl overflow-x-auto mb-8">
+        <table className="w-full text-sm min-w-[640px]">
           <thead className="bg-neutral-50 text-left text-neutral-600">
             <tr><th className="p-3">Название</th><th>Адрес</th><th>Телефон</th><th>Статус</th><th>Заказы / Касса</th><th></th></tr>
           </thead>

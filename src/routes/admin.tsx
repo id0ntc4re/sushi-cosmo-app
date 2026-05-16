@@ -97,11 +97,13 @@ function AdminLayout() {
           <img src={logo} className="h-9 w-9" alt="" />
           <div>
             <div className="font-extrabold leading-tight">КосмоСуши</div>
-            <div className="text-xs text-neutral-500">Админ-панель</div>
+            <div className="text-xs text-neutral-500">
+              {isSuper ? "👑 Главный админ" : branchName ? `Филиал · ${branchName}` : "Админ-панель"}
+            </div>
           </div>
         </Link>
-        <nav className="p-3 flex-1 space-y-1">
-          {NAV.map((n) => {
+        <nav className="p-3 flex-1 space-y-1 overflow-y-auto">
+          {NAV.filter((n) => !n.superOnly || isSuper).map((n) => {
             const active = n.exact ? path === n.to : path.startsWith(n.to);
             return (
               <Link key={n.to} to={n.to}

@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAdminRole, branchName } from "@/lib/admin-role";
 
 export const Route = createFileRoute("/admin/")({
   component: Dashboard,
@@ -15,19 +16,29 @@ type Stats = {
 };
 
 function Dashboard() {
+  const { isSuper, branchId, branches, loading } = useAdminRole();
+  const [filterBranch, setFilterBranch] = useState<string>("all");
   const [s, setS] = useState<Stats | null>(null);
   const [recent, setRecent] = useState<any[]>([]);
 
   useEffect(() => {
+    if (loading) return;
     (async () => {
       const today = new Date(); today.setHours(0, 0, 0, 0);
       const week = new Date(); week.setDate(week.getDate() - 7);
+
+      const scopeBranch = isSuper
+        ? (filterBranch !== "all" ? filterBranch : null)
+        : branchId;
+
+      const apply = (q: any) => scopeBranch ? q.eq("branch_id", scopeBranch) : q;
+
       const [todayR, weekR, newR, prodR, recentR] = await Promise.all([
-        supabase.from("orders").select("total", { count: "exact" }).gte("created_at", today.toISOString()),
-        supabase.from("orders").select("id", { count: "exact", head: true }).gte("created_at", week.toISOString()),
-        supabase.from("orders").select("id", { count: "exact", head: true }).eq("status", "new"),
+        apply(supabase.from("orders").select("total", { count: "exact" }).gte("created_at", today.toISOString())),
+        apply(supabase.from("orders").select("id", { count: "exact", head: true }).gte("created_at", week.toISOString())),
+        apply(supabase.from("orders").select("id", { count: "exact", head: true }).eq("status", "new")),
         supabase.from("products").select("id", { count: "exact", head: true }),
-        supabase.from("orders").select("id,number,customer_name,total,status,created_at").order("created_at", { ascending: false }).limit(8),
+        apply(supabase.from("orders").select("id,number,customer_name,total,status,created_at,branch_id").order("created_at", { ascending: false }).limit(8)),
       ]);
       setS({
         ordersToday: todayR.count ?? 0,
@@ -38,11 +49,30 @@ function Dashboard() {
       });
       setRecent(recentR.data ?? []);
     })();
-  }, []);
+  }, [loading, isSuper, branchId, filterBranch]);
+
+  const scopeLabel = isSuper
+    ? (filterBranch === "all" ? "Все филиалы" : branchName(branches, filterBranch))
+    : branchName(branches, branchId);
 
   return (
     <div>
-      <h1 className="text-3xl font-extrabold mb-6">Дашборд</h1>
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+        <div>
+          <h1 className="text-3xl font-extrabold">Дашборд</h1>
+          <div className="text-sm text-neutral-500 mt-1">Филиал: <span className="font-semibold text-neutral-800">{scopeLabel}</span></div>
+        </div>
+        {isSuper && (
+          <select
+            value={filterBranch}
+            onChange={(e) => setFilterBranch(e.target.value)}
+            className="px-4 py-2 rounded-xl border border-neutral-200 bg-white"
+          >
+            <option value="all">Все филиалы</option>
+            {branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+          </select>
+        )}
+      </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <Stat label="Заказов сегодня" value={s?.ordersToday ?? "—"} />
         <Stat label="Выручка сегодня" value={s ? `${s.revenueToday} ₽` : "—"} accent />
@@ -57,7 +87,11 @@ function Dashboard() {
         </div>
         <table className="w-full text-sm">
           <thead className="text-left text-neutral-500 border-b">
-            <tr><th className="py-2">№</th><th>Клиент</th><th>Сумма</th><th>Статус</th><th>Дата</th></tr>
+            <tr>
+              <th className="py-2">№</th><th>Клиент</th><th>Сумма</th><th>Статус</th>
+              {isSuper && <th>Филиал</th>}
+              <th>Дата</th>
+            </tr>
           </thead>
           <tbody>
             {recent.map((o) => (
@@ -66,10 +100,11 @@ function Dashboard() {
                 <td>{o.customer_name}</td>
                 <td className="font-semibold">{Number(o.total)} ₽</td>
                 <td><StatusBadge s={o.status} /></td>
+                {isSuper && <td className="text-neutral-600">{branchName(branches, o.branch_id)}</td>}
                 <td className="text-neutral-500">{new Date(o.created_at).toLocaleString("ru")}</td>
               </tr>
             ))}
-            {!recent.length && <tr><td colSpan={5} className="py-8 text-center text-neutral-400">Заказов пока нет</td></tr>}
+            {!recent.length && <tr><td colSpan={isSuper ? 6 : 5} className="py-8 text-center text-neutral-400">Заказов пока нет</td></tr>}
           </tbody>
         </table>
       </div>

@@ -337,6 +337,18 @@ function Checkout() {
                     </Field>
                   )}
 
+                  {branches.length > 1 && (
+                    <Field label={form.delivery_type === "pickup" ? "Филиал самовывоза" : "Готовит филиал"}>
+                      <select className={inputCls} value={branchId} onChange={(e) => setBranchId(e.target.value)}>
+                        {branches.map((b) => (
+                          <option key={b.id} value={b.id}>
+                            {b.name}{b.address ? ` · ${b.address}` : ""}
+                          </option>
+                        ))}
+                      </select>
+                    </Field>
+                  )}
+
                   <div className="grid grid-cols-2 gap-3">
                     <Field label="Время доставки">
                       <select className={inputCls} value={form.delivery_time}

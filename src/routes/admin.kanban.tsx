@@ -22,14 +22,18 @@ function Kanban() {
   const [orders, setOrders] = useState<any[]>([]);
   const [soundOn, setSoundOn] = useState(true);
   const [now, setNow] = useState(Date.now());
+  const [filterBranch, setFilterBranch] = useState<string>("all");
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const knownIds = useRef<Set<string>>(new Set());
+  const { isSuper, branchId, branches } = useAdminRole();
 
   async function load() {
-    const { data } = await supabase.from("orders")
-      .select("id,number,customer_name,phone,address,total,status,payment_method,delivery_type,comment,created_at,courier_id")
+    let q = supabase.from("orders")
+      .select("id,number,customer_name,phone,address,total,status,payment_method,delivery_type,comment,created_at,courier_id,branch_id")
       .in("status", ["new", "confirmed", "cooking", "delivering"])
       .order("created_at", { ascending: true });
+    if (isSuper && filterBranch !== "all") q = q.eq("branch_id", filterBranch);
+    const { data } = await q;
     const list = data ?? [];
     setOrders(list);
     list.forEach((o: any) => knownIds.current.add(o.id));
@@ -47,7 +51,7 @@ function Kanban() {
         load();
       }).subscribe();
     return () => { clearInterval(t); supabase.removeChannel(ch); };
-  }, [soundOn]);
+  }, [soundOn, isSuper, filterBranch]);
 
   async function move(id: string, status: string) {
     const patch: any = { status };

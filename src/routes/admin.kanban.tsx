@@ -120,6 +120,9 @@ function Kanban() {
                           {elapsed(o.created_at)}
                         </div>
                       </div>
+                      {isSuper && (
+                        <div className="text-[10px] uppercase tracking-wide text-neutral-400 mb-0.5">{branchName(branches, o.branch_id)}</div>
+                      )}
                       <div className="text-sm font-semibold truncate">{o.customer_name}</div>
                       <div className="text-xs text-neutral-500 truncate">{o.phone}</div>
                       {o.address && <div className="text-xs text-neutral-500 truncate mt-1">📍 {o.address}</div>}

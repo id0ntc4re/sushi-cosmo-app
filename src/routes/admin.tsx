@@ -115,10 +115,10 @@ function AdminShell({
           const active = n.exact ? path === n.to : path.startsWith(n.to);
           return (
             <Link key={n.to} to={n.to}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition ${
-                active ? "bg-primary text-white" : "text-neutral-700 hover:bg-neutral-100"
+              className={`flex items-center gap-3 px-3 min-h-11 py-3 rounded-xl text-[15px] lg:text-sm font-semibold transition ${
+                active ? "bg-primary text-white" : "text-neutral-700 hover:bg-neutral-100 active:bg-neutral-200"
               }`}>
-              <span>{n.icon}</span>{n.label}
+              <span className="text-lg">{n.icon}</span>{n.label}
             </Link>
           );
         })}
@@ -139,8 +139,8 @@ function AdminShell({
   return (
     <div className="min-h-screen lg:flex bg-neutral-50">
       {/* Mobile topbar */}
-      <div className="lg:hidden sticky top-0 z-30 bg-white border-b flex items-center gap-3 px-4 h-14">
-        <button onClick={() => setOpen(true)} className="h-10 w-10 grid place-items-center rounded-lg hover:bg-neutral-100" aria-label="Меню">
+      <div className="lg:hidden sticky top-0 z-30 bg-white border-b flex items-center gap-3 px-3 h-16">
+        <button onClick={() => setOpen(true)} className="h-12 w-12 grid place-items-center rounded-xl hover:bg-neutral-100 active:bg-neutral-200" aria-label="Меню">
           <span className="text-2xl">☰</span>
         </button>
         <Link to="/admin" className="flex items-center gap-2 min-w-0">
@@ -158,7 +158,7 @@ function AdminShell({
           <div className="absolute inset-0 bg-black/50" onClick={() => setOpen(false)} />
           <aside className="absolute left-0 top-0 h-full w-[82%] max-w-xs bg-white flex flex-col shadow-2xl">
             <div className="flex items-center justify-end p-2 border-b">
-              <button onClick={() => setOpen(false)} className="h-10 w-10 grid place-items-center rounded-lg hover:bg-neutral-100" aria-label="Закрыть">
+              <button onClick={() => setOpen(false)} className="h-12 w-12 grid place-items-center rounded-xl hover:bg-neutral-100 active:bg-neutral-200" aria-label="Закрыть">
                 <span className="text-2xl">×</span>
               </button>
             </div>

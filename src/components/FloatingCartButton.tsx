@@ -1,9 +1,13 @@
 import { ShoppingCart } from "lucide-react";
+import { useRouterState } from "@tanstack/react-router";
 import { useCart } from "@/lib/cart";
 
 export function FloatingCartButton() {
   const { count, subtotal, setOpen } = useCart();
+  const path = useRouterState({ select: (s) => s.location.pathname });
 
+  // Скрываем в админке и на страницах авторизации
+  if (path.startsWith("/admin") || path.startsWith("/login") || path.startsWith("/account")) return null;
   if (count === 0) return null;
 
   return (

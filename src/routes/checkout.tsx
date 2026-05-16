@@ -65,6 +65,8 @@ function Checkout() {
   const [profile, setProfile] = useState<any | null>(null);
   const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
   const [bonusUse, setBonusUse] = useState(0);
+  const [branches, setBranches] = useState<{ id: string; name: string; address: string | null }[]>([]);
+  const [branchId, setBranchId] = useState<string>("");
 
   const [form, setForm] = useState({
     customer_name: "",
@@ -84,12 +86,16 @@ function Checkout() {
 
   useEffect(() => {
     (async () => {
-      const [{ data: st }, { data: ad }] = await Promise.all([
+      const [{ data: st }, { data: ad }, { data: br }] = await Promise.all([
         supabase.from("settings").select("value").eq("key", "general").maybeSingle(),
         supabase.from("products").select("id,name,price,image_url,weight").eq("is_active", true).eq("in_stock", true).eq("is_addon", true).order("sort_order"),
+        supabase.from("branches").select("id,name,address").eq("is_active", true).order("sort_order"),
       ]);
       if (st?.value) setSettings({ ...DEFAULT_SETTINGS, ...(st.value as any) });
       setAddons((ad as Addon[]) ?? []);
+      const bl = (br ?? []) as { id: string; name: string; address: string | null }[];
+      setBranches(bl);
+      if (bl.length && !branchId) setBranchId(bl[0].id);
 
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
@@ -180,6 +186,7 @@ function Checkout() {
           bonus_used: bonusApplied,
           bonus_earned: bonusEarn,
           total,
+          branch_id: branchId || null,
           },
           items: items.map((it) => ({
             product_id: it.id,
@@ -326,6 +333,18 @@ function Checkout() {
                       <select className={inputCls} value={form.pickup_point}
                         onChange={(e) => set("pickup_point", e.target.value)}>
                         {PICKUP_POINTS.map((p) => <option key={p} value={p}>{p}</option>)}
+                      </select>
+                    </Field>
+                  )}
+
+                  {branches.length > 1 && (
+                    <Field label={form.delivery_type === "pickup" ? "Филиал самовывоза" : "Готовит филиал"}>
+                      <select className={inputCls} value={branchId} onChange={(e) => setBranchId(e.target.value)}>
+                        {branches.map((b) => (
+                          <option key={b.id} value={b.id}>
+                            {b.name}{b.address ? ` · ${b.address}` : ""}
+                          </option>
+                        ))}
                       </select>
                     </Field>
                   )}

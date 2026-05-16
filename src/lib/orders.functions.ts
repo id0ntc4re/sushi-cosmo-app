@@ -23,6 +23,7 @@ export const createCheckoutOrder = createServerFn({ method: "POST" })
       bonus_used: z.number().min(0),
       bonus_earned: z.number().min(0),
       total: z.number().min(0),
+      branch_id: z.string().uuid().nullable(),
     }),
     items: z.array(z.object({
       product_id: z.string().uuid().nullable(),
@@ -43,9 +44,17 @@ export const createCheckoutOrder = createServerFn({ method: "POST" })
       userId = userData.user?.id ?? null;
     }
 
+    let branchId = data.order.branch_id;
+    if (!branchId) {
+      const { data: br } = await supabaseAdmin
+        .from("branches").select("id").eq("is_active", true)
+        .order("sort_order").limit(1).maybeSingle();
+      branchId = br?.id ?? null;
+    }
+
     const { data: order, error: orderError } = await supabaseAdmin
       .from("orders")
-      .insert({ ...data.order, user_id: userId })
+      .insert({ ...data.order, user_id: userId, branch_id: branchId })
       .select("id, number")
       .single();
 

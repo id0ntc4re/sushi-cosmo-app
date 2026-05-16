@@ -8,13 +8,14 @@ export const Route = createFileRoute("/admin")({
   component: AdminLayout,
 });
 
-const NAV = [
+const NAV: { to: string; label: string; icon: string; exact?: boolean; superOnly?: boolean }[] = [
   { to: "/admin", label: "Дашборд", icon: "📊", exact: true },
   { to: "/admin/kanban", label: "Канбан заказов", icon: "🟢" },
   { to: "/admin/orders", label: "Заказы", icon: "📦" },
   { to: "/admin/customers", label: "Клиенты", icon: "👥" },
   { to: "/admin/reports", label: "Отчёты", icon: "📈" },
   { to: "/admin/shifts", label: "Кассовые смены", icon: "💵" },
+  { to: "/admin/branches", label: "Филиалы", icon: "🏢", superOnly: true },
   { to: "/admin/couriers", label: "Курьеры и зоны", icon: "🛵" },
   { to: "/admin/inventory", label: "Склад / Техкарты", icon: "📦" },
   { to: "/admin/modifiers", label: "Модификаторы", icon: "🧩" },
@@ -31,6 +32,8 @@ function AdminLayout() {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const [state, setState] = useState<"loading" | "ok" | "no-auth" | "no-admin">("loading");
   const [email, setEmail] = useState<string | null>(null);
+  const [isSuper, setIsSuper] = useState(false);
+  const [branchName, setBranchName] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
@@ -43,11 +46,19 @@ function AdminLayout() {
       setEmail(user.email ?? null);
       const { data: roles } = await supabase
         .from("user_roles")
-        .select("role")
+        .select("role,branch_id")
         .eq("user_id", user.id);
-      const isAdmin = (roles ?? []).some((r) => r.role === "admin");
+      const rs = (roles ?? []) as { role: string; branch_id: string | null }[];
+      const sup = rs.some((r) => r.role === "super_admin");
+      const adminRow = rs.find((r) => r.role === "admin");
+      const ok = sup || !!adminRow;
       if (!mounted) return;
-      setState(isAdmin ? "ok" : "no-admin");
+      setIsSuper(sup);
+      if (adminRow?.branch_id) {
+        const { data: b } = await supabase.from("branches").select("name").eq("id", adminRow.branch_id).maybeSingle();
+        if (mounted) setBranchName(b?.name ?? null);
+      }
+      setState(ok ? "ok" : "no-admin");
     })();
     return () => { mounted = false; };
   }, []);
@@ -86,11 +97,13 @@ function AdminLayout() {
           <img src={logo} className="h-9 w-9" alt="" />
           <div>
             <div className="font-extrabold leading-tight">КосмоСуши</div>
-            <div className="text-xs text-neutral-500">Админ-панель</div>
+            <div className="text-xs text-neutral-500">
+              {isSuper ? "👑 Главный админ" : branchName ? `Филиал · ${branchName}` : "Админ-панель"}
+            </div>
           </div>
         </Link>
-        <nav className="p-3 flex-1 space-y-1">
-          {NAV.map((n) => {
+        <nav className="p-3 flex-1 space-y-1 overflow-y-auto">
+          {NAV.filter((n) => !n.superOnly || isSuper).map((n) => {
             const active = n.exact ? path === n.to : path.startsWith(n.to);
             return (
               <Link key={n.to} to={n.to}

@@ -119,8 +119,39 @@ export type Database = {
         }
         Relationships: []
       }
+      branches: {
+        Row: {
+          address: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string
+          phone: string | null
+          sort_order: number
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          phone?: string | null
+          sort_order?: number
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          phone?: string | null
+          sort_order?: number
+        }
+        Relationships: []
+      }
       cash_shifts: {
         Row: {
+          branch_id: string | null
           card_total: number
           cash_total: number
           closed_at: string | null
@@ -133,6 +164,7 @@ export type Database = {
           orders_count: number
         }
         Insert: {
+          branch_id?: string | null
           card_total?: number
           cash_total?: number
           closed_at?: string | null
@@ -145,6 +177,7 @@ export type Database = {
           orders_count?: number
         }
         Update: {
+          branch_id?: string | null
           card_total?: number
           cash_total?: number
           closed_at?: string | null
@@ -156,7 +189,15 @@ export type Database = {
           opening_cash?: number
           orders_count?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "cash_shifts_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       categories: {
         Row: {
@@ -214,6 +255,7 @@ export type Database = {
       }
       couriers: {
         Row: {
+          branch_id: string | null
           created_at: string
           id: string
           is_active: boolean
@@ -221,6 +263,7 @@ export type Database = {
           phone: string | null
         }
         Insert: {
+          branch_id?: string | null
           created_at?: string
           id?: string
           is_active?: boolean
@@ -228,13 +271,22 @@ export type Database = {
           phone?: string | null
         }
         Update: {
+          branch_id?: string | null
           created_at?: string
           id?: string
           is_active?: boolean
           name?: string
           phone?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "couriers_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       delivery_zones: {
         Row: {
@@ -461,6 +513,7 @@ export type Database = {
           admin_note: string | null
           bonus_earned: number
           bonus_used: number
+          branch_id: string | null
           change_from: number | null
           comment: string | null
           confirmed_at: string | null
@@ -491,6 +544,7 @@ export type Database = {
           admin_note?: string | null
           bonus_earned?: number
           bonus_used?: number
+          branch_id?: string | null
           change_from?: number | null
           comment?: string | null
           confirmed_at?: string | null
@@ -521,6 +575,7 @@ export type Database = {
           admin_note?: string | null
           bonus_earned?: number
           bonus_used?: number
+          branch_id?: string | null
           change_from?: number | null
           comment?: string | null
           confirmed_at?: string | null
@@ -546,7 +601,15 @@ export type Database = {
           updated_at?: string
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "orders_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       product_modifiers: {
         Row: {
@@ -813,30 +876,45 @@ export type Database = {
       }
       user_roles: {
         Row: {
+          branch_id: string | null
           created_at: string
           id: string
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
         Insert: {
+          branch_id?: string | null
           created_at?: string
           id?: string
           role: Database["public"]["Enums"]["app_role"]
           user_id: string
         }
         Update: {
+          branch_id?: string | null
           created_at?: string
           id?: string
           role?: Database["public"]["Enums"]["app_role"]
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_roles_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      can_access_branch: {
+        Args: { _branch_id: string; _user_id: string }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -845,9 +923,10 @@ export type Database = {
         Returns: boolean
       }
       loyalty_tier: { Args: { _total: number }; Returns: string }
+      user_branch: { Args: { _user_id: string }; Returns: string }
     }
     Enums: {
-      app_role: "admin" | "user"
+      app_role: "admin" | "user" | "super_admin"
       delivery_type: "delivery" | "pickup"
       order_status:
         | "new"
@@ -984,7 +1063,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user"],
+      app_role: ["admin", "user", "super_admin"],
       delivery_type: ["delivery", "pickup"],
       order_status: [
         "new",

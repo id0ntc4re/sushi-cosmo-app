@@ -47,7 +47,7 @@ function Account() {
       ]);
       if (cancelled) return;
       setProfile(p);
-      setIsAdmin((roles ?? []).some((r: any) => r.role === "admin"));
+      setIsAdmin((roles ?? []).some((r: any) => r.role === "admin" || r.role === "super_admin"));
       setLoading(false);
     };
     supabase.auth.getSession().then(({ data: { session } }) => {

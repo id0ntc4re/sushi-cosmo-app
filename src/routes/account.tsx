@@ -26,33 +26,24 @@ const TABS: { key: TabKey; label: string; icon: string }[] = [
 
 function Account() {
   const nav = useNavigate();
-  const [loading, setLoading] = useState(true);
+  const [authChecked, setAuthChecked] = useState(false);
   const [user, setUser] = useState<{ id: string; email: string | null } | null>(null);
   const [tab, setTab] = useState<TabKey>("orders");
   const [profile, setProfile] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
 
+  // 1) Быстрая проверка сессии — не блокируем рендер шапки/меню
   useEffect(() => {
     let cancelled = false;
-    const init = async (u: { id: string; email: string | null } | null) => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
       if (cancelled) return;
+      const u = session?.user;
       if (!u) {
         nav({ to: "/account-login", search: { redirect: "/account" } } as any);
         return;
       }
-      setUser(u);
-      const [{ data: p }, { data: roles }] = await Promise.all([
-        supabase.from("profiles").select("*").eq("id", u.id).maybeSingle(),
-        supabase.from("user_roles").select("role").eq("user_id", u.id),
-      ]);
-      if (cancelled) return;
-      setProfile(p);
-      setIsAdmin((roles ?? []).some((r: any) => r.role === "admin" || r.role === "super_admin"));
-      setLoading(false);
-    };
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      const u = session?.user;
-      init(u ? { id: u.id, email: u.email ?? null } : null);
+      setUser({ id: u.id, email: u.email ?? null });
+      setAuthChecked(true);
     });
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "INITIAL_SESSION" || event === "TOKEN_REFRESHED" || event === "USER_UPDATED") return;
@@ -63,53 +54,80 @@ function Account() {
     return () => { cancelled = true; sub.subscription.unsubscribe(); };
   }, [nav]);
 
-  if (loading || !user) return <div className="min-h-screen grid place-items-center text-neutral-500">Загружаем…</div>;
+  // 2) Подгружаем профиль/роли отдельно — UI уже виден
+  useEffect(() => {
+    if (!user) return;
+    let cancelled = false;
+    (async () => {
+      const [{ data: p }, { data: roles }] = await Promise.all([
+        supabase.from("profiles").select("*").eq("id", user.id).maybeSingle(),
+        supabase.from("user_roles").select("role").eq("user_id", user.id),
+      ]);
+      if (cancelled) return;
+      setProfile(p);
+      setIsAdmin((roles ?? []).some((r: any) => r.role === "admin" || r.role === "super_admin"));
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id]);
+
+  if (!authChecked || !user) {
+    return <div className="min-h-screen grid place-items-center text-neutral-500">Загружаем…</div>;
+  }
 
   return (
     <div className="min-h-screen bg-neutral-50">
       <header className="bg-white border-b">
-        <div className="mx-auto max-w-[1280px] px-6 h-20 flex items-center gap-6">
-          <Link to="/" className="flex items-center gap-2">
-            <img src={logo} alt="" className="h-10 w-10" />
-            <span className="font-extrabold text-xl">КосмоСуши</span>
+        <div className="mx-auto max-w-[1280px] px-4 sm:px-6 h-16 sm:h-20 flex items-center gap-3 sm:gap-6">
+          <Link to="/" className="flex items-center gap-2 min-w-0">
+            <img src={logo} alt="" className="h-9 w-9 sm:h-10 sm:w-10 shrink-0" />
+            <span className="font-extrabold text-base sm:text-xl truncate">КосмоСуши</span>
           </Link>
-          <Link to="/" className="ml-auto text-sm text-neutral-600 hover:text-primary">← В меню</Link>
+          <Link to="/" className="ml-auto text-xs sm:text-sm text-neutral-600 hover:text-primary whitespace-nowrap">← В меню</Link>
           {isAdmin && (
-            <Link to="/admin" className="text-sm font-bold px-4 py-2 rounded-full bg-primary text-white hover:opacity-90">
+            <Link to="/admin" className="hidden sm:inline-flex text-sm font-bold px-4 py-2 rounded-full bg-primary text-white hover:opacity-90">
               ⚙️ Админ-панель
             </Link>
           )}
           <button onClick={async () => { await supabase.auth.signOut(); nav({ to: "/" }); }}
-            className="text-sm text-neutral-600 hover:text-primary">Выйти</button>
+            className="text-xs sm:text-sm text-neutral-600 hover:text-primary whitespace-nowrap">Выйти</button>
         </div>
+        {isAdmin && (
+          <div className="sm:hidden px-4 pb-3">
+            <Link to="/admin" className="block text-center text-sm font-bold px-4 py-2 rounded-full bg-primary text-white">
+              ⚙️ Админ-панель
+            </Link>
+          </div>
+        )}
       </header>
 
-      <main className="mx-auto max-w-[1200px] px-6 py-8">
-        <div className="mb-6 flex items-center gap-4 flex-wrap">
-          <div>
-            <h1 className="text-3xl md:text-4xl font-extrabold">Личный кабинет</h1>
-            <p className="text-neutral-500 mt-1">{profile?.full_name || user.email}</p>
+      <main className="mx-auto max-w-[1200px] px-4 sm:px-6 py-6 sm:py-8">
+        <div className="mb-6 flex items-start sm:items-center gap-3 sm:gap-4 flex-wrap">
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold">Личный кабинет</h1>
+            <p className="text-neutral-500 mt-1 text-sm sm:text-base truncate">{profile?.full_name || user.email}</p>
           </div>
           <div className="ml-auto flex items-center gap-3">
-            <div className="px-4 py-2 rounded-full bg-amber-50 text-amber-700 font-bold text-sm">
+            <div className="px-3 sm:px-4 py-2 rounded-full bg-amber-50 text-amber-700 font-bold text-xs sm:text-sm whitespace-nowrap">
               {Math.floor(Number(profile?.bonus_balance || 0))} ₽ бонусов
             </div>
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-[260px_1fr] gap-6">
-          <aside className="bg-white rounded-2xl p-2 h-fit lg:sticky lg:top-6">
-            {TABS.map((t) => (
-              <button key={t.key} onClick={() => setTab(t.key)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-sm font-semibold transition ${
-                  tab === t.key ? "bg-primary text-white" : "hover:bg-neutral-50 text-neutral-700"
-                }`}>
-                <span>{t.icon}</span>{t.label}
-              </button>
-            ))}
+        <div className="grid lg:grid-cols-[260px_1fr] gap-4 lg:gap-6">
+          <aside className="bg-white rounded-2xl p-2 h-fit lg:sticky lg:top-6 overflow-x-auto lg:overflow-visible">
+            <div className="flex lg:flex-col gap-1 lg:gap-0 min-w-max lg:min-w-0">
+              {TABS.map((t) => (
+                <button key={t.key} onClick={() => setTab(t.key)}
+                  className={`flex items-center gap-2 lg:gap-3 px-3 lg:px-4 py-2.5 lg:py-3 rounded-xl text-left text-xs sm:text-sm font-semibold transition whitespace-nowrap lg:w-full ${
+                    tab === t.key ? "bg-primary text-white" : "hover:bg-neutral-50 text-neutral-700"
+                  }`}>
+                  <span>{t.icon}</span>{t.label}
+                </button>
+              ))}
+            </div>
           </aside>
 
-          <section>
+          <section className="min-w-0">
             {tab === "orders" && <OrdersTab userId={user.id} />}
             {tab === "profile" && <ProfileTab profile={profile} email={user.email} onSaved={(p) => setProfile(p)} />}
             {tab === "addresses" && <AddressesTab userId={user.id} />}

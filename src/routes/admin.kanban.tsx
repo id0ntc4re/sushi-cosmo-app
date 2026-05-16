@@ -77,12 +77,26 @@ function Kanban() {
     <div>
       {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
       <audio ref={audioRef} src="https://cdn.jsdelivr.net/gh/akx/Notifications@master/sounds/bell.mp3" preload="auto" />
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-extrabold">Канбан заказов</h1>
-        <label className="flex items-center gap-2 text-sm font-semibold bg-white px-4 py-2 rounded-full">
-          <input type="checkbox" checked={soundOn} onChange={(e) => setSoundOn(e.target.checked)} />
-          🔔 Звук на новые заказы
-        </label>
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+        <div>
+          <h1 className="text-3xl font-extrabold">Канбан заказов</h1>
+          {!isSuper && branchId && (
+            <div className="text-sm text-neutral-500 mt-1">Филиал: {branchName(branches, branchId)}</div>
+          )}
+        </div>
+        <div className="flex items-center gap-3 flex-wrap">
+          {isSuper && (
+            <select value={filterBranch} onChange={(e) => setFilterBranch(e.target.value)}
+              className="text-sm font-semibold bg-white px-4 py-2 rounded-full border">
+              <option value="all">Все филиалы</option>
+              {branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+            </select>
+          )}
+          <label className="flex items-center gap-2 text-sm font-semibold bg-white px-4 py-2 rounded-full">
+            <input type="checkbox" checked={soundOn} onChange={(e) => setSoundOn(e.target.checked)} />
+            🔔 Звук на новые заказы
+          </label>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">

@@ -847,7 +847,7 @@ export type Database = {
       loyalty_tier: { Args: { _total: number }; Returns: string }
     }
     Enums: {
-      app_role: "admin" | "user"
+      app_role: "admin" | "user" | "super_admin"
       delivery_type: "delivery" | "pickup"
       order_status:
         | "new"
@@ -984,7 +984,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      app_role: ["admin", "user"],
+      app_role: ["admin", "user", "super_admin"],
       delivery_type: ["delivery", "pickup"],
       order_status: [
         "new",

@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useAdminRole, branchName } from "@/lib/admin-role";
 
 export const Route = createFileRoute("/admin/kanban")({ component: Kanban });
 
@@ -21,14 +22,18 @@ function Kanban() {
   const [orders, setOrders] = useState<any[]>([]);
   const [soundOn, setSoundOn] = useState(true);
   const [now, setNow] = useState(Date.now());
+  const [filterBranch, setFilterBranch] = useState<string>("all");
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const knownIds = useRef<Set<string>>(new Set());
+  const { isSuper, branchId, branches } = useAdminRole();
 
   async function load() {
-    const { data } = await supabase.from("orders")
-      .select("id,number,customer_name,phone,address,total,status,payment_method,delivery_type,comment,created_at,courier_id")
+    let q = supabase.from("orders")
+      .select("id,number,customer_name,phone,address,total,status,payment_method,delivery_type,comment,created_at,courier_id,branch_id")
       .in("status", ["new", "confirmed", "cooking", "delivering"])
       .order("created_at", { ascending: true });
+    if (isSuper && filterBranch !== "all") q = q.eq("branch_id", filterBranch);
+    const { data } = await q;
     const list = data ?? [];
     setOrders(list);
     list.forEach((o: any) => knownIds.current.add(o.id));
@@ -46,7 +51,7 @@ function Kanban() {
         load();
       }).subscribe();
     return () => { clearInterval(t); supabase.removeChannel(ch); };
-  }, [soundOn]);
+  }, [soundOn, isSuper, filterBranch]);
 
   async function move(id: string, status: string) {
     const patch: any = { status };
@@ -72,12 +77,26 @@ function Kanban() {
     <div>
       {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
       <audio ref={audioRef} src="https://cdn.jsdelivr.net/gh/akx/Notifications@master/sounds/bell.mp3" preload="auto" />
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-extrabold">Канбан заказов</h1>
-        <label className="flex items-center gap-2 text-sm font-semibold bg-white px-4 py-2 rounded-full">
-          <input type="checkbox" checked={soundOn} onChange={(e) => setSoundOn(e.target.checked)} />
-          🔔 Звук на новые заказы
-        </label>
+      <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+        <div>
+          <h1 className="text-3xl font-extrabold">Канбан заказов</h1>
+          {!isSuper && branchId && (
+            <div className="text-sm text-neutral-500 mt-1">Филиал: {branchName(branches, branchId)}</div>
+          )}
+        </div>
+        <div className="flex items-center gap-3 flex-wrap">
+          {isSuper && (
+            <select value={filterBranch} onChange={(e) => setFilterBranch(e.target.value)}
+              className="text-sm font-semibold bg-white px-4 py-2 rounded-full border">
+              <option value="all">Все филиалы</option>
+              {branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+            </select>
+          )}
+          <label className="flex items-center gap-2 text-sm font-semibold bg-white px-4 py-2 rounded-full">
+            <input type="checkbox" checked={soundOn} onChange={(e) => setSoundOn(e.target.checked)} />
+            🔔 Звук на новые заказы
+          </label>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
@@ -101,6 +120,9 @@ function Kanban() {
                           {elapsed(o.created_at)}
                         </div>
                       </div>
+                      {isSuper && (
+                        <div className="text-[10px] uppercase tracking-wide text-neutral-400 mb-0.5">{branchName(branches, o.branch_id)}</div>
+                      )}
                       <div className="text-sm font-semibold truncate">{o.customer_name}</div>
                       <div className="text-xs text-neutral-500 truncate">{o.phone}</div>
                       {o.address && <div className="text-xs text-neutral-500 truncate mt-1">📍 {o.address}</div>}

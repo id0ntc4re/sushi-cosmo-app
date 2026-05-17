@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, Link, useRouterState, useNavigate, redirect } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAdminNotifications } from "@/lib/admin-notifications";
 import logo from "@/assets/logo.svg";
 
 export const Route = createFileRoute("/admin")({

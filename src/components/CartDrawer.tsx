@@ -15,7 +15,7 @@ type Reco = {
 export function CartDrawer() {
   const { items, open, setOpen, setQty, remove, subtotal, add } = useCart();
   const [recos, setRecos] = useState<Reco[]>([]);
-  const [freeFrom, setFreeFrom] = useState<number>(1500);
+  const [freeFrom, setFreeFrom] = useState<number>(700);
 
   useEffect(() => {
     supabase.from("settings").select("value").eq("key", "general").maybeSingle().then(({ data }) => {

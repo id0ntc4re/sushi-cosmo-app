@@ -149,6 +149,44 @@ export type Database = {
         }
         Relationships: []
       }
+      callback_requests: {
+        Row: {
+          branch_id: string | null
+          comment: string | null
+          created_at: string
+          id: string
+          name: string
+          phone: string
+          status: string
+        }
+        Insert: {
+          branch_id?: string | null
+          comment?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          phone: string
+          status?: string
+        }
+        Update: {
+          branch_id?: string | null
+          comment?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          phone?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "callback_requests_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cash_shifts: {
         Row: {
           branch_id: string | null

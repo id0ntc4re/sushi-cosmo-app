@@ -7,7 +7,7 @@ import logo from "@/assets/logo.svg";
 
 const BRANCHES = [
   { name: "Шахтёров", address: "г. Кемерово, пр-т Шахтёров, 68", phone: "+7 913 286 92-84", hours: "10:00–22:00" },
-  { name: "Строителей", address: "г. Кемерово, б-р Строителей, 21", phone: "+7 913 286 92-85", hours: "10:00–22:00" },
+  { name: "Строителей", address: "г. Кемерово, б-р Строителей, 21", phone: "+7 913 286 92-84", hours: "10:00–22:00" },
 ];
 
 export function SiteHeader() {
@@ -48,7 +48,7 @@ export function SiteHeader() {
             <span className="truncate">Доставка {active.hours}</span>
           </div>
           <div className="hidden sm:flex items-center gap-4">
-            <span>Бесплатная доставка от 1500 ₽</span>
+            <span>Бесплатная доставка от 700 ₽</span>
             <span className="opacity-70">·</span>
             <span>Бонусы за каждый заказ</span>
           </div>

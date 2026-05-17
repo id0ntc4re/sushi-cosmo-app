@@ -11,12 +11,11 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 
 import logo from "@/assets/logo.svg";
 import hero1 from "@/assets/hero-1.jpg";
-import hero2 from "@/assets/hero-2.jpg";
+
 import hero3 from "@/assets/hero-3.jpg";
 
 const FALLBACK_SLIDES = [
   { image_url: hero1, eyebrow: "Хит сезона", title: "Свежие суши и роллы", subtitle: "Доставка по Кемерово ежедневно с 10:00 до 22:00", cta_label: "Смотреть меню", cta_link: "#menu" },
-  { image_url: hero2, eyebrow: "Классика", title: "Ассорти из лосося и тунца", subtitle: "Только свежая рыба и нежный рис каждый день", cta_label: "Заказать сет", cta_link: "#menu" },
   { image_url: hero3, eyebrow: "Новинка", title: "Горячие запечённые роллы", subtitle: "Тающий сыр, острый соус и хрустящая корочка", cta_label: "Попробовать", cta_link: "#menu" },
 ];
 
@@ -203,7 +202,7 @@ function Index() {
       <section className="mx-auto max-w-[1280px] px-3 sm:px-6 mt-6 sm:mt-10">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           {[
-            { Icon: Truck, title: "Бесплатно от 1500 ₽", text: "Доставим в течение часа" },
+            { Icon: Truck, title: "Бесплатно от 700 ₽", text: "Доставим в течение часа" },
             { Icon: Fish, title: "Свежая рыба", text: "Поставки каждый день" },
             { Icon: Sparkles, title: "Бонусы за заказ", text: "Копите и оплачивайте" },
             { Icon: Clock, title: "10:00 – 22:00", text: "Работаем без выходных" },
@@ -428,7 +427,7 @@ function Index() {
             </div>
             <ul className="space-y-2 text-sm opacity-90">
               <li className="flex items-start gap-2"><span className="text-primary">📍</span>пр-т Шахтёров, 68</li>
-              <li className="flex items-start gap-2"><span className="text-primary">📍</span>Бр Строителей, 21</li>
+              <li className="flex items-start gap-2"><span className="text-primary">📍</span>бульвар Строителей, 21</li>
               <li className="flex items-start gap-2"><span className="text-primary">🕒</span>Ежедневно 10:00–22:00</li>
             </ul>
           </div>
@@ -544,6 +543,12 @@ function ProductModal({ product, onClose, onAdd }: { product: Product; onClose: 
               <p className="text-sm text-foreground/80">{product.ingredients}</p>
             </div>
           )}
+          <div className="mb-4 rounded-xl bg-amber-50 border border-amber-100 px-3 py-2 text-[12px] text-amber-800">
+            ⚠️ Внешний вид блюда может отличаться от фотографии.
+            {(/сет|set|набор/i.test(product.name) || (Array.isArray(product.tags) && product.tags.some((t) => /сет|set|набор/i.test(t))))
+              ? " К набору входят палочки, соевый соус и имбирь — количество указано в описании."
+              : " Палочки, соус и имбирь приобретаются отдельно."}
+          </div>
           <div className="flex items-center justify-between gap-3 pt-4 border-t flex-wrap">
             <span className="text-2xl sm:text-3xl font-extrabold">{Number(product.price) * qty} ₽</span>
             <div className="flex items-center gap-2 sm:gap-3">

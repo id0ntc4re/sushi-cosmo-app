@@ -28,7 +28,7 @@ const schema = z.object({
   comment: z.string().max(500).optional().or(z.literal("")),
 });
 
-const PICKUP_POINTS = ["пр-т Шахтёров, 68", "Бр Строителей, 21"];
+const PICKUP_POINTS = ["пр-т Шахтёров, 68", "бульвар Строителей, 21"];
 
 type Settings = {
   delivery_cost: number;
@@ -132,11 +132,12 @@ function Checkout() {
       : 0;
   const discount = promo?.discount ?? 0;
   const bonusBalance = Math.floor(Number(profile?.bonus_balance || 0));
-  const maxBonus = Math.min(bonusBalance, Math.floor(subtotal * 0.3));
+  // Скидки и бонусы не суммируются: при активном промокоде бонусы не применяются
+  const maxBonus = promo ? 0 : Math.min(bonusBalance, Math.floor(subtotal * 0.3));
   const bonusApplied = Math.min(bonusUse, maxBonus);
   const total = Math.max(0, subtotal - discount - bonusApplied + deliveryCost);
   const bonusEarn = profile ? Math.floor((subtotal - bonusApplied) * 0.03) : 0;
-  const belowMin = settings.min_order > 0 && subtotal < settings.min_order;
+  const belowMin = false;
 
   async function applyPromo() {
     setPromoErr(null);
@@ -474,15 +475,25 @@ function Checkout() {
                       <span className="text-sm font-bold">⭐ Бонусы ({bonusBalance} ₽)</span>
                       <span className="text-xs text-neutral-500">Макс. {maxBonus} ₽</span>
                     </div>
-                    <div className="flex gap-2 items-center">
-                      <input type="range" min={0} max={maxBonus} value={bonusApplied}
-                        onChange={(e) => setBonusUse(Number(e.target.value))} className="flex-1" />
-                      <input type="number" min={0} max={maxBonus} value={bonusApplied}
-                        onChange={(e) => setBonusUse(Math.max(0, Math.min(maxBonus, Number(e.target.value) || 0)))}
-                        className="w-20 px-2 py-1 rounded-lg border text-sm text-right" />
-                    </div>
+                    {promo ? (
+                      <div className="text-xs text-neutral-500">
+                        Промокод и бонусы не суммируются. Уберите промокод, чтобы оплатить бонусами.
+                      </div>
+                    ) : (
+                      <div className="flex gap-2 items-center">
+                        <input type="range" min={0} max={maxBonus} value={bonusApplied}
+                          onChange={(e) => setBonusUse(Number(e.target.value))} className="flex-1" />
+                        <input type="number" min={0} max={maxBonus} value={bonusApplied}
+                          onChange={(e) => setBonusUse(Math.max(0, Math.min(maxBonus, Number(e.target.value) || 0)))}
+                          className="w-20 px-2 py-1 rounded-lg border text-sm text-right" />
+                      </div>
+                    )}
                   </div>
                 )}
+
+                <div className="text-[11px] text-neutral-500 -mt-1 mb-2">
+                  Скидки по промокоду и бонусы не суммируются — применяется только что-то одно.
+                </div>
 
                 <div className="space-y-1 text-sm border-t pt-4">
                   <Row k="Товары" v={`${subtotal} ₽`} />

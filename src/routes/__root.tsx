@@ -15,6 +15,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { FlashSaleBanner } from "@/components/FlashSaleBanner";
 import { NewsletterPopup } from "@/components/NewsletterPopup";
 import { FloatingCartButton } from "@/components/FloatingCartButton";
+import { CallbackButton } from "@/components/CallbackButton";
 
 function NotFoundComponent() {
   return (

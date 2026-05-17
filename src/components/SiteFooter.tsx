@@ -22,7 +22,6 @@ export function SiteFooter() {
           </div>
           <ul className="space-y-2 text-sm opacity-90">
             <li className="flex items-start gap-2"><span className="text-primary">📍</span>пр-т Шахтёров, 68</li>
-            <li className="flex items-start gap-2"><span className="text-primary">📍</span>пр-т Шахтёров, 68</li>
             <li className="flex items-start gap-2"><span className="text-primary">📍</span>бульвар Строителей, 21</li>
             <li className="flex items-start gap-2"><span className="text-primary">🕒</span>Ежедневно 10:00–22:00</li>
           </ul>

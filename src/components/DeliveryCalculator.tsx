@@ -96,14 +96,16 @@ export function DeliveryCalculator({ subtotal, onOpenCart, products: providedPro
     if (!products.length) return [];
     const occ = OCCASIONS.find((o) => o.id === occasion);
     const boosts = occ?.boost ?? [];
-    const scored = products.map((p) => {
-      const name = p.name.toLowerCase();
-      const score = boosts.reduce((s, b) => s + (name.includes(b.toLowerCase()) ? 10 : 0), 0);
+    const scored = products.map((p: any) => {
+      const hay = [p.name, ...(Array.isArray(p.tags) ? p.tags : [])].join(" ").toLowerCase();
+      const score = boosts.reduce((s, b) => s + (hay.includes(b.toLowerCase()) ? 10 : 0), 0);
       return { p, score };
     });
-    scored.sort((a, b) => b.score - a.score || Number(b.p.price) - Number(a.p.price));
+    // Для «острого» показываем только реально острые позиции
+    const filtered = occasion === "spicy" ? scored.filter((x) => x.score > 0) : scored;
+    filtered.sort((a, b) => b.score - a.score || Number(b.p.price) - Number(a.p.price));
     const limit = persons ? Math.min(12, Math.max(6, persons * 3)) : 9;
-    return scored.slice(0, limit).map((x) => x.p);
+    return filtered.slice(0, limit).map((x) => x.p);
   }, [products, occasion, persons]);
 
   const draft = useMemo(

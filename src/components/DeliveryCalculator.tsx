@@ -43,7 +43,7 @@ const PERSONS: { n: number; label: string; Icon: LucideIcon; hint: string }[] = 
 const OCCASIONS: { id: string; label: string; Icon: LucideIcon; boost: string[] }[] = [
   { id: "dinner", label: "Просто поужинать", Icon: Utensils, boost: ["Филадельфия", "Калифорния"] },
   { id: "party", label: "Вечеринка / День рождения", Icon: Cake, boost: ["сет", "ассорти"] },
-  { id: "spicy", label: "Хочу остренького", Icon: Flame, boost: ["острый", "спайси", "запечён"] },
+  { id: "spicy", label: "Хочу остренького", Icon: Flame, boost: ["острый", "острая", "острые", "спайси", "spicy", "чили", "халапень", "васаби", "огнен"] },
   { id: "light", label: "Лёгкое и классика", Icon: Leaf, boost: ["филадельфия", "ролл", "суши"] },
 ];
 

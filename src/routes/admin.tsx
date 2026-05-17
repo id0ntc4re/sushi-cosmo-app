@@ -58,6 +58,7 @@ function AdminLayout() {
       if (!mounted) return;
       setIsSuper(sup);
       if (adminRow?.branch_id) {
+        setBranchId(adminRow.branch_id);
         const { data: b } = await supabase.from("branches").select("name").eq("id", adminRow.branch_id).maybeSingle();
         if (mounted) setBranchName(b?.name ?? null);
       }

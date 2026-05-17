@@ -202,7 +202,7 @@ function Index() {
       <section className="mx-auto max-w-[1280px] px-3 sm:px-6 mt-6 sm:mt-10">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
           {[
-            { Icon: Truck, title: "Бесплатно от 1500 ₽", text: "Доставим в течение часа" },
+            { Icon: Truck, title: "Бесплатно от 700 ₽", text: "Доставим в течение часа" },
             { Icon: Fish, title: "Свежая рыба", text: "Поставки каждый день" },
             { Icon: Sparkles, title: "Бонусы за заказ", text: "Копите и оплачивайте" },
             { Icon: Clock, title: "10:00 – 22:00", text: "Работаем без выходных" },

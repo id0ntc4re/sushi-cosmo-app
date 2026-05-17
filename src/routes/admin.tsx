@@ -35,6 +35,7 @@ function AdminLayout() {
   const [state, setState] = useState<"loading" | "ok" | "no-auth" | "no-admin">("loading");
   const [email, setEmail] = useState<string | null>(null);
   const [isSuper, setIsSuper] = useState(false);
+  const [branchId, setBranchId] = useState<string | null>(null);
   const [branchName, setBranchName] = useState<string | null>(null);
 
   useEffect(() => {

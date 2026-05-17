@@ -28,7 +28,7 @@ const schema = z.object({
   comment: z.string().max(500).optional().or(z.literal("")),
 });
 
-const PICKUP_POINTS = ["пр-т Шахтёров, 68", "Бр Строителей, 21"];
+const PICKUP_POINTS = ["пр-т Шахтёров, 68", "бульвар Строителей, 21"];
 
 type Settings = {
   delivery_cost: number;

@@ -129,6 +129,7 @@ function RootComponent() {
         <Outlet />
         <CartDrawer />
         <FloatingCartButton />
+        <CallbackButton />
         <NewsletterPopup />
         <Toaster position="top-right" />
       </CartProvider>

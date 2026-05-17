@@ -49,7 +49,7 @@ const OCCASIONS: { id: string; label: string; Icon: LucideIcon; boost: string[] 
 
 export function DeliveryCalculator({ subtotal, onOpenCart, products: providedProducts = [] }: Props) {
   const cart = useCart();
-  const [freeFrom, setFreeFrom] = useState(1500);
+  const [freeFrom, setFreeFrom] = useState(700);
   const [products, setProducts] = useState<Product[]>(providedProducts);
   const [categories, setCategories] = useState<Category[]>([]);
 

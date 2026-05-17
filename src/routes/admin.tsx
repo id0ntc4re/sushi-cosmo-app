@@ -1,6 +1,7 @@
 import { createFileRoute, Outlet, Link, useRouterState, useNavigate, redirect } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAdminNotifications } from "@/lib/admin-notifications";
 import logo from "@/assets/logo.svg";
 
 export const Route = createFileRoute("/admin")({
@@ -12,6 +13,7 @@ const NAV: { to: string; label: string; icon: string; exact?: boolean; superOnly
   { to: "/admin", label: "Дашборд", icon: "📊", exact: true },
   { to: "/admin/kanban", label: "Канбан заказов", icon: "🟢" },
   { to: "/admin/orders", label: "Заказы", icon: "📦" },
+  { to: "/admin/callbacks", label: "Заявки на звонок", icon: "📞" },
   { to: "/admin/customers", label: "Клиенты", icon: "👥" },
   { to: "/admin/reports", label: "Отчёты", icon: "📈" },
   { to: "/admin/shifts", label: "Кассовые смены", icon: "💵" },
@@ -33,6 +35,7 @@ function AdminLayout() {
   const [state, setState] = useState<"loading" | "ok" | "no-auth" | "no-admin">("loading");
   const [email, setEmail] = useState<string | null>(null);
   const [isSuper, setIsSuper] = useState(false);
+  const [branchId, setBranchId] = useState<string | null>(null);
   const [branchName, setBranchName] = useState<string | null>(null);
 
   useEffect(() => {
@@ -55,6 +58,7 @@ function AdminLayout() {
       if (!mounted) return;
       setIsSuper(sup);
       if (adminRow?.branch_id) {
+        setBranchId(adminRow.branch_id);
         const { data: b } = await supabase.from("branches").select("name").eq("id", adminRow.branch_id).maybeSingle();
         if (mounted) setBranchName(b?.name ?? null);
       }
@@ -90,12 +94,13 @@ function AdminLayout() {
     );
   }
 
-  return <AdminShell email={email} isSuper={isSuper} branchName={branchName} path={path} nav={nav} />;
+  return <AdminShell email={email} isSuper={isSuper} branchId={branchId} branchName={branchName} path={path} nav={nav} />;
 }
 
 function AdminShell({
-  email, isSuper, branchName, path, nav,
-}: { email: string | null; isSuper: boolean; branchName: string | null; path: string; nav: ReturnType<typeof useNavigate> }) {
+  email, isSuper, branchId, branchName, path, nav,
+}: { email: string | null; isSuper: boolean; branchId: string | null; branchName: string | null; path: string; nav: ReturnType<typeof useNavigate> }) {
+  useAdminNotifications({ isSuper, branchId });
   const [open, setOpen] = useState(false);
   useEffect(() => { setOpen(false); }, [path]);
 

@@ -35,6 +35,7 @@ import { Route as AdminInventoryRouteImport } from './routes/admin.inventory'
 import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
 import { Route as AdminCouriersRouteImport } from './routes/admin.couriers'
 import { Route as AdminCategoriesRouteImport } from './routes/admin.categories'
+import { Route as AdminCallbacksRouteImport } from './routes/admin.callbacks'
 import { Route as AdminBranchesRouteImport } from './routes/admin.branches'
 import { Route as AdminBannersRouteImport } from './routes/admin.banners'
 
@@ -168,6 +169,11 @@ const AdminCategoriesRoute = AdminCategoriesRouteImport.update({
   path: '/categories',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminCallbacksRoute = AdminCallbacksRouteImport.update({
+  id: '/callbacks',
+  path: '/callbacks',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminBranchesRoute = AdminBranchesRouteImport.update({
   id: '/branches',
   path: '/branches',
@@ -192,6 +198,7 @@ export interface FileRoutesByFullPath {
   '/order-success': typeof OrderSuccessRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/branches': typeof AdminBranchesRoute
+  '/admin/callbacks': typeof AdminCallbacksRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/couriers': typeof AdminCouriersRoute
   '/admin/customers': typeof AdminCustomersRoute
@@ -221,6 +228,7 @@ export interface FileRoutesByTo {
   '/order-success': typeof OrderSuccessRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/branches': typeof AdminBranchesRoute
+  '/admin/callbacks': typeof AdminCallbacksRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/couriers': typeof AdminCouriersRoute
   '/admin/customers': typeof AdminCustomersRoute
@@ -252,6 +260,7 @@ export interface FileRoutesById {
   '/order-success': typeof OrderSuccessRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/branches': typeof AdminBranchesRoute
+  '/admin/callbacks': typeof AdminCallbacksRoute
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/couriers': typeof AdminCouriersRoute
   '/admin/customers': typeof AdminCustomersRoute
@@ -284,6 +293,7 @@ export interface FileRouteTypes {
     | '/order-success'
     | '/admin/banners'
     | '/admin/branches'
+    | '/admin/callbacks'
     | '/admin/categories'
     | '/admin/couriers'
     | '/admin/customers'
@@ -313,6 +323,7 @@ export interface FileRouteTypes {
     | '/order-success'
     | '/admin/banners'
     | '/admin/branches'
+    | '/admin/callbacks'
     | '/admin/categories'
     | '/admin/couriers'
     | '/admin/customers'
@@ -343,6 +354,7 @@ export interface FileRouteTypes {
     | '/order-success'
     | '/admin/banners'
     | '/admin/branches'
+    | '/admin/callbacks'
     | '/admin/categories'
     | '/admin/couriers'
     | '/admin/customers'
@@ -560,6 +572,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminCategoriesRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/callbacks': {
+      id: '/admin/callbacks'
+      path: '/callbacks'
+      fullPath: '/admin/callbacks'
+      preLoaderRoute: typeof AdminCallbacksRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/branches': {
       id: '/admin/branches'
       path: '/branches'
@@ -580,6 +599,7 @@ declare module '@tanstack/react-router' {
 interface AdminRouteChildren {
   AdminBannersRoute: typeof AdminBannersRoute
   AdminBranchesRoute: typeof AdminBranchesRoute
+  AdminCallbacksRoute: typeof AdminCallbacksRoute
   AdminCategoriesRoute: typeof AdminCategoriesRoute
   AdminCouriersRoute: typeof AdminCouriersRoute
   AdminCustomersRoute: typeof AdminCustomersRoute
@@ -599,6 +619,7 @@ interface AdminRouteChildren {
 const AdminRouteChildren: AdminRouteChildren = {
   AdminBannersRoute: AdminBannersRoute,
   AdminBranchesRoute: AdminBranchesRoute,
+  AdminCallbacksRoute: AdminCallbacksRoute,
   AdminCategoriesRoute: AdminCategoriesRoute,
   AdminCouriersRoute: AdminCouriersRoute,
   AdminCustomersRoute: AdminCustomersRoute,

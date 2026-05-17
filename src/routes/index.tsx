@@ -16,7 +16,6 @@ import hero3 from "@/assets/hero-3.jpg";
 
 const FALLBACK_SLIDES = [
   { image_url: hero1, eyebrow: "Хит сезона", title: "Свежие суши и роллы", subtitle: "Доставка по Кемерово ежедневно с 10:00 до 22:00", cta_label: "Смотреть меню", cta_link: "#menu" },
-  { image_url: hero2, eyebrow: "Классика", title: "Ассорти из лосося и тунца", subtitle: "Только свежая рыба и нежный рис каждый день", cta_label: "Заказать сет", cta_link: "#menu" },
   { image_url: hero3, eyebrow: "Новинка", title: "Горячие запечённые роллы", subtitle: "Тающий сыр, острый соус и хрустящая корочка", cta_label: "Попробовать", cta_link: "#menu" },
 ];
 

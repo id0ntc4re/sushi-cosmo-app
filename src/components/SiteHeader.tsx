@@ -48,7 +48,7 @@ export function SiteHeader() {
             <span className="truncate">Доставка {active.hours}</span>
           </div>
           <div className="hidden sm:flex items-center gap-4">
-            <span>Бесплатная доставка от 1500 ₽</span>
+            <span>Бесплатная доставка от 700 ₽</span>
             <span className="opacity-70">·</span>
             <span>Бонусы за каждый заказ</span>
           </div>

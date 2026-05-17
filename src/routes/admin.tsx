@@ -13,6 +13,7 @@ const NAV: { to: string; label: string; icon: string; exact?: boolean; superOnly
   { to: "/admin", label: "Дашборд", icon: "📊", exact: true },
   { to: "/admin/kanban", label: "Канбан заказов", icon: "🟢" },
   { to: "/admin/orders", label: "Заказы", icon: "📦" },
+  { to: "/admin/callbacks", label: "Заявки на звонок", icon: "📞" },
   { to: "/admin/customers", label: "Клиенты", icon: "👥" },
   { to: "/admin/reports", label: "Отчёты", icon: "📈" },
   { to: "/admin/shifts", label: "Кассовые смены", icon: "💵" },

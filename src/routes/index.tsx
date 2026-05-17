@@ -545,7 +545,7 @@ function ProductModal({ product, onClose, onAdd }: { product: Product; onClose: 
           )}
           <div className="mb-4 rounded-xl bg-amber-50 border border-amber-100 px-3 py-2 text-[12px] text-amber-800">
             ⚠️ Внешний вид блюда может отличаться от фотографии.
-            {Array.isArray(product.tags) && product.tags.some((t) => /сет|set|набор/i.test(t))
+            {(/сет|set|набор/i.test(product.name) || (Array.isArray(product.tags) && product.tags.some((t) => /сет|set|набор/i.test(t))))
               ? " К набору входят палочки, соевый соус и имбирь — количество указано в описании."
               : " Палочки, соус и имбирь приобретаются отдельно."}
           </div>

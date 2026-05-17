@@ -94,12 +94,13 @@ function AdminLayout() {
     );
   }
 
-  return <AdminShell email={email} isSuper={isSuper} branchName={branchName} path={path} nav={nav} />;
+  return <AdminShell email={email} isSuper={isSuper} branchId={branchId} branchName={branchName} path={path} nav={nav} />;
 }
 
 function AdminShell({
-  email, isSuper, branchName, path, nav,
-}: { email: string | null; isSuper: boolean; branchName: string | null; path: string; nav: ReturnType<typeof useNavigate> }) {
+  email, isSuper, branchId, branchName, path, nav,
+}: { email: string | null; isSuper: boolean; branchId: string | null; branchName: string | null; path: string; nav: ReturnType<typeof useNavigate> }) {
+  useAdminNotifications({ isSuper, branchId });
   const [open, setOpen] = useState(false);
   useEffect(() => { setOpen(false); }, [path]);
 

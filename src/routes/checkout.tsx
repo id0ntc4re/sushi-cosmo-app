@@ -132,11 +132,12 @@ function Checkout() {
       : 0;
   const discount = promo?.discount ?? 0;
   const bonusBalance = Math.floor(Number(profile?.bonus_balance || 0));
-  const maxBonus = Math.min(bonusBalance, Math.floor(subtotal * 0.3));
+  // Скидки и бонусы не суммируются: при активном промокоде бонусы не применяются
+  const maxBonus = promo ? 0 : Math.min(bonusBalance, Math.floor(subtotal * 0.3));
   const bonusApplied = Math.min(bonusUse, maxBonus);
   const total = Math.max(0, subtotal - discount - bonusApplied + deliveryCost);
   const bonusEarn = profile ? Math.floor((subtotal - bonusApplied) * 0.03) : 0;
-  const belowMin = settings.min_order > 0 && subtotal < settings.min_order;
+  const belowMin = false;
 
   async function applyPromo() {
     setPromoErr(null);

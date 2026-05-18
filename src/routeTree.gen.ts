@@ -22,6 +22,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as NewsIndexRouteImport } from './routes/news.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as NewsSlugRouteImport } from './routes/news.$slug'
+import { Route as AdminWarehouseRouteImport } from './routes/admin.warehouse'
 import { Route as AdminTrashRouteImport } from './routes/admin.trash'
 import { Route as AdminShiftsRouteImport } from './routes/admin.shifts'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
@@ -105,6 +106,11 @@ const NewsSlugRoute = NewsSlugRouteImport.update({
   id: '/news/$slug',
   path: '/news/$slug',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminWarehouseRoute = AdminWarehouseRouteImport.update({
+  id: '/warehouse',
+  path: '/warehouse',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AdminTrashRoute = AdminTrashRouteImport.update({
   id: '/trash',
@@ -226,6 +232,7 @@ export interface FileRoutesByFullPath {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/shifts': typeof AdminShiftsRoute
   '/admin/trash': typeof AdminTrashRoute
+  '/admin/warehouse': typeof AdminWarehouseRoute
   '/news/$slug': typeof NewsSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/news/': typeof NewsIndexRoute
@@ -258,6 +265,7 @@ export interface FileRoutesByTo {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/shifts': typeof AdminShiftsRoute
   '/admin/trash': typeof AdminTrashRoute
+  '/admin/warehouse': typeof AdminWarehouseRoute
   '/news/$slug': typeof NewsSlugRoute
   '/admin': typeof AdminIndexRoute
   '/news': typeof NewsIndexRoute
@@ -292,6 +300,7 @@ export interface FileRoutesById {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/shifts': typeof AdminShiftsRoute
   '/admin/trash': typeof AdminTrashRoute
+  '/admin/warehouse': typeof AdminWarehouseRoute
   '/news/$slug': typeof NewsSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/news/': typeof NewsIndexRoute
@@ -327,6 +336,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/shifts'
     | '/admin/trash'
+    | '/admin/warehouse'
     | '/news/$slug'
     | '/admin/'
     | '/news/'
@@ -359,6 +369,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/shifts'
     | '/admin/trash'
+    | '/admin/warehouse'
     | '/news/$slug'
     | '/admin'
     | '/news'
@@ -392,6 +403,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/shifts'
     | '/admin/trash'
+    | '/admin/warehouse'
     | '/news/$slug'
     | '/admin/'
     | '/news/'
@@ -504,6 +516,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/news/$slug'
       preLoaderRoute: typeof NewsSlugRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/admin/warehouse': {
+      id: '/admin/warehouse'
+      path: '/warehouse'
+      fullPath: '/admin/warehouse'
+      preLoaderRoute: typeof AdminWarehouseRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/admin/trash': {
       id: '/admin/trash'
@@ -653,6 +672,7 @@ interface AdminRouteChildren {
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminShiftsRoute: typeof AdminShiftsRoute
   AdminTrashRoute: typeof AdminTrashRoute
+  AdminWarehouseRoute: typeof AdminWarehouseRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
@@ -675,6 +695,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminSettingsRoute: AdminSettingsRoute,
   AdminShiftsRoute: AdminShiftsRoute,
   AdminTrashRoute: AdminTrashRoute,
+  AdminWarehouseRoute: AdminWarehouseRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 

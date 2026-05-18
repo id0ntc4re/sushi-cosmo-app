@@ -439,7 +439,11 @@ function Checkout() {
 
                 {belowMin && (
                   <div className="px-4 py-3 rounded-xl bg-amber-50 text-amber-800 text-sm">
-                    Минимальная сумма заказа: <b>{settings.min_order} ₽</b>. Добавьте ещё на {settings.min_order - subtotal} ₽.
+                    {form.delivery_type === "delivery" && zone && zoneMin > (Number(settings.min_order) || 0) ? (
+                      <>Минимальная сумма для доставки в <b>«{zone.name}»</b>: <b>{minRequired} ₽</b>. Добавьте ещё на {minRequired - subtotal} ₽.</>
+                    ) : (
+                      <>Минимальная сумма заказа: <b>{minRequired} ₽</b>. Добавьте ещё на {minRequired - subtotal} ₽.</>
+                    )}
                   </div>
                 )}
                 {error && (

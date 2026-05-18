@@ -22,6 +22,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as NewsIndexRouteImport } from './routes/news.index'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as NewsSlugRouteImport } from './routes/news.$slug'
+import { Route as AdminWarehouseRouteImport } from './routes/admin.warehouse'
 import { Route as AdminTrashRouteImport } from './routes/admin.trash'
 import { Route as AdminShiftsRouteImport } from './routes/admin.shifts'
 import { Route as AdminSettingsRouteImport } from './routes/admin.settings'
@@ -34,6 +35,7 @@ import { Route as AdminNewsRouteImport } from './routes/admin.news'
 import { Route as AdminModifiersRouteImport } from './routes/admin.modifiers'
 import { Route as AdminKanbanRouteImport } from './routes/admin.kanban'
 import { Route as AdminInventoryRouteImport } from './routes/admin.inventory'
+import { Route as AdminExpensesRouteImport } from './routes/admin.expenses'
 import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
 import { Route as AdminCouriersRouteImport } from './routes/admin.couriers'
 import { Route as AdminCategoriesRouteImport } from './routes/admin.categories'
@@ -106,6 +108,11 @@ const NewsSlugRoute = NewsSlugRouteImport.update({
   path: '/news/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminWarehouseRoute = AdminWarehouseRouteImport.update({
+  id: '/warehouse',
+  path: '/warehouse',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminTrashRoute = AdminTrashRouteImport.update({
   id: '/trash',
   path: '/trash',
@@ -166,6 +173,11 @@ const AdminInventoryRoute = AdminInventoryRouteImport.update({
   path: '/inventory',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminExpensesRoute = AdminExpensesRouteImport.update({
+  id: '/expenses',
+  path: '/expenses',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminCustomersRoute = AdminCustomersRouteImport.update({
   id: '/customers',
   path: '/customers',
@@ -214,6 +226,7 @@ export interface FileRoutesByFullPath {
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/couriers': typeof AdminCouriersRoute
   '/admin/customers': typeof AdminCustomersRoute
+  '/admin/expenses': typeof AdminExpensesRoute
   '/admin/inventory': typeof AdminInventoryRoute
   '/admin/kanban': typeof AdminKanbanRoute
   '/admin/modifiers': typeof AdminModifiersRoute
@@ -226,6 +239,7 @@ export interface FileRoutesByFullPath {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/shifts': typeof AdminShiftsRoute
   '/admin/trash': typeof AdminTrashRoute
+  '/admin/warehouse': typeof AdminWarehouseRoute
   '/news/$slug': typeof NewsSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/news/': typeof NewsIndexRoute
@@ -246,6 +260,7 @@ export interface FileRoutesByTo {
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/couriers': typeof AdminCouriersRoute
   '/admin/customers': typeof AdminCustomersRoute
+  '/admin/expenses': typeof AdminExpensesRoute
   '/admin/inventory': typeof AdminInventoryRoute
   '/admin/kanban': typeof AdminKanbanRoute
   '/admin/modifiers': typeof AdminModifiersRoute
@@ -258,6 +273,7 @@ export interface FileRoutesByTo {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/shifts': typeof AdminShiftsRoute
   '/admin/trash': typeof AdminTrashRoute
+  '/admin/warehouse': typeof AdminWarehouseRoute
   '/news/$slug': typeof NewsSlugRoute
   '/admin': typeof AdminIndexRoute
   '/news': typeof NewsIndexRoute
@@ -280,6 +296,7 @@ export interface FileRoutesById {
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/couriers': typeof AdminCouriersRoute
   '/admin/customers': typeof AdminCustomersRoute
+  '/admin/expenses': typeof AdminExpensesRoute
   '/admin/inventory': typeof AdminInventoryRoute
   '/admin/kanban': typeof AdminKanbanRoute
   '/admin/modifiers': typeof AdminModifiersRoute
@@ -292,6 +309,7 @@ export interface FileRoutesById {
   '/admin/settings': typeof AdminSettingsRoute
   '/admin/shifts': typeof AdminShiftsRoute
   '/admin/trash': typeof AdminTrashRoute
+  '/admin/warehouse': typeof AdminWarehouseRoute
   '/news/$slug': typeof NewsSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/news/': typeof NewsIndexRoute
@@ -315,6 +333,7 @@ export interface FileRouteTypes {
     | '/admin/categories'
     | '/admin/couriers'
     | '/admin/customers'
+    | '/admin/expenses'
     | '/admin/inventory'
     | '/admin/kanban'
     | '/admin/modifiers'
@@ -327,6 +346,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/shifts'
     | '/admin/trash'
+    | '/admin/warehouse'
     | '/news/$slug'
     | '/admin/'
     | '/news/'
@@ -347,6 +367,7 @@ export interface FileRouteTypes {
     | '/admin/categories'
     | '/admin/couriers'
     | '/admin/customers'
+    | '/admin/expenses'
     | '/admin/inventory'
     | '/admin/kanban'
     | '/admin/modifiers'
@@ -359,6 +380,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/shifts'
     | '/admin/trash'
+    | '/admin/warehouse'
     | '/news/$slug'
     | '/admin'
     | '/news'
@@ -380,6 +402,7 @@ export interface FileRouteTypes {
     | '/admin/categories'
     | '/admin/couriers'
     | '/admin/customers'
+    | '/admin/expenses'
     | '/admin/inventory'
     | '/admin/kanban'
     | '/admin/modifiers'
@@ -392,6 +415,7 @@ export interface FileRouteTypes {
     | '/admin/settings'
     | '/admin/shifts'
     | '/admin/trash'
+    | '/admin/warehouse'
     | '/news/$slug'
     | '/admin/'
     | '/news/'
@@ -505,6 +529,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof NewsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin/warehouse': {
+      id: '/admin/warehouse'
+      path: '/warehouse'
+      fullPath: '/admin/warehouse'
+      preLoaderRoute: typeof AdminWarehouseRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/trash': {
       id: '/admin/trash'
       path: '/trash'
@@ -589,6 +620,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminInventoryRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/expenses': {
+      id: '/admin/expenses'
+      path: '/expenses'
+      fullPath: '/admin/expenses'
+      preLoaderRoute: typeof AdminExpensesRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/customers': {
       id: '/admin/customers'
       path: '/customers'
@@ -641,6 +679,7 @@ interface AdminRouteChildren {
   AdminCategoriesRoute: typeof AdminCategoriesRoute
   AdminCouriersRoute: typeof AdminCouriersRoute
   AdminCustomersRoute: typeof AdminCustomersRoute
+  AdminExpensesRoute: typeof AdminExpensesRoute
   AdminInventoryRoute: typeof AdminInventoryRoute
   AdminKanbanRoute: typeof AdminKanbanRoute
   AdminModifiersRoute: typeof AdminModifiersRoute
@@ -653,6 +692,7 @@ interface AdminRouteChildren {
   AdminSettingsRoute: typeof AdminSettingsRoute
   AdminShiftsRoute: typeof AdminShiftsRoute
   AdminTrashRoute: typeof AdminTrashRoute
+  AdminWarehouseRoute: typeof AdminWarehouseRoute
   AdminIndexRoute: typeof AdminIndexRoute
 }
 
@@ -663,6 +703,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminCategoriesRoute: AdminCategoriesRoute,
   AdminCouriersRoute: AdminCouriersRoute,
   AdminCustomersRoute: AdminCustomersRoute,
+  AdminExpensesRoute: AdminExpensesRoute,
   AdminInventoryRoute: AdminInventoryRoute,
   AdminKanbanRoute: AdminKanbanRoute,
   AdminModifiersRoute: AdminModifiersRoute,
@@ -675,6 +716,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminSettingsRoute: AdminSettingsRoute,
   AdminShiftsRoute: AdminShiftsRoute,
   AdminTrashRoute: AdminTrashRoute,
+  AdminWarehouseRoute: AdminWarehouseRoute,
   AdminIndexRoute: AdminIndexRoute,
 }
 

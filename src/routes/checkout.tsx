@@ -348,6 +348,24 @@ function Checkout() {
                           onChange={(e) => set("address", e.target.value)}
                           placeholder="Улица, дом, кв., подъезд, этаж" required />
                       </Field>
+                      {zones.length > 0 && (
+                        <Field label="Зона доставки*">
+                          <select className={inputCls} value={zoneId} onChange={(e) => setZoneId(e.target.value)} required>
+                            {zones.map((z) => (
+                              <option key={z.id} value={z.id}>
+                                {z.name} · доставка {Number(z.cost)} ₽
+                                {Number(z.min_order) > 0 ? ` · мин. заказ ${Number(z.min_order)} ₽` : ""}
+                                {z.free_from != null ? ` · бесплатно от ${Number(z.free_from)} ₽` : ""}
+                              </option>
+                            ))}
+                          </select>
+                          {zone && (
+                            <p className="text-xs text-neutral-500 mt-1.5">
+                              Не уверены в зоне? Уточните у оператора по телефону — стоимость и время доставки в отдалённые районы могут отличаться.
+                            </p>
+                          )}
+                        </Field>
+                      )}
                     </>
                   ) : (
                     <Field label="Точка самовывоза">

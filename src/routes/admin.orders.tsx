@@ -31,7 +31,7 @@ function OrdersAdmin() {
   const [items, setItems] = useState<any[]>([]);
 
   async function load() {
-    const q = supabase.from("orders").select("*").order("created_at", { ascending: false }).limit(200);
+    const q = supabase.from("orders").select("*").is("deleted_at", null).order("created_at", { ascending: false }).limit(200);
     const { data } = await q;
     setOrders(data ?? []);
   }
@@ -60,9 +60,10 @@ function OrdersAdmin() {
   }
 
   async function remove(id: string) {
-    if (!confirm("Удалить заказ?")) return;
-    const { error } = await supabase.from("orders").delete().eq("id", id);
+    if (!confirm("Удалить заказ? Его можно будет восстановить из «Удалённых».")) return;
+    const { error } = await supabase.from("orders").update({ deleted_at: new Date().toISOString() } as any).eq("id", id);
     if (error) return toast.error(error.message);
+    toast.success("Заказ перемещён в Удалённые");
     setOpen(null); load();
   }
 

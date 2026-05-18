@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { sendOrderEmail } from "@/lib/email.server";
 
 export const createCheckoutOrder = createServerFn({ method: "POST" })
   .inputValidator((data) => z.object({
@@ -116,9 +117,50 @@ export const createCheckoutOrder = createServerFn({ method: "POST" })
       }
     }
 
+    // Копия заказа на почту филиала + резервные адреса из settings.order_emails
+    try {
+      const [{ data: branchRow }, { data: setRow }] = await Promise.all([
+        branchId
+          ? supabaseAdmin.from("branches").select("name,email").eq("id", branchId).maybeSingle()
+          : Promise.resolve({ data: null as any }),
+        supabaseAdmin.from("settings").select("value").eq("key", "order_emails").maybeSingle(),
+      ]);
+      const branchEmail = (branchRow as any)?.email as string | null | undefined;
+      const branchName = (branchRow as any)?.name as string | null | undefined;
+      const fallbackList = Array.isArray((setRow as any)?.value?.emails)
+        ? ((setRow as any).value.emails as string[])
+        : [];
+      const to = [branchEmail ?? "", ...fallbackList].filter(Boolean) as string[];
+      if (to.length > 0) {
+        await sendOrderEmail({
+          to,
+          order: {
+            number: order.number,
+            customer_name: data.order.customer_name,
+            phone: data.order.phone,
+            delivery_type: data.order.delivery_type,
+            address: data.order.address,
+            pickup_point: data.order.pickup_point,
+            payment_method: data.order.payment_method,
+            change_from: data.order.change_from,
+            delivery_time: data.order.delivery_time,
+            comment: data.order.comment,
+            subtotal: data.order.subtotal,
+            delivery_cost: data.order.delivery_cost,
+            discount: data.order.discount,
+            bonus_used: data.order.bonus_used,
+            total: data.order.total,
+            branch_name: branchName ?? null,
+            items: data.items.map((i) => ({ name: i.name, price: i.price, quantity: i.quantity })),
+          },
+        });
+      }
+    } catch (err) {
+      console.error("[order email] failed:", err);
+    }
+
     return order;
   });
-// ===== Admin POS: create order on behalf of customer =====
 export const createOrderAsAdmin = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((data) => z.object({

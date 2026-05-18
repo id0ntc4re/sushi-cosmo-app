@@ -219,7 +219,7 @@ function Index() {
       </section>
 
       {/* DELIVERY CALCULATOR CTA */}
-      <DeliveryCalculator subtotal={cart.subtotal} onOpenCart={() => cart.setOpen(true)} products={products.filter((p) => !p.is_addon)} />
+      <DeliveryCalculator subtotal={cart.subtotal} onOpenCart={() => cart.setOpen(true)} products={products.filter((p) => !p.is_addon)} onOpenProduct={(p) => setOpenProduct(p as any)} />
 
       {/* MENU */}
       <section id="menu" className="mx-auto max-w-[1280px] px-3 sm:px-6 mt-8 sm:mt-12 scroll-mt-32 md:scroll-mt-40">

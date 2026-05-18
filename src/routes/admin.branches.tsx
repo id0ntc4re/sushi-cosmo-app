@@ -17,6 +17,21 @@ function BranchesPage() {
   const [admins, setAdmins] = useState<RoleRow[]>([]);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteBranch, setInviteBranch] = useState<string>("");
+  const [testingId, setTestingId] = useState<string | null>(null);
+  const sendTest = useServerFn(sendTestBranchEmail);
+
+  async function testEmail(b: Branch) {
+    if (!b.email) return toast.error("Сначала укажите email для филиала");
+    setTestingId(b.id);
+    try {
+      const res = await sendTest({ data: { branchId: b.id } });
+      toast.success(`Письмо отправлено на ${res.sentTo}`);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Не удалось отправить");
+    } finally {
+      setTestingId(null);
+    }
+  }
 
   async function load() {
     const { data } = await supabase.from("branches").select("*").order("sort_order");

@@ -204,7 +204,7 @@ function BranchStats({ branchId }: { branchId: string }) {
   useEffect(() => {
     (async () => {
       const [{ count: o }, { count: sh }] = await Promise.all([
-        supabase.from("orders").select("id", { count: "exact", head: true }).eq("branch_id", branchId),
+        supabase.from("orders").select("id", { count: "exact", head: true }).eq("branch_id", branchId).is("deleted_at", null),
         supabase.from("cash_shifts").select("id", { count: "exact", head: true }).eq("branch_id", branchId),
       ]);
       setS({ orders: o ?? 0, shifts: sh ?? 0 });

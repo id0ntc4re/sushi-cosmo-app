@@ -67,6 +67,8 @@ function Checkout() {
   const [bonusUse, setBonusUse] = useState(0);
   const [branches, setBranches] = useState<{ id: string; name: string; address: string | null }[]>([]);
   const [branchId, setBranchId] = useState<string>("");
+  const [zones, setZones] = useState<{ id: string; name: string; cost: number; free_from: number | null; min_order: number }[]>([]);
+  const [zoneId, setZoneId] = useState<string>("");
 
   const [form, setForm] = useState({
     customer_name: "",
@@ -86,16 +88,20 @@ function Checkout() {
 
   useEffect(() => {
     (async () => {
-      const [{ data: st }, { data: ad }, { data: br }] = await Promise.all([
+      const [{ data: st }, { data: ad }, { data: br }, { data: zn }] = await Promise.all([
         supabase.from("settings").select("value").eq("key", "general").maybeSingle(),
         supabase.from("products").select("id,name,price,image_url,weight").eq("is_active", true).eq("in_stock", true).eq("is_addon", true).order("sort_order"),
         supabase.from("branches").select("id,name,address").eq("is_active", true).order("sort_order"),
+        supabase.from("delivery_zones").select("id,name,cost,free_from,min_order").eq("is_active", true).order("sort_order"),
       ]);
       if (st?.value) setSettings({ ...DEFAULT_SETTINGS, ...(st.value as any) });
       setAddons((ad as Addon[]) ?? []);
       const bl = (br ?? []) as { id: string; name: string; address: string | null }[];
       setBranches(bl);
       if (bl.length && !branchId) setBranchId(bl[0].id);
+      const zl = (zn ?? []) as typeof zones;
+      setZones(zl);
+      if (zl.length && !zoneId) setZoneId(zl[0].id);
 
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
@@ -124,11 +130,18 @@ function Checkout() {
     }
   }, [subtotal, promo]);
 
+  const zone = zones.find((z) => z.id === zoneId) ?? null;
+  const zoneFreeFrom = zone?.free_from != null ? Number(zone.free_from) : settings.free_delivery_from;
+  const zoneCost = zone ? Number(zone.cost) : settings.delivery_cost;
+  const zoneMin = zone ? Number(zone.min_order) : 0;
+  const minRequired = form.delivery_type === "delivery"
+    ? Math.max(zoneMin, Number(settings.min_order) || 0)
+    : Number(settings.min_order) || 0;
   const deliveryCost =
     form.delivery_type === "delivery"
-      ? subtotal >= settings.free_delivery_from
+      ? subtotal >= zoneFreeFrom
         ? 0
-        : settings.delivery_cost
+        : zoneCost
       : 0;
   const discount = promo?.discount ?? 0;
   const bonusBalance = Math.floor(Number(profile?.bonus_balance || 0));
@@ -137,7 +150,7 @@ function Checkout() {
   const bonusApplied = Math.min(bonusUse, maxBonus);
   const total = Math.max(0, subtotal - discount - bonusApplied + deliveryCost);
   const bonusEarn = profile ? Math.floor((subtotal - bonusApplied) * 0.03) : 0;
-  const belowMin = false;
+  const belowMin = subtotal < minRequired;
 
   async function applyPromo() {
     setPromoErr(null);
@@ -155,12 +168,19 @@ function Checkout() {
     e.preventDefault();
     setError(null);
     if (items.length === 0) return setError("Корзина пуста");
-    if (belowMin) return setError(`Минимальная сумма заказа: ${settings.min_order} ₽`);
+    if (belowMin) {
+      const what = form.delivery_type === "delivery" && zone && zoneMin > (Number(settings.min_order) || 0)
+        ? `для доставки в «${zone.name}»`
+        : "заказа";
+      return setError(`Минимальная сумма ${what}: ${minRequired} ₽. Добавьте ещё на ${minRequired - subtotal} ₽.`);
+    }
 
     const parsed = schema.safeParse(form);
     if (!parsed.success) return setError(parsed.error.issues[0].message);
     if (parsed.data.delivery_type === "delivery" && !parsed.data.address)
       return setError("Укажите адрес доставки");
+    if (parsed.data.delivery_type === "delivery" && !zone)
+      return setError("Выберите зону доставки");
 
     setSubmitting(true);
     try {
@@ -173,7 +193,7 @@ function Checkout() {
           customer_name: parsed.data.customer_name,
           phone: parsed.data.phone,
           delivery_type: parsed.data.delivery_type,
-          address: parsed.data.delivery_type === "delivery" ? parsed.data.address : null,
+          address: parsed.data.delivery_type === "delivery" ? `[${zone!.name}] ${parsed.data.address}` : null,
           pickup_point: parsed.data.delivery_type === "pickup" ? parsed.data.pickup_point : null,
           payment_method: parsed.data.payment_method,
           change_from: parsed.data.change_from ? Number(parsed.data.change_from) : null,
@@ -328,6 +348,24 @@ function Checkout() {
                           onChange={(e) => set("address", e.target.value)}
                           placeholder="Улица, дом, кв., подъезд, этаж" required />
                       </Field>
+                      {zones.length > 0 && (
+                        <Field label="Зона доставки*">
+                          <select className={inputCls} value={zoneId} onChange={(e) => setZoneId(e.target.value)} required>
+                            {zones.map((z) => (
+                              <option key={z.id} value={z.id}>
+                                {z.name} · доставка {Number(z.cost)} ₽
+                                {Number(z.min_order) > 0 ? ` · мин. заказ ${Number(z.min_order)} ₽` : ""}
+                                {z.free_from != null ? ` · бесплатно от ${Number(z.free_from)} ₽` : ""}
+                              </option>
+                            ))}
+                          </select>
+                          {zone && (
+                            <p className="text-xs text-neutral-500 mt-1.5">
+                              Не уверены в зоне? Уточните у оператора по телефону — стоимость и время доставки в отдалённые районы могут отличаться.
+                            </p>
+                          )}
+                        </Field>
+                      )}
                     </>
                   ) : (
                     <Field label="Точка самовывоза">
@@ -401,7 +439,11 @@ function Checkout() {
 
                 {belowMin && (
                   <div className="px-4 py-3 rounded-xl bg-amber-50 text-amber-800 text-sm">
-                    Минимальная сумма заказа: <b>{settings.min_order} ₽</b>. Добавьте ещё на {settings.min_order - subtotal} ₽.
+                    {form.delivery_type === "delivery" && zone && zoneMin > (Number(settings.min_order) || 0) ? (
+                      <>Минимальная сумма для доставки в <b>«{zone.name}»</b>: <b>{minRequired} ₽</b>. Добавьте ещё на {minRequired - subtotal} ₽.</>
+                    ) : (
+                      <>Минимальная сумма заказа: <b>{minRequired} ₽</b>. Добавьте ещё на {minRequired - subtotal} ₽.</>
+                    )}
                   </div>
                 )}
                 {error && (

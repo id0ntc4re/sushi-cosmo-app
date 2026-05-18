@@ -558,6 +558,7 @@ export type Database = {
           courier_id: string | null
           created_at: string
           customer_name: string
+          deleted_at: string | null
           delivery_cost: number
           delivery_time: string | null
           delivery_type: Database["public"]["Enums"]["delivery_type"]
@@ -589,6 +590,7 @@ export type Database = {
           courier_id?: string | null
           created_at?: string
           customer_name: string
+          deleted_at?: string | null
           delivery_cost?: number
           delivery_time?: string | null
           delivery_type?: Database["public"]["Enums"]["delivery_type"]
@@ -620,6 +622,7 @@ export type Database = {
           courier_id?: string | null
           created_at?: string
           customer_name?: string
+          deleted_at?: string | null
           delivery_cost?: number
           delivery_time?: string | null
           delivery_type?: Database["public"]["Enums"]["delivery_type"]

@@ -33,6 +33,7 @@ function Couriers() {
     setList(data ?? []);
     const { data: o } = await supabase.from("orders")
       .select("id,number,total,courier_id,status,address")
+      .is("deleted_at", null)
       .in("status", ["delivering"]);
     setActive(o ?? []);
   }

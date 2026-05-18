@@ -37,7 +37,7 @@ function Shifts() {
     setOpenShift(o ?? null);
     if (o) {
       const { data: orders } = await supabase.from("orders")
-        .select("total,payment_method,status").eq("shift_id", o.id).neq("status", "cancelled");
+        .select("total,payment_method,status").eq("shift_id", o.id).is("deleted_at", null).neq("status", "cancelled");
       const cash = (orders ?? []).filter((x: any) => x.payment_method === "cash").reduce((a: number, x: any) => a + Number(x.total), 0);
       const card = (orders ?? []).filter((x: any) => x.payment_method !== "cash").reduce((a: number, x: any) => a + Number(x.total), 0);
       setStats({ cash, card, count: (orders ?? []).length, total: cash + card });

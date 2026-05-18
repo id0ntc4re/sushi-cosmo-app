@@ -30,6 +30,7 @@ function Kanban() {
   async function load() {
     let q = supabase.from("orders")
       .select("id,number,customer_name,phone,address,total,status,payment_method,delivery_type,comment,created_at,courier_id,branch_id")
+      .is("deleted_at", null)
       .in("status", ["new", "confirmed", "cooking", "delivering"])
       .order("created_at", { ascending: true });
     if (isSuper && filterBranch !== "all") q = q.eq("branch_id", filterBranch);

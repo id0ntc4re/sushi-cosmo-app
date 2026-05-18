@@ -31,7 +31,10 @@ function Dashboard() {
         ? (filterBranch !== "all" ? filterBranch : null)
         : branchId;
 
-      const apply = (q: any) => scopeBranch ? q.eq("branch_id", scopeBranch) : q;
+      const apply = (q: any) => {
+        let r = q.is("deleted_at", null);
+        return scopeBranch ? r.eq("branch_id", scopeBranch) : r;
+      };
 
       const [todayR, weekR, newR, prodR, recentR] = await Promise.all([
         apply(supabase.from("orders").select("total", { count: "exact" }).gte("created_at", today.toISOString())),

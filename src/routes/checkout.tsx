@@ -168,12 +168,19 @@ function Checkout() {
     e.preventDefault();
     setError(null);
     if (items.length === 0) return setError("Корзина пуста");
-    if (belowMin) return setError(`Минимальная сумма заказа: ${settings.min_order} ₽`);
+    if (belowMin) {
+      const what = form.delivery_type === "delivery" && zone && zoneMin > (Number(settings.min_order) || 0)
+        ? `для доставки в «${zone.name}»`
+        : "заказа";
+      return setError(`Минимальная сумма ${what}: ${minRequired} ₽. Добавьте ещё на ${minRequired - subtotal} ₽.`);
+    }
 
     const parsed = schema.safeParse(form);
     if (!parsed.success) return setError(parsed.error.issues[0].message);
     if (parsed.data.delivery_type === "delivery" && !parsed.data.address)
       return setError("Укажите адрес доставки");
+    if (parsed.data.delivery_type === "delivery" && !zone)
+      return setError("Выберите зону доставки");
 
     setSubmitting(true);
     try {

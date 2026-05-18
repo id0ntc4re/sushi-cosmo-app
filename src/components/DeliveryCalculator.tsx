@@ -31,6 +31,7 @@ type Props = {
   subtotal: number;
   onOpenCart: () => void;
   products?: Product[];
+  onOpenProduct?: (product: Product) => void;
 };
 
 const PERSONS: { n: number; label: string; Icon: LucideIcon; hint: string }[] = [

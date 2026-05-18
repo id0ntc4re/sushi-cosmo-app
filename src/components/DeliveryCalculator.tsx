@@ -327,9 +327,14 @@ export function DeliveryCalculator({ subtotal, onOpenCart, products: providedPro
                             : "border-border hover:border-foreground/30"
                         }`}
                       >
-                        <div className="relative aspect-square bg-muted grid place-items-center text-3xl">
+                        <button
+                          type="button"
+                          onClick={() => onOpenProduct?.(p)}
+                          className="relative aspect-square w-full bg-muted grid place-items-center text-3xl cursor-pointer overflow-hidden"
+                          aria-label={`Открыть ${p.name}`}
+                        >
                           {p.image_url ? (
-                            <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" />
+                            <img src={p.image_url} alt={p.name} className="w-full h-full object-cover transition-transform hover:scale-105" />
                           ) : (
                             "🍣"
                           )}
@@ -338,11 +343,15 @@ export function DeliveryCalculator({ subtotal, onOpenCart, products: providedPro
                               {qty}
                             </span>
                           )}
-                        </div>
+                        </button>
                         <div className="p-2">
-                          <div className="text-xs font-semibold leading-tight line-clamp-2 min-h-[2.2em]">
+                          <button
+                            type="button"
+                            onClick={() => onOpenProduct?.(p)}
+                            className="text-left w-full text-xs font-semibold leading-tight line-clamp-2 min-h-[2.2em] hover:text-primary transition-colors"
+                          >
                             {p.name}
-                          </div>
+                          </button>
                           <div className="mt-1.5 flex items-center justify-between gap-1">
                             <span className="text-sm font-extrabold text-primary">{Number(p.price)} ₽</span>
                             {qty === 0 ? (

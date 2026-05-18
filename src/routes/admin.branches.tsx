@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAdminRole, type Branch } from "@/lib/admin-role";
+import { sendTestBranchEmail } from "@/lib/branch-email.functions";
 
 export const Route = createFileRoute("/admin/branches")({ component: BranchesPage });
 
@@ -15,6 +17,21 @@ function BranchesPage() {
   const [admins, setAdmins] = useState<RoleRow[]>([]);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteBranch, setInviteBranch] = useState<string>("");
+  const [testingId, setTestingId] = useState<string | null>(null);
+  const sendTest = useServerFn(sendTestBranchEmail);
+
+  async function testEmail(b: Branch) {
+    if (!b.email) return toast.error("Сначала укажите email для филиала");
+    setTestingId(b.id);
+    try {
+      const res = await sendTest({ data: { branchId: b.id } });
+      toast.success(`Письмо отправлено на ${res.sentTo}`);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Не удалось отправить");
+    } finally {
+      setTestingId(null);
+    }
+  }
 
   async function load() {
     const { data } = await supabase.from("branches").select("*").order("sort_order");
@@ -112,7 +129,12 @@ function BranchesPage() {
                   ? <span className="text-green-600 font-semibold">Активен</span>
                   : <span className="text-neutral-400">Выключен</span>}</td>
                 <td><BranchStats branchId={b.id} /></td>
-                <td className="text-right pr-3">
+                <td className="text-right pr-3 whitespace-nowrap">
+                  <button onClick={() => testEmail(b)} disabled={testingId === b.id}
+                    title="Отправить тестовое письмо на email филиала"
+                    className="text-xs px-2 py-1 rounded-full bg-neutral-100 hover:bg-neutral-200 font-semibold mr-2 disabled:opacity-50">
+                    {testingId === b.id ? "…" : "✉️ Тест"}
+                  </button>
                   <button onClick={() => setEditing(b)} className="text-primary font-semibold mr-3">✏️</button>
                   <button onClick={() => remove(b.id)} className="text-red-500">🗑️</button>
                 </td>

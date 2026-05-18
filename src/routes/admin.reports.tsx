@@ -14,6 +14,7 @@ function Reports() {
       const since = new Date(); since.setDate(since.getDate() - days); since.setHours(0, 0, 0, 0);
       const { data: o } = await supabase.from("orders")
         .select("id,total,status,payment_method,delivery_type,created_at")
+        .is("deleted_at", null)
         .gte("created_at", since.toISOString())
         .neq("status", "cancelled");
       setOrders(o ?? []);

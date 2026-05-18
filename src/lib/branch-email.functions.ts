@@ -1,6 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { sendOrderEmail } from "./email.server";
 
 export const sendTestBranchEmail = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

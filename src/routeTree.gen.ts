@@ -35,6 +35,7 @@ import { Route as AdminNewsRouteImport } from './routes/admin.news'
 import { Route as AdminModifiersRouteImport } from './routes/admin.modifiers'
 import { Route as AdminKanbanRouteImport } from './routes/admin.kanban'
 import { Route as AdminInventoryRouteImport } from './routes/admin.inventory'
+import { Route as AdminExpensesRouteImport } from './routes/admin.expenses'
 import { Route as AdminCustomersRouteImport } from './routes/admin.customers'
 import { Route as AdminCouriersRouteImport } from './routes/admin.couriers'
 import { Route as AdminCategoriesRouteImport } from './routes/admin.categories'
@@ -172,6 +173,11 @@ const AdminInventoryRoute = AdminInventoryRouteImport.update({
   path: '/inventory',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminExpensesRoute = AdminExpensesRouteImport.update({
+  id: '/expenses',
+  path: '/expenses',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminCustomersRoute = AdminCustomersRouteImport.update({
   id: '/customers',
   path: '/customers',
@@ -220,6 +226,7 @@ export interface FileRoutesByFullPath {
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/couriers': typeof AdminCouriersRoute
   '/admin/customers': typeof AdminCustomersRoute
+  '/admin/expenses': typeof AdminExpensesRoute
   '/admin/inventory': typeof AdminInventoryRoute
   '/admin/kanban': typeof AdminKanbanRoute
   '/admin/modifiers': typeof AdminModifiersRoute
@@ -253,6 +260,7 @@ export interface FileRoutesByTo {
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/couriers': typeof AdminCouriersRoute
   '/admin/customers': typeof AdminCustomersRoute
+  '/admin/expenses': typeof AdminExpensesRoute
   '/admin/inventory': typeof AdminInventoryRoute
   '/admin/kanban': typeof AdminKanbanRoute
   '/admin/modifiers': typeof AdminModifiersRoute
@@ -288,6 +296,7 @@ export interface FileRoutesById {
   '/admin/categories': typeof AdminCategoriesRoute
   '/admin/couriers': typeof AdminCouriersRoute
   '/admin/customers': typeof AdminCustomersRoute
+  '/admin/expenses': typeof AdminExpensesRoute
   '/admin/inventory': typeof AdminInventoryRoute
   '/admin/kanban': typeof AdminKanbanRoute
   '/admin/modifiers': typeof AdminModifiersRoute
@@ -324,6 +333,7 @@ export interface FileRouteTypes {
     | '/admin/categories'
     | '/admin/couriers'
     | '/admin/customers'
+    | '/admin/expenses'
     | '/admin/inventory'
     | '/admin/kanban'
     | '/admin/modifiers'
@@ -357,6 +367,7 @@ export interface FileRouteTypes {
     | '/admin/categories'
     | '/admin/couriers'
     | '/admin/customers'
+    | '/admin/expenses'
     | '/admin/inventory'
     | '/admin/kanban'
     | '/admin/modifiers'
@@ -391,6 +402,7 @@ export interface FileRouteTypes {
     | '/admin/categories'
     | '/admin/couriers'
     | '/admin/customers'
+    | '/admin/expenses'
     | '/admin/inventory'
     | '/admin/kanban'
     | '/admin/modifiers'
@@ -608,6 +620,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminInventoryRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/expenses': {
+      id: '/admin/expenses'
+      path: '/expenses'
+      fullPath: '/admin/expenses'
+      preLoaderRoute: typeof AdminExpensesRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/customers': {
       id: '/admin/customers'
       path: '/customers'
@@ -660,6 +679,7 @@ interface AdminRouteChildren {
   AdminCategoriesRoute: typeof AdminCategoriesRoute
   AdminCouriersRoute: typeof AdminCouriersRoute
   AdminCustomersRoute: typeof AdminCustomersRoute
+  AdminExpensesRoute: typeof AdminExpensesRoute
   AdminInventoryRoute: typeof AdminInventoryRoute
   AdminKanbanRoute: typeof AdminKanbanRoute
   AdminModifiersRoute: typeof AdminModifiersRoute
@@ -683,6 +703,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminCategoriesRoute: AdminCategoriesRoute,
   AdminCouriersRoute: AdminCouriersRoute,
   AdminCustomersRoute: AdminCustomersRoute,
+  AdminExpensesRoute: AdminExpensesRoute,
   AdminInventoryRoute: AdminInventoryRoute,
   AdminKanbanRoute: AdminKanbanRoute,
   AdminModifiersRoute: AdminModifiersRoute,

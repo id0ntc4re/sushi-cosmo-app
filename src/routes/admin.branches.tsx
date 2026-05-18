@@ -177,6 +177,11 @@ function BranchesPage() {
                 className="w-full px-3 py-2 rounded-xl border" /></Field>
               <Field label="Телефон"><input value={editing.phone ?? ""} onChange={(e) => setEditing({ ...editing, phone: e.target.value })}
                 className="w-full px-3 py-2 rounded-xl border" /></Field>
+              <Field label="Email для копий заказов">
+                <input type="email" value={editing.email ?? ""} onChange={(e) => setEditing({ ...editing, email: e.target.value })}
+                  placeholder="orders@filial.ru" className="w-full px-3 py-2 rounded-xl border" />
+                <p className="text-xs text-neutral-500 mt-1">На этот адрес автоматически уходит копия каждого нового заказа.</p>
+              </Field>
               <Field label="Порядок"><input type="number" value={editing.sort_order ?? 0} onChange={(e) => setEditing({ ...editing, sort_order: Number(e.target.value) })}
                 className="w-full px-3 py-2 rounded-xl border" /></Field>
               <label className="flex items-center gap-2">

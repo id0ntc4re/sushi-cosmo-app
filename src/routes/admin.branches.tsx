@@ -41,6 +41,7 @@ function BranchesPage() {
       name: editing.name?.trim(),
       address: editing.address ?? null,
       phone: editing.phone ?? null,
+      email: editing.email?.trim() || null,
       is_active: editing.is_active ?? true,
       sort_order: editing.sort_order ?? 0,
     };

@@ -24,31 +24,31 @@ export const sendTestBranchEmail = createServerFn({ method: "POST" })
       throw new Error("RESEND_API_KEY не настроен в секретах");
     }
 
-    await sendOrderEmail({
-      to: [branch.email],
-      order: {
-        number: 9999,
-        customer_name: "Тестовый клиент",
-        phone: "+7 999 000-00-00",
-        delivery_type: "delivery",
-        address: "ул. Тестовая, 1, кв. 42",
-        pickup_point: null,
-        payment_method: "card_courier",
-        change_from: null,
-        delivery_time: "Как можно скорее",
-        comment: "Это тестовое письмо — проверка доставки уведомлений о заказах.",
-        subtotal: 1200,
-        delivery_cost: 0,
-        discount: 0,
-        bonus_used: 0,
-        total: 1200,
-        branch_name: branch.name,
-        items: [
-          { name: "Филадельфия Классик", price: 590, quantity: 2 },
-          { name: "Кола 0.5", price: 100, quantity: 1 },
-        ],
+    const html = `
+      <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#222">
+        <h2>✅ Тестовое письмо</h2>
+        <p>Если вы видите это сообщение, значит уведомления о новых заказах для филиала
+          <b>${branch.name}</b> будут приходить на адрес <b>${branch.email}</b>.</p>
+        <p style="color:#666;font-size:13px">Отправлено из админки сайта КосмоСуши.</p>
+      </div>`;
+
+    const resp = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
       },
+      body: JSON.stringify({
+        from: "КосмоСуши <onboarding@resend.dev>",
+        to: [branch.email],
+        subject: `Тестовое письмо · ${branch.name}`,
+        html,
+      }),
     });
+    if (!resp.ok) {
+      const text = await resp.text();
+      throw new Error(`Resend ${resp.status}: ${text}`);
+    }
 
     return { ok: true, sentTo: branch.email };
   });

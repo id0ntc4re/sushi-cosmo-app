@@ -119,6 +119,33 @@ export type Database = {
         }
         Relationships: []
       }
+      branch_stock: {
+        Row: {
+          branch_id: string
+          id: string
+          ingredient_id: string
+          min_stock: number
+          stock: number
+          updated_at: string
+        }
+        Insert: {
+          branch_id: string
+          id?: string
+          ingredient_id: string
+          min_stock?: number
+          stock?: number
+          updated_at?: string
+        }
+        Update: {
+          branch_id?: string
+          id?: string
+          ingredient_id?: string
+          min_stock?: number
+          stock?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       branches: {
         Row: {
           address: string | null
@@ -359,6 +386,39 @@ export type Database = {
         }
         Relationships: []
       }
+      expenses: {
+        Row: {
+          amount: number
+          branch_id: string
+          category: string
+          created_at: string
+          created_by: string | null
+          id: string
+          note: string | null
+          spent_at: string
+        }
+        Insert: {
+          amount: number
+          branch_id: string
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          spent_at?: string
+        }
+        Update: {
+          amount?: number
+          branch_id?: string
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          note?: string | null
+          spent_at?: string
+        }
+        Relationships: []
+      }
       favorites: {
         Row: {
           created_at: string
@@ -407,6 +467,42 @@ export type Database = {
           stock?: number
           unit?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      inventory_counts: {
+        Row: {
+          branch_id: string
+          counted: number
+          created_at: string
+          created_by: string | null
+          diff: number
+          expected: number
+          id: string
+          ingredient_id: string
+          note: string | null
+        }
+        Insert: {
+          branch_id: string
+          counted: number
+          created_at?: string
+          created_by?: string | null
+          diff?: number
+          expected?: number
+          id?: string
+          ingredient_id: string
+          note?: string | null
+        }
+        Update: {
+          branch_id?: string
+          counted?: number
+          created_at?: string
+          created_by?: string | null
+          diff?: number
+          expected?: number
+          id?: string
+          ingredient_id?: string
+          note?: string | null
         }
         Relationships: []
       }
@@ -912,6 +1008,69 @@ export type Database = {
           ingredient_id?: string
           order_id?: string | null
           reason?: string
+        }
+        Relationships: []
+      }
+      stock_transfers: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          from_branch_id: string
+          id: string
+          ingredient_id: string
+          note: string | null
+          qty: number
+          to_branch_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          from_branch_id: string
+          id?: string
+          ingredient_id: string
+          note?: string | null
+          qty: number
+          to_branch_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          from_branch_id?: string
+          id?: string
+          ingredient_id?: string
+          note?: string | null
+          qty?: number
+          to_branch_id?: string
+        }
+        Relationships: []
+      }
+      stock_writeoffs: {
+        Row: {
+          branch_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          ingredient_id: string
+          qty: number
+          reason: string | null
+        }
+        Insert: {
+          branch_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          ingredient_id: string
+          qty: number
+          reason?: string | null
+        }
+        Update: {
+          branch_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          ingredient_id?: string
+          qty?: number
+          reason?: string | null
         }
         Relationships: []
       }

@@ -28,6 +28,7 @@ function Customers() {
         .select("id,full_name,phone,email,bonus_balance,total_spent,created_at");
       const { data: orders } = await supabase.from("orders")
         .select("user_id,total,created_at,status")
+        .is("deleted_at", null)
         .neq("status", "cancelled");
       const byUser: Record<string, { count: number; sum: number; last: string | null }> = {};
       (orders ?? []).forEach((o: any) => {

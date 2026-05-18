@@ -130,11 +130,18 @@ function Checkout() {
     }
   }, [subtotal, promo]);
 
+  const zone = zones.find((z) => z.id === zoneId) ?? null;
+  const zoneFreeFrom = zone?.free_from != null ? Number(zone.free_from) : settings.free_delivery_from;
+  const zoneCost = zone ? Number(zone.cost) : settings.delivery_cost;
+  const zoneMin = zone ? Number(zone.min_order) : 0;
+  const minRequired = form.delivery_type === "delivery"
+    ? Math.max(zoneMin, Number(settings.min_order) || 0)
+    : Number(settings.min_order) || 0;
   const deliveryCost =
     form.delivery_type === "delivery"
-      ? subtotal >= settings.free_delivery_from
+      ? subtotal >= zoneFreeFrom
         ? 0
-        : settings.delivery_cost
+        : zoneCost
       : 0;
   const discount = promo?.discount ?? 0;
   const bonusBalance = Math.floor(Number(profile?.bonus_balance || 0));
@@ -143,7 +150,7 @@ function Checkout() {
   const bonusApplied = Math.min(bonusUse, maxBonus);
   const total = Math.max(0, subtotal - discount - bonusApplied + deliveryCost);
   const bonusEarn = profile ? Math.floor((subtotal - bonusApplied) * 0.03) : 0;
-  const belowMin = false;
+  const belowMin = subtotal < minRequired;
 
   async function applyPromo() {
     setPromoErr(null);

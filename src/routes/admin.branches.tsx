@@ -129,7 +129,12 @@ function BranchesPage() {
                   ? <span className="text-green-600 font-semibold">Активен</span>
                   : <span className="text-neutral-400">Выключен</span>}</td>
                 <td><BranchStats branchId={b.id} /></td>
-                <td className="text-right pr-3">
+                <td className="text-right pr-3 whitespace-nowrap">
+                  <button onClick={() => testEmail(b)} disabled={testingId === b.id}
+                    title="Отправить тестовое письмо на email филиала"
+                    className="text-xs px-2 py-1 rounded-full bg-neutral-100 hover:bg-neutral-200 font-semibold mr-2 disabled:opacity-50">
+                    {testingId === b.id ? "…" : "✉️ Тест"}
+                  </button>
                   <button onClick={() => setEditing(b)} className="text-primary font-semibold mr-3">✏️</button>
                   <button onClick={() => remove(b.id)} className="text-red-500">🗑️</button>
                 </td>

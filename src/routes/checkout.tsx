@@ -88,16 +88,20 @@ function Checkout() {
 
   useEffect(() => {
     (async () => {
-      const [{ data: st }, { data: ad }, { data: br }] = await Promise.all([
+      const [{ data: st }, { data: ad }, { data: br }, { data: zn }] = await Promise.all([
         supabase.from("settings").select("value").eq("key", "general").maybeSingle(),
         supabase.from("products").select("id,name,price,image_url,weight").eq("is_active", true).eq("in_stock", true).eq("is_addon", true).order("sort_order"),
         supabase.from("branches").select("id,name,address").eq("is_active", true).order("sort_order"),
+        supabase.from("delivery_zones").select("id,name,cost,free_from,min_order").eq("is_active", true).order("sort_order"),
       ]);
       if (st?.value) setSettings({ ...DEFAULT_SETTINGS, ...(st.value as any) });
       setAddons((ad as Addon[]) ?? []);
       const bl = (br ?? []) as { id: string; name: string; address: string | null }[];
       setBranches(bl);
       if (bl.length && !branchId) setBranchId(bl[0].id);
+      const zl = (zn ?? []) as typeof zones;
+      setZones(zl);
+      if (zl.length && !zoneId) setZoneId(zl[0].id);
 
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {

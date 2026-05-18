@@ -48,7 +48,7 @@ const OCCASIONS: { id: string; label: string; Icon: LucideIcon; boost: string[] 
   { id: "light", label: "Лёгкое и классика", Icon: Leaf, boost: ["филадельфия", "ролл", "суши"] },
 ];
 
-export function DeliveryCalculator({ subtotal, onOpenCart, products: providedProducts = [] }: Props) {
+export function DeliveryCalculator({ subtotal, onOpenCart, products: providedProducts = [], onOpenProduct }: Props) {
   const cart = useCart();
   const [freeFrom, setFreeFrom] = useState(700);
   const [products, setProducts] = useState<Product[]>(providedProducts);

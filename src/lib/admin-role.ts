@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 export type AdminRole = "super_admin" | "admin" | null;
-export type Branch = { id: string; name: string; address: string | null; phone: string | null; is_active: boolean; sort_order: number };
+export type Branch = { id: string; name: string; address: string | null; phone: string | null; email: string | null; is_active: boolean; sort_order: number };
 
 export function useAdminRole() {
   const [role, setRole] = useState<AdminRole>(null);

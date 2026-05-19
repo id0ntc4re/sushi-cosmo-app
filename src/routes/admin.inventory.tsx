@@ -6,15 +6,20 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/admin/inventory")({ component: Inventory });
 
 function Inventory() {
-  const [tab, setTab] = useState<"stock" | "recipes">("stock");
+  const [tab, setTab] = useState<"stock" | "recipes" | "purchases" | "suppliers">("stock");
   return (
     <div>
       <h1 className="text-3xl font-extrabold mb-6">Склад и техкарты</h1>
-      <div className="flex gap-2 mb-5">
+      <div className="flex gap-2 mb-5 flex-wrap">
         <Tab on={tab === "stock"} onClick={() => setTab("stock")}>📦 Ингредиенты</Tab>
         <Tab on={tab === "recipes"} onClick={() => setTab("recipes")}>📋 Техкарты</Tab>
+        <Tab on={tab === "purchases"} onClick={() => setTab("purchases")}>📥 Приход</Tab>
+        <Tab on={tab === "suppliers"} onClick={() => setTab("suppliers")}>🏭 Поставщики</Tab>
       </div>
-      {tab === "stock" ? <Stock /> : <Recipes />}
+      {tab === "stock" && <Stock />}
+      {tab === "recipes" && <Recipes />}
+      {tab === "purchases" && <Purchases />}
+      {tab === "suppliers" && <Suppliers />}
     </div>
   );
 }
@@ -178,3 +183,287 @@ function Recipes() {
 }
 
 const inp = "w-full px-3 py-2 rounded-xl border border-neutral-200 outline-none focus:border-primary";
+
+function Suppliers() {
+  const [items, setItems] = useState<any[]>([]);
+  const [draft, setDraft] = useState({ name: "", phone: "", inn: "", contact_person: "", note: "" });
+
+  async function load() {
+    const { data } = await supabase.from("suppliers").select("*").order("name");
+    setItems(data ?? []);
+  }
+  useEffect(() => { load(); }, []);
+
+  async function add() {
+    if (!draft.name) return toast.error("Название обязательно");
+    const { error } = await supabase.from("suppliers").insert(draft);
+    if (error) return toast.error(error.message);
+    setDraft({ name: "", phone: "", inn: "", contact_person: "", note: "" });
+    load();
+  }
+  async function del(id: string) {
+    if (!confirm("Удалить поставщика?")) return;
+    await supabase.from("suppliers").delete().eq("id", id);
+    load();
+  }
+  async function update(id: string, patch: any) {
+    await supabase.from("suppliers").update(patch).eq("id", id);
+    load();
+  }
+
+  return (
+    <div className="bg-white rounded-3xl p-5">
+      <div className="grid grid-cols-12 gap-2 mb-4">
+        <input className={inp + " col-span-3"} placeholder="Название*" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
+        <input className={inp + " col-span-2"} placeholder="Телефон" value={draft.phone} onChange={(e) => setDraft({ ...draft, phone: e.target.value })} />
+        <input className={inp + " col-span-2"} placeholder="ИНН" value={draft.inn} onChange={(e) => setDraft({ ...draft, inn: e.target.value })} />
+        <input className={inp + " col-span-2"} placeholder="Контакт" value={draft.contact_person} onChange={(e) => setDraft({ ...draft, contact_person: e.target.value })} />
+        <input className={inp + " col-span-2"} placeholder="Заметка" value={draft.note} onChange={(e) => setDraft({ ...draft, note: e.target.value })} />
+        <button onClick={add} className="col-span-1 px-3 py-2 rounded-xl bg-primary text-white font-bold">+</button>
+      </div>
+      <table className="w-full text-sm">
+        <thead className="text-left text-neutral-500 border-b">
+          <tr><th className="py-2">Поставщик</th><th>Телефон</th><th>ИНН</th><th>Контакт</th><th>Заметка</th><th></th></tr>
+        </thead>
+        <tbody>
+          {items.map((s) => (
+            <tr key={s.id} className="border-b">
+              <td className="py-2 font-semibold">
+                <input defaultValue={s.name} onBlur={(e) => update(s.id, { name: e.target.value })} className="px-2 py-1 rounded border w-full" />
+              </td>
+              <td><input defaultValue={s.phone ?? ""} onBlur={(e) => update(s.id, { phone: e.target.value })} className="px-2 py-1 rounded border w-32" /></td>
+              <td><input defaultValue={s.inn ?? ""} onBlur={(e) => update(s.id, { inn: e.target.value })} className="px-2 py-1 rounded border w-28" /></td>
+              <td><input defaultValue={s.contact_person ?? ""} onBlur={(e) => update(s.id, { contact_person: e.target.value })} className="px-2 py-1 rounded border w-32" /></td>
+              <td><input defaultValue={s.note ?? ""} onBlur={(e) => update(s.id, { note: e.target.value })} className="px-2 py-1 rounded border w-40" /></td>
+              <td><button onClick={() => del(s.id)} className="text-red-500 text-xs">Удалить</button></td>
+            </tr>
+          ))}
+          {!items.length && <tr><td colSpan={6} className="py-8 text-center text-neutral-400">Добавьте поставщиков</td></tr>}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function Purchases() {
+  const [invoices, setInvoices] = useState<any[]>([]);
+  const [suppliers, setSuppliers] = useState<any[]>([]);
+  const [branches, setBranches] = useState<any[]>([]);
+  const [ingredients, setIngredients] = useState<any[]>([]);
+  const [editing, setEditing] = useState<any | null>(null);
+
+  async function load() {
+    const [{ data: inv }, { data: sup }, { data: br }, { data: ing }] = await Promise.all([
+      supabase.from("purchase_invoices").select("*, suppliers(name), branches(name)").order("invoice_date", { ascending: false }),
+      supabase.from("suppliers").select("id,name").order("name"),
+      supabase.from("branches").select("id,name").order("name"),
+      supabase.from("ingredients").select("id,name,unit,cost_price,stock").order("name"),
+    ]);
+    setInvoices(inv ?? []); setSuppliers(sup ?? []); setBranches(br ?? []); setIngredients(ing ?? []);
+  }
+  useEffect(() => { load(); }, []);
+
+  async function createDraft() {
+    if (!branches.length) return toast.error("Сначала создайте филиал");
+    if (!suppliers.length) return toast.error("Сначала добавьте поставщика");
+    const { data, error } = await supabase.from("purchase_invoices").insert({
+      supplier_id: suppliers[0].id,
+      branch_id: branches[0].id,
+    }).select().single();
+    if (error) return toast.error(error.message);
+    setEditing({ ...data, items: [] });
+    load();
+  }
+
+  async function openEdit(inv: any) {
+    const { data } = await supabase.from("purchase_invoice_items").select("*").eq("invoice_id", inv.id);
+    setEditing({ ...inv, items: data ?? [] });
+  }
+
+  async function delInvoice(id: string) {
+    if (!confirm("Удалить черновик накладной?")) return;
+    await supabase.from("purchase_invoices").delete().eq("id", id);
+    load();
+  }
+
+  if (editing) {
+    return <InvoiceEditor inv={editing} suppliers={suppliers} branches={branches} ingredients={ingredients}
+      onClose={() => { setEditing(null); load(); }} />;
+  }
+
+  return (
+    <div className="bg-white rounded-3xl p-5">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="font-extrabold text-lg">Приходные накладные</h3>
+        <button onClick={createDraft} className="px-4 py-2 rounded-xl bg-primary text-white font-bold">+ Новая накладная</button>
+      </div>
+      <table className="w-full text-sm">
+        <thead className="text-left text-neutral-500 border-b">
+          <tr><th className="py-2">№</th><th>Дата</th><th>Поставщик</th><th>Филиал</th><th>Сумма</th><th>Статус</th><th></th></tr>
+        </thead>
+        <tbody>
+          {invoices.map((i) => (
+            <tr key={i.id} className="border-b">
+              <td className="py-2 font-semibold">{i.invoice_number ?? "—"}</td>
+              <td>{i.invoice_date}</td>
+              <td>{i.suppliers?.name ?? "—"}</td>
+              <td>{i.branches?.name ?? "—"}</td>
+              <td className="font-bold">{Number(i.total).toFixed(2)} ₽</td>
+              <td>
+                {i.status === "posted"
+                  ? <span className="px-2 py-1 rounded-full text-xs bg-green-100 text-green-700">Проведена</span>
+                  : <span className="px-2 py-1 rounded-full text-xs bg-amber-100 text-amber-700">Черновик</span>}
+              </td>
+              <td className="flex gap-2 py-2">
+                <button onClick={() => openEdit(i)} className="text-primary text-xs font-bold">
+                  {i.status === "posted" ? "Открыть" : "Редактировать"}
+                </button>
+                {i.status !== "posted" && (
+                  <button onClick={() => delInvoice(i.id)} className="text-red-500 text-xs">Удалить</button>
+                )}
+              </td>
+            </tr>
+          ))}
+          {!invoices.length && <tr><td colSpan={7} className="py-8 text-center text-neutral-400">Накладных пока нет</td></tr>}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function InvoiceEditor({ inv, suppliers, branches, ingredients, onClose }: any) {
+  const [header, setHeader] = useState({
+    supplier_id: inv.supplier_id ?? "",
+    branch_id: inv.branch_id ?? "",
+    invoice_number: inv.invoice_number ?? "",
+    invoice_date: inv.invoice_date,
+    note: inv.note ?? "",
+  });
+  const [items, setItems] = useState<any[]>(inv.items ?? []);
+  const [newItem, setNewItem] = useState({ ingredient_id: ingredients[0]?.id ?? "", qty: 0, price: 0 });
+  const posted = inv.status === "posted";
+
+  const total = items.reduce((s, it) => s + Number(it.qty) * Number(it.price), 0);
+
+  async function saveHeader() {
+    const { error } = await supabase.from("purchase_invoices").update(header).eq("id", inv.id);
+    if (error) toast.error(error.message); else toast.success("Сохранено");
+  }
+
+  async function addItem() {
+    if (!newItem.ingredient_id || !newItem.qty || !newItem.price) return toast.error("Заполните все поля");
+    const total = newItem.qty * newItem.price;
+    const { data, error } = await supabase.from("purchase_invoice_items").insert({
+      invoice_id: inv.id, ...newItem, total,
+    }).select().single();
+    if (error) return toast.error(error.message);
+    setItems([...items, data]);
+    setNewItem({ ingredient_id: ingredients[0]?.id ?? "", qty: 0, price: 0 });
+  }
+
+  async function delItem(id: string) {
+    await supabase.from("purchase_invoice_items").delete().eq("id", id);
+    setItems(items.filter((i) => i.id !== id));
+  }
+
+  async function post() {
+    if (!items.length) return toast.error("Добавьте позиции");
+    if (!confirm(`Провести накладную на ${total.toFixed(2)} ₽? Остатки будут увеличены, себестоимость пересчитана.`)) return;
+    await saveHeader();
+    const { error } = await supabase.rpc("post_purchase_invoice", { _invoice_id: inv.id });
+    if (error) return toast.error(error.message);
+    toast.success("Накладная проведена, остатки обновлены");
+    onClose();
+  }
+
+  return (
+    <div className="bg-white rounded-3xl p-5">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="font-extrabold text-lg">
+          {posted ? "Просмотр накладной" : "Редактирование накладной"}
+        </h3>
+        <button onClick={onClose} className="text-neutral-500 text-sm">← Назад к списку</button>
+      </div>
+
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-5">
+        <div>
+          <label className="text-xs text-neutral-500">Поставщик</label>
+          <select disabled={posted} value={header.supplier_id} onChange={(e) => setHeader({ ...header, supplier_id: e.target.value })} className={inp}>
+            <option value="">—</option>
+            {suppliers.map((s: any) => <option key={s.id} value={s.id}>{s.name}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className="text-xs text-neutral-500">Филиал</label>
+          <select disabled={posted} value={header.branch_id} onChange={(e) => setHeader({ ...header, branch_id: e.target.value })} className={inp}>
+            <option value="">—</option>
+            {branches.map((b: any) => <option key={b.id} value={b.id}>{b.name}</option>)}
+          </select>
+        </div>
+        <div>
+          <label className="text-xs text-neutral-500">№ накладной</label>
+          <input disabled={posted} value={header.invoice_number} onChange={(e) => setHeader({ ...header, invoice_number: e.target.value })} className={inp} />
+        </div>
+        <div>
+          <label className="text-xs text-neutral-500">Дата</label>
+          <input disabled={posted} type="date" value={header.invoice_date} onChange={(e) => setHeader({ ...header, invoice_date: e.target.value })} className={inp} />
+        </div>
+        <div>
+          <label className="text-xs text-neutral-500">Заметка</label>
+          <input disabled={posted} value={header.note} onChange={(e) => setHeader({ ...header, note: e.target.value })} className={inp} />
+        </div>
+      </div>
+
+      <h4 className="font-bold mb-2">Позиции</h4>
+      <table className="w-full text-sm mb-4">
+        <thead className="text-left text-neutral-500 border-b">
+          <tr><th className="py-2">Ингредиент</th><th>Кол-во</th><th>Цена/ед.</th><th>Сумма</th><th></th></tr>
+        </thead>
+        <tbody>
+          {items.map((it) => {
+            const ing = ingredients.find((i: any) => i.id === it.ingredient_id);
+            return (
+              <tr key={it.id} className="border-b">
+                <td className="py-2 font-semibold">{ing?.name ?? "?"}</td>
+                <td>{Number(it.qty)} {ing?.unit}</td>
+                <td>{Number(it.price).toFixed(2)} ₽</td>
+                <td className="font-bold">{(Number(it.qty) * Number(it.price)).toFixed(2)} ₽</td>
+                <td>{!posted && <button onClick={() => delItem(it.id)} className="text-red-500 text-xs">✕</button>}</td>
+              </tr>
+            );
+          })}
+          {!items.length && <tr><td colSpan={5} className="py-4 text-center text-neutral-400">Позиций нет</td></tr>}
+        </tbody>
+        <tfoot>
+          <tr className="border-t-2">
+            <td colSpan={3} className="py-2 text-right font-bold">Итого:</td>
+            <td className="font-extrabold text-lg">{total.toFixed(2)} ₽</td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+
+      {!posted && (
+        <>
+          <div className="grid grid-cols-12 gap-2 mb-4 bg-neutral-50 p-3 rounded-xl">
+            <select value={newItem.ingredient_id} onChange={(e) => setNewItem({ ...newItem, ingredient_id: e.target.value })} className={inp + " col-span-5"}>
+              {ingredients.map((i: any) => <option key={i.id} value={i.id}>{i.name} (ост: {Number(i.stock)} {i.unit}, цена: {Number(i.cost_price).toFixed(2)} ₽)</option>)}
+            </select>
+            <input type="number" placeholder="Кол-во" value={newItem.qty || ""} onChange={(e) => setNewItem({ ...newItem, qty: Number(e.target.value) })} className={inp + " col-span-2"} />
+            <input type="number" step="0.01" placeholder="Цена за ед." value={newItem.price || ""} onChange={(e) => setNewItem({ ...newItem, price: Number(e.target.value) })} className={inp + " col-span-2"} />
+            <div className="col-span-2 px-3 py-2 font-bold">{(newItem.qty * newItem.price).toFixed(2)} ₽</div>
+            <button onClick={addItem} className="col-span-1 px-3 py-2 rounded-xl bg-primary text-white font-bold">+</button>
+          </div>
+
+          <div className="flex gap-3">
+            <button onClick={saveHeader} className="px-5 py-2.5 rounded-xl bg-neutral-100 font-bold">💾 Сохранить черновик</button>
+            <button onClick={post} className="px-5 py-2.5 rounded-xl bg-green-600 text-white font-bold">✓ Провести накладную</button>
+          </div>
+          <p className="text-xs text-neutral-500 mt-3">
+            При проведении: остатки ингредиентов увеличатся на указанные количества, себестоимость пересчитается по средневзвешенной цене.
+          </p>
+        </>
+      )}
+    </div>
+  );
+}

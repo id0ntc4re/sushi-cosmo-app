@@ -6,15 +6,20 @@ import { toast } from "sonner";
 export const Route = createFileRoute("/admin/inventory")({ component: Inventory });
 
 function Inventory() {
-  const [tab, setTab] = useState<"stock" | "recipes">("stock");
+  const [tab, setTab] = useState<"stock" | "recipes" | "purchases" | "suppliers">("stock");
   return (
     <div>
       <h1 className="text-3xl font-extrabold mb-6">Склад и техкарты</h1>
-      <div className="flex gap-2 mb-5">
+      <div className="flex gap-2 mb-5 flex-wrap">
         <Tab on={tab === "stock"} onClick={() => setTab("stock")}>📦 Ингредиенты</Tab>
         <Tab on={tab === "recipes"} onClick={() => setTab("recipes")}>📋 Техкарты</Tab>
+        <Tab on={tab === "purchases"} onClick={() => setTab("purchases")}>📥 Приход</Tab>
+        <Tab on={tab === "suppliers"} onClick={() => setTab("suppliers")}>🏭 Поставщики</Tab>
       </div>
-      {tab === "stock" ? <Stock /> : <Recipes />}
+      {tab === "stock" && <Stock />}
+      {tab === "recipes" && <Recipes />}
+      {tab === "purchases" && <Purchases />}
+      {tab === "suppliers" && <Suppliers />}
     </div>
   );
 }

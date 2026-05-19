@@ -921,6 +921,98 @@ export type Database = {
         }
         Relationships: []
       }
+      purchase_invoice_items: {
+        Row: {
+          id: string
+          ingredient_id: string
+          invoice_id: string
+          price: number
+          qty: number
+          total: number
+        }
+        Insert: {
+          id?: string
+          ingredient_id: string
+          invoice_id: string
+          price?: number
+          qty: number
+          total?: number
+        }
+        Update: {
+          id?: string
+          ingredient_id?: string
+          invoice_id?: string
+          price?: number
+          qty?: number
+          total?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_invoice_items_ingredient_id_fkey"
+            columns: ["ingredient_id"]
+            isOneToOne: false
+            referencedRelation: "ingredients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_invoice_items_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      purchase_invoices: {
+        Row: {
+          branch_id: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          invoice_date: string
+          invoice_number: string | null
+          note: string | null
+          posted_at: string | null
+          status: string
+          supplier_id: string | null
+          total: number
+        }
+        Insert: {
+          branch_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          invoice_date?: string
+          invoice_number?: string | null
+          note?: string | null
+          posted_at?: string | null
+          status?: string
+          supplier_id?: string | null
+          total?: number
+        }
+        Update: {
+          branch_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          invoice_date?: string
+          invoice_number?: string | null
+          note?: string | null
+          posted_at?: string | null
+          status?: string
+          supplier_id?: string | null
+          total?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_invoices_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recipes: {
         Row: {
           id: string
@@ -1077,6 +1169,39 @@ export type Database = {
         }
         Relationships: []
       }
+      suppliers: {
+        Row: {
+          contact_person: string | null
+          created_at: string
+          id: string
+          inn: string | null
+          is_active: boolean
+          name: string
+          note: string | null
+          phone: string | null
+        }
+        Insert: {
+          contact_person?: string | null
+          created_at?: string
+          id?: string
+          inn?: string | null
+          is_active?: boolean
+          name: string
+          note?: string | null
+          phone?: string | null
+        }
+        Update: {
+          contact_person?: string | null
+          created_at?: string
+          id?: string
+          inn?: string | null
+          is_active?: boolean
+          name?: string
+          note?: string | null
+          phone?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           branch_id: string | null
@@ -1126,6 +1251,10 @@ export type Database = {
         Returns: boolean
       }
       loyalty_tier: { Args: { _total: number }; Returns: string }
+      post_purchase_invoice: {
+        Args: { _invoice_id: string }
+        Returns: undefined
+      }
       user_branch: { Args: { _user_id: string }; Returns: string }
     }
     Enums: {

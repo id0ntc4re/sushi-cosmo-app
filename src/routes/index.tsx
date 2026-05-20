@@ -565,6 +565,25 @@ function ProductModal({ product, onClose, onAdd }: { product: Product; onClose: 
               <p className="text-sm text-foreground/80">{product.ingredients}</p>
             </div>
           )}
+          {(product.calories != null || product.protein != null || product.fat != null || product.carbs != null) && (
+            <div className="mb-5 sm:mb-6">
+              <div className="text-xs uppercase tracking-wider font-bold text-primary mb-2">Пищевая ценность {product.weight ? `(на ${product.weight})` : ""}</div>
+              <div className="grid grid-cols-4 gap-2">
+                {[
+                  { label: "Ккал", v: product.calories },
+                  { label: "Белки", v: product.protein },
+                  { label: "Жиры", v: product.fat },
+                  { label: "Углев.", v: product.carbs },
+                ].map((x) => (
+                  <div key={x.label} className="rounded-xl bg-neutral-50 border border-neutral-100 px-2 py-2 text-center">
+                    <div className="text-base font-extrabold">{x.v != null ? Number(x.v) : "—"}</div>
+                    <div className="text-[10px] uppercase tracking-wider text-neutral-500">{x.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="mb-4 rounded-xl bg-amber-50 border border-amber-100 px-3 py-2 text-[12px] text-amber-800">
             ⚠️ Внешний вид блюда может отличаться от фотографии.
             {(/сет|set|набор/i.test(product.name) || (Array.isArray(product.tags) && product.tags.some((t) => /сет|set|набор/i.test(t))))

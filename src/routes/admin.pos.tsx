@@ -70,7 +70,7 @@ function PosPage() {
       }
       // Profile by phone (any match)
       const { data: profs } = await supabase
-        .from("profiles").select("id,full_name,phone,email,bonus_balance,total_spent")
+        .from("profiles").select("id,full_name,phone,email,bonus_balance,total_spent,birth_date,anniversary_date")
         .ilike("phone", `%${cleanPhone.slice(-10)}%`).limit(1);
       const p = (profs?.[0] ?? null) as Profile | null;
       if (p) {

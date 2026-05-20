@@ -121,6 +121,7 @@ function OrdersAdmin() {
       order_id: open.id, user_id: user?.id ?? null, action: "item_added",
       details: { product_id: p.id, name: p.name, price: p.price },
     });
+    loadHistory(open.id);
     toast.success(`+ ${p.name}`);
     load();
   }

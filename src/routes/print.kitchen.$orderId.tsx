@@ -37,7 +37,7 @@ function KitchenReceipt() {
           details: {},
         });
       }
-      setTimeout(() => window.print(), 350);
+      setTimeout(() => { try { window.focus(); window.print(); } catch {} }, 600);
     })();
   }, [orderId]);
 

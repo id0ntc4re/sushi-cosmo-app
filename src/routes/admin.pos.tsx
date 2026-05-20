@@ -327,6 +327,36 @@ function PosPage() {
                   }`}>{l}</button>
               ))}
             </div>
+            {(holidayBirth || holidayAnniv) && (
+              <div className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl p-3 space-y-2">
+                <div className="text-xs font-bold text-purple-900">
+                  🎉 У клиента праздник: {holidayBirth ? `🎂 День рождения (через ${daysToNext(profile!.birth_date)}д)` : ""}
+                  {holidayBirth && holidayAnniv ? " · " : ""}
+                  {holidayAnniv ? `💍 Годовщина (через ${daysToNext(profile!.anniversary_date)}д)` : ""}
+                </div>
+                <div className="flex gap-1.5 flex-wrap">
+                  {holidayBirth && (
+                    <button onClick={() => { setDiscountPct(holidayPct); setHolidayKind("birthday"); setBonusUse(0); }}
+                      className={`px-3 py-1.5 rounded-full text-xs font-bold ${holidayKind === "birthday" ? "bg-pink-500 text-white" : "bg-white border border-pink-300 text-pink-700"}`}>
+                      🎂 Применить {holidayPct}%
+                    </button>
+                  )}
+                  {holidayAnniv && (
+                    <button onClick={() => { setDiscountPct(holidayPct); setHolidayKind("anniversary"); setBonusUse(0); }}
+                      className={`px-3 py-1.5 rounded-full text-xs font-bold ${holidayKind === "anniversary" ? "bg-purple-500 text-white" : "bg-white border border-purple-300 text-purple-700"}`}>
+                      💍 Применить {holidayPct}%
+                    </button>
+                  )}
+                  {holidayKind && (
+                    <button onClick={() => { setHolidayKind(null); setDiscountPct(0); }}
+                      className="px-3 py-1.5 rounded-full text-xs bg-neutral-100">Убрать</button>
+                  )}
+                </div>
+                <div className="text-[10px] text-neutral-500">
+                  Доставка — 10%, самовывоз — 15% (текущий способ: {deliveryType === "delivery" ? "доставка" : "самовывоз"})
+                </div>
+              </div>
+            )}
             <div>
               <div className="text-xs text-neutral-600 mb-1">Скидка, %</div>
               <div className="flex gap-1.5 flex-wrap">

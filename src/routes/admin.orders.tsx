@@ -59,10 +59,17 @@ function OrdersAdmin() {
     }
   }, [editing]);
 
+  async function loadHistory(orderId: string) {
+    const { data } = await (supabase.from("order_changes") as any)
+      .select("*").eq("order_id", orderId).order("created_at", { ascending: false });
+    setHistory(data ?? []);
+  }
+
   async function openOrder(o: Order) {
-    setOpen(o); setEditing(false); setMeta(null);
+    setOpen(o); setEditing(false); setMeta(null); setShowHistory(false);
     const { data } = await supabase.from("order_items").select("*").eq("order_id", o.id);
     setItems(data ?? []);
+    loadHistory(o.id);
   }
 
   function startEdit() {

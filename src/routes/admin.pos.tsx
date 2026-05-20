@@ -38,7 +38,21 @@ function PosPage() {
   const [bonusUse, setBonusUse] = useState(0);
   const [posBranch, setPosBranch] = useState<string>("");
   const [adminNote, setAdminNote] = useState("");
+  const [holidayKind, setHolidayKind] = useState<"birthday" | "anniversary" | null>(null);
   const [busy, setBusy] = useState(false);
+
+  function daysToNext(dateStr: string | null): number | null {
+    if (!dateStr) return null;
+    const today = new Date();
+    const d = new Date(dateStr);
+    const next = new Date(today.getFullYear(), d.getMonth(), d.getDate());
+    if (next < new Date(today.getFullYear(), today.getMonth(), today.getDate()))
+      next.setFullYear(today.getFullYear() + 1);
+    return Math.round((next.getTime() - today.getTime()) / 86400000);
+  }
+  const holidayBirth = profile && daysToNext(profile.birth_date) != null && daysToNext(profile.birth_date)! <= 7;
+  const holidayAnniv = profile && daysToNext(profile.anniversary_date) != null && daysToNext(profile.anniversary_date)! <= 7;
+  const holidayPct = deliveryType === "delivery" ? 10 : 15;
 
   useEffect(() => {
     (async () => {

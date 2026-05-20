@@ -151,17 +151,50 @@ function OrdersAdmin() {
             {open.comment && <div className="sm:col-span-2"><Info k="Комментарий" v={open.comment} /></div>}
           </div>
 
+          <div className="flex gap-2 flex-wrap mb-4">
+            <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${open.payment_status === "paid" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+              {open.payment_status === "paid" ? `💰 Оплачен${open.fiscal_receipt_number ? ` · чек ${open.fiscal_receipt_number}` : ""}` : "💵 Не оплачен"}
+            </span>
+            {open.kitchen_printed_at && (
+              <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700">
+                🖨 Кухня печатался · {new Date(open.kitchen_printed_at).toLocaleTimeString("ru", { hour: "2-digit", minute: "2-digit" })}
+              </span>
+            )}
+            {open.holiday_discount_kind && (
+              <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-pink-100 text-pink-700">
+                {open.holiday_discount_kind === "birthday" ? "🎂 Скидка ДР" : "💍 Скидка годовщина"}
+              </span>
+            )}
+          </div>
+
           <div className="bg-neutral-50 rounded-2xl p-4 mb-5">
-            <div className="font-bold mb-3">Товары</div>
+            <div className="flex justify-between items-center mb-3">
+              <div className="font-bold">Товары</div>
+              <button onClick={() => setEditing(!editing)} className={`text-xs font-semibold px-3 py-1 rounded-full ${editing ? "bg-primary text-white" : "bg-white border"}`}>
+                {editing ? "✓ Готово" : "✎ Редактировать"}
+              </button>
+            </div>
             {items.map((it) => (
-              <div key={it.id} className="flex justify-between py-1.5 text-sm">
-                <span>{it.name} <span className="text-neutral-500">× {it.quantity}</span></span>
-                <span className="font-semibold">{Number(it.total)} ₽</span>
+              <div key={it.id} className="flex justify-between items-center py-1.5 text-sm gap-2">
+                <span className="flex-1 truncate">{it.name}</span>
+                {editing ? (
+                  <div className="flex items-center gap-1">
+                    <button onClick={() => changeQty(it, it.quantity - 1)} className="h-7 w-7 rounded-full bg-white border font-bold">−</button>
+                    <span className="w-6 text-center text-xs font-bold">{it.quantity}</span>
+                    <button onClick={() => changeQty(it, it.quantity + 1)} className="h-7 w-7 rounded-full bg-primary text-white font-bold">+</button>
+                    <button onClick={() => changeQty(it, 0)} className="ml-1 h-7 w-7 rounded-full bg-red-50 text-red-600 font-bold">✕</button>
+                  </div>
+                ) : (
+                  <span className="text-neutral-500">× {it.quantity}</span>
+                )}
+                <span className="font-semibold w-20 text-right">{Number(it.total)} ₽</span>
               </div>
             ))}
             <div className="border-t mt-3 pt-3 space-y-1">
               <div className="flex justify-between text-sm"><span className="text-neutral-600">Товары</span><span>{Number(open.subtotal)} ₽</span></div>
               <div className="flex justify-between text-sm"><span className="text-neutral-600">Доставка</span><span>{Number(open.delivery_cost)} ₽</span></div>
+              {Number(open.discount) > 0 && <div className="flex justify-between text-sm text-primary"><span>Скидка</span><span>−{Number(open.discount)} ₽</span></div>}
+              {Number(open.bonus_used) > 0 && <div className="flex justify-between text-sm text-primary"><span>Бонусы</span><span>−{Number(open.bonus_used)} ₽</span></div>}
               <div className="flex justify-between font-extrabold text-lg pt-1"><span>Итого</span><span>{Number(open.total)} ₽</span></div>
             </div>
           </div>
@@ -178,9 +211,13 @@ function OrdersAdmin() {
             </div>
           </div>
 
-          <div className="flex justify-between">
+          <div className="flex justify-between flex-wrap gap-2">
             <button onClick={() => remove(open.id)} className="px-4 py-2 rounded-full bg-red-50 text-red-600 font-semibold text-sm">Удалить</button>
-            <button onClick={() => setOpen(null)} className="px-5 py-2 rounded-full bg-neutral-900 text-white font-semibold text-sm">Закрыть</button>
+            <div className="flex gap-2 flex-wrap">
+              <button onClick={() => window.open(`/print/kitchen/${open.id}`, "_blank", "width=420,height=720")}
+                className="px-4 py-2 rounded-full bg-amber-500 text-white font-semibold text-sm">🖨 Кухонный чек</button>
+              <button onClick={() => setOpen(null)} className="px-5 py-2 rounded-full bg-neutral-900 text-white font-semibold text-sm">Закрыть</button>
+            </div>
           </div>
         </Modal>
       )}

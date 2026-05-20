@@ -140,28 +140,34 @@ function Index() {
                     loading={i === 0 ? "eager" : "lazy"}
                   />
                 )}
-                <div className="absolute inset-0 bg-gradient-to-t sm:bg-gradient-to-r from-black/80 via-black/50 to-black/10 sm:to-transparent" />
-                <div className="relative z-10 h-full flex items-end sm:items-center">
-                  <div className="px-5 pb-8 sm:px-8 md:px-14 sm:pb-0 max-w-2xl animate-fade-in" key={`c-${i}-${slide}`}>
-                    {s.eyebrow && (
-                      <span className="inline-block px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-primary/90 text-white text-[10px] sm:text-xs font-bold uppercase tracking-wider">
-                        {s.eyebrow}
-                      </span>
-                    )}
-                    <h1 className="mt-2 sm:mt-4 text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-extrabold leading-tight drop-shadow-lg">
-                      {s.title}
-                    </h1>
-                    {s.subtitle && <p className="mt-2 sm:mt-3 text-sm sm:text-base md:text-xl opacity-95 max-w-lg">{s.subtitle}</p>}
-                    {s.cta_label && (
-                      <a
-                        href={s.cta_link || "#menu"}
-                        className="inline-block mt-4 sm:mt-6 px-5 py-2.5 sm:px-8 sm:py-3.5 rounded-full bg-primary text-white font-bold text-sm sm:text-base shadow-xl hover:bg-primary/90 transition"
-                      >
-                        {s.cta_label} →
-                      </a>
-                    )}
-                  </div>
-                </div>
+                {(s.title || s.eyebrow || s.subtitle || s.cta_label) && (
+                  <>
+                    <div className="absolute inset-0 bg-gradient-to-t sm:bg-gradient-to-r from-black/80 via-black/50 to-black/10 sm:to-transparent" />
+                    <div className="relative z-10 h-full flex items-end sm:items-center">
+                      <div className="px-5 pb-8 sm:px-8 md:px-14 sm:pb-0 max-w-2xl animate-fade-in" key={`c-${i}-${slide}`}>
+                        {s.eyebrow && (
+                          <span className="inline-block px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full bg-primary/90 text-white text-[10px] sm:text-xs font-bold uppercase tracking-wider">
+                            {s.eyebrow}
+                          </span>
+                        )}
+                        {s.title && (
+                          <h1 className="mt-2 sm:mt-4 text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-extrabold leading-tight drop-shadow-lg">
+                            {s.title}
+                          </h1>
+                        )}
+                        {s.subtitle && <p className="mt-2 sm:mt-3 text-sm sm:text-base md:text-xl opacity-95 max-w-lg">{s.subtitle}</p>}
+                        {s.cta_label && (
+                          <a
+                            href={s.cta_link || "#menu"}
+                            className="inline-block mt-4 sm:mt-6 px-5 py-2.5 sm:px-8 sm:py-3.5 rounded-full bg-primary text-white font-bold text-sm sm:text-base shadow-xl hover:bg-primary/90 transition"
+                          >
+                            {s.cta_label} →
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             ))}
 

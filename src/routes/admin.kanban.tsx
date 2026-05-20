@@ -29,7 +29,7 @@ function Kanban() {
 
   async function load() {
     let q = supabase.from("orders")
-      .select("id,number,customer_name,phone,address,total,status,payment_method,delivery_type,comment,created_at,courier_id,branch_id")
+      .select("id,number,customer_name,phone,address,total,status,payment_method,payment_status,delivery_type,comment,created_at,courier_id,branch_id,kitchen_printed_at,paid_at")
       .is("deleted_at", null)
       .in("status", ["new", "confirmed", "cooking", "delivering"])
       .order("created_at", { ascending: true });
@@ -38,6 +38,27 @@ function Kanban() {
     const list = data ?? [];
     setOrders(list);
     list.forEach((o: any) => knownIds.current.add(o.id));
+  }
+
+  function printKitchen(o: any) {
+    if (o.kitchen_printed_at && !confirm("Чек уже печатался. Напечатать ещё раз?")) return;
+    window.open(`/print/kitchen/${o.id}`, "_blank", "width=420,height=720");
+    setTimeout(load, 1500);
+  }
+
+  async function markPaid(o: any) {
+    const num = prompt("Номер фискального чека (можно оставить пустым):") ?? "";
+    const { error } = await (supabase.from("orders") as any)
+      .update({ payment_status: "paid", paid_at: new Date().toISOString(), fiscal_receipt_number: num || null })
+      .eq("id", o.id);
+    if (error) return toast.error(error.message);
+    const { data: { user } } = await supabase.auth.getUser();
+    await (supabase.from("order_changes") as any).insert({
+      order_id: o.id, user_id: user?.id ?? null, action: "paid",
+      details: { fiscal_receipt_number: num || null },
+    });
+    toast.success("Оплата принята");
+    load();
   }
 
   useEffect(() => {

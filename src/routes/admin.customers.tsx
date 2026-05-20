@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -104,7 +104,14 @@ function Customers() {
   async function saveEdit() {
     if (!edit) return;
     const { error } = await (supabase.from("profiles") as any)
-      .update({ birth_date: edit.birth_date || null, anniversary_date: edit.anniversary_date || null })
+      .update({
+        full_name: edit.full_name?.trim() || null,
+        phone: edit.phone?.trim() || null,
+        email: edit.email?.trim() || null,
+        bonus_balance: Number(edit.bonus_balance) || 0,
+        birth_date: edit.birth_date || null,
+        anniversary_date: edit.anniversary_date || null,
+      })
       .eq("id", edit.id);
     if (error) return toast.error(error.message);
     toast.success("Сохранено");
@@ -183,22 +190,37 @@ function Customers() {
             <h2 className="text-xl font-extrabold mb-1">{edit.full_name ?? "Клиент"}</h2>
             <div className="text-sm text-neutral-500 mb-5">{edit.phone ?? "—"} · {edit.email ?? "—"}</div>
 
-            <div className="space-y-4">
-              <label className="block">
-                <div className="text-xs text-neutral-500 mb-1">🎂 День рождения</div>
-                <input type="date" value={edit.birth_date ?? ""} onChange={(e) => setEdit({ ...edit, birth_date: e.target.value })}
+            <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-1">
+              <Field label="Имя">
+                <input value={edit.full_name ?? ""} onChange={(e) => setEdit({ ...edit, full_name: e.target.value })}
                   className="w-full px-4 py-2 rounded-xl border border-neutral-200" />
-              </label>
-              <label className="block">
-                <div className="text-xs text-neutral-500 mb-1">💍 Годовщина свадьбы</div>
-                <input type="date" value={edit.anniversary_date ?? ""} onChange={(e) => setEdit({ ...edit, anniversary_date: e.target.value })}
+              </Field>
+              <Field label="Телефон">
+                <input value={edit.phone ?? ""} onChange={(e) => setEdit({ ...edit, phone: e.target.value })}
                   className="w-full px-4 py-2 rounded-xl border border-neutral-200" />
-              </label>
+              </Field>
+              <Field label="Email">
+                <input type="email" value={edit.email ?? ""} onChange={(e) => setEdit({ ...edit, email: e.target.value })}
+                  className="w-full px-4 py-2 rounded-xl border border-neutral-200" />
+              </Field>
+              <div className="grid grid-cols-2 gap-3">
+                <Field label="🎂 День рождения">
+                  <input type="date" value={edit.birth_date ?? ""} onChange={(e) => setEdit({ ...edit, birth_date: e.target.value })}
+                    className="w-full px-4 py-2 rounded-xl border border-neutral-200" />
+                </Field>
+                <Field label="💍 Годовщина">
+                  <input type="date" value={edit.anniversary_date ?? ""} onChange={(e) => setEdit({ ...edit, anniversary_date: e.target.value })}
+                    className="w-full px-4 py-2 rounded-xl border border-neutral-200" />
+                </Field>
+              </div>
+              <Field label="Бонусы">
+                <input type="number" step="1" value={edit.bonus_balance ?? 0} onChange={(e) => setEdit({ ...edit, bonus_balance: Number(e.target.value) })}
+                  className="w-full px-4 py-2 rounded-xl border border-neutral-200" />
+              </Field>
 
               <div className="bg-amber-50 rounded-xl p-3 text-xs text-amber-800">
                 Скидка применяется автоматически ±7 дней от даты:<br />
-                • Доставка — <b>10%</b><br />
-                • Самовывоз — <b>15%</b>
+                • Доставка — <b>10%</b> · Самовывоз — <b>15%</b>
               </div>
             </div>
 
@@ -219,5 +241,14 @@ function Card({ label, v, accent }: { label: string; v: any; accent?: boolean })
       <div className={`text-xs uppercase mb-1 ${accent ? "text-white/80" : "text-neutral-500"}`}>{label}</div>
       <div className="text-2xl font-extrabold">{v}</div>
     </div>
+  );
+}
+
+function Field({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <label className="block">
+      <div className="text-xs text-neutral-500 mb-1">{label}</div>
+      {children}
+    </label>
   );
 }

@@ -30,6 +30,9 @@ function OrdersAdmin() {
   const [open, setOpen] = useState<Order | null>(null);
   const [items, setItems] = useState<any[]>([]);
   const [editing, setEditing] = useState(false);
+  const [meta, setMeta] = useState<any>(null);
+  const [products, setProducts] = useState<any[]>([]);
+  const [productSearch, setProductSearch] = useState("");
 
   async function load() {
     const q = supabase.from("orders").select("*").is("deleted_at", null).order("created_at", { ascending: false }).limit(200);
@@ -46,10 +49,69 @@ function OrdersAdmin() {
     return () => { supabase.removeChannel(ch); };
   }, []);
 
+  useEffect(() => {
+    if (editing && !products.length) {
+      supabase.from("products").select("id,name,price,image_url,category_id,is_active")
+        .eq("is_active", true).order("name").then(({ data }) => setProducts(data ?? []));
+    }
+  }, [editing]);
+
   async function openOrder(o: Order) {
-    setOpen(o); setEditing(false);
+    setOpen(o); setEditing(false); setMeta(null);
     const { data } = await supabase.from("order_items").select("*").eq("order_id", o.id);
     setItems(data ?? []);
+  }
+
+  function startEdit() {
+    setEditing(true);
+    setMeta({
+      customer_name: open.customer_name ?? "",
+      phone: open.phone ?? "",
+      delivery_type: open.delivery_type,
+      address: open.address ?? "",
+      pickup_point: open.pickup_point ?? "",
+      delivery_time: open.delivery_time ?? "",
+      payment_method: open.payment_method,
+      change_from: open.change_from ?? "",
+      persons: open.persons ?? 1,
+      comment: open.comment ?? "",
+      delivery_cost: Number(open.delivery_cost) || 0,
+      discount: Number(open.discount) || 0,
+    });
+  }
+
+  async function saveMeta() {
+    if (!meta || !open) return;
+    const payload: any = { ...meta, change_from: meta.change_from === "" ? null : Number(meta.change_from) };
+    const { error } = await (supabase.from("orders") as any).update(payload).eq("id", open.id);
+    if (error) return toast.error(error.message);
+    await recalcOrderTotals(open.id);
+    const { data: { user } } = await supabase.auth.getUser();
+    await (supabase.from("order_changes") as any).insert({
+      order_id: open.id, user_id: user?.id ?? null, action: "details_edited", details: payload,
+    });
+    toast.success("Сохранено");
+    const { data } = await supabase.from("orders").select("*").eq("id", open.id).maybeSingle();
+    if (data) setOpen(data);
+    load();
+  }
+
+  async function addProduct(p: any) {
+    const { error } = await (supabase.from("order_items") as any).insert({
+      order_id: open.id, product_id: p.id, name: p.name,
+      price: p.price, quantity: 1, total: Number(p.price), modifiers: [],
+    });
+    if (error) return toast.error(error.message);
+    await recalcOrderTotals(open.id);
+    const { data } = await supabase.from("order_items").select("*").eq("order_id", open.id);
+    setItems(data ?? []);
+    const { data: { user } } = await supabase.auth.getUser();
+    await (supabase.from("order_changes") as any).insert({
+      order_id: open.id, user_id: user?.id ?? null, action: "item_added",
+      details: { product_id: p.id, name: p.name, price: p.price },
+    });
+    toast.success(`+ ${p.name}`);
+    load();
   }
 
   async function setStatus(id: string, status: string) {
@@ -139,17 +201,49 @@ function OrdersAdmin() {
 
       {open && (
         <Modal onClose={() => setOpen(null)} title={`Заказ #${open.number}`}>
-          <div className="grid sm:grid-cols-2 gap-3 text-sm mb-5">
-            <Info k="Клиент" v={open.customer_name} />
-            <Info k="Телефон" v={<a href={`tel:${open.phone}`} className="text-primary">{open.phone}</a>} />
-            <Info k="Тип" v={open.delivery_type === "delivery" ? "Доставка" : "Самовывоз"} />
-            <Info k={open.delivery_type === "delivery" ? "Адрес" : "Точка"} v={open.address || open.pickup_point || "—"} />
-            <Info k="Оплата" v={{ cash: "Наличные", card_courier: "Картой курьеру", card_online: "Онлайн" }[open.payment_method as string]} />
-            {open.change_from && <Info k="Сдача с" v={`${open.change_from} ₽`} />}
-            <Info k="Персон" v={open.persons} />
-            <Info k="Время" v={open.delivery_time || "—"} />
-            {open.comment && <div className="sm:col-span-2"><Info k="Комментарий" v={open.comment} /></div>}
-          </div>
+          {!editing ? (
+            <div className="grid sm:grid-cols-2 gap-3 text-sm mb-5">
+              <Info k="Клиент" v={open.customer_name} />
+              <Info k="Телефон" v={<a href={`tel:${open.phone}`} className="text-primary">{open.phone}</a>} />
+              <Info k="Тип" v={open.delivery_type === "delivery" ? "Доставка" : "Самовывоз"} />
+              <Info k={open.delivery_type === "delivery" ? "Адрес" : "Точка"} v={open.address || open.pickup_point || "—"} />
+              <Info k="Оплата" v={{ cash: "Наличные", card_courier: "Картой курьеру", card_online: "Онлайн" }[open.payment_method as string]} />
+              {open.change_from && <Info k="Сдача с" v={`${open.change_from} ₽`} />}
+              <Info k="Персон" v={open.persons} />
+              <Info k="Время" v={open.delivery_time || "—"} />
+              {open.comment && <div className="sm:col-span-2"><Info k="Комментарий" v={open.comment} /></div>}
+            </div>
+          ) : (
+            <div className="bg-blue-50/50 rounded-2xl p-4 mb-5 space-y-3">
+              <div className="font-bold text-sm mb-2">Данные заказа</div>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <L lab="Клиент"><input value={meta.customer_name} onChange={(e) => setMeta({ ...meta, customer_name: e.target.value })} className={inp} /></L>
+                <L lab="Телефон"><input value={meta.phone} onChange={(e) => setMeta({ ...meta, phone: e.target.value })} className={inp} /></L>
+                <L lab="Тип">
+                  <select value={meta.delivery_type} onChange={(e) => setMeta({ ...meta, delivery_type: e.target.value })} className={inp}>
+                    <option value="delivery">Доставка</option><option value="pickup">Самовывоз</option>
+                  </select>
+                </L>
+                <L lab="Оплата">
+                  <select value={meta.payment_method} onChange={(e) => setMeta({ ...meta, payment_method: e.target.value })} className={inp}>
+                    <option value="cash">Наличные</option><option value="card_courier">Картой курьеру</option><option value="card_online">Онлайн</option>
+                  </select>
+                </L>
+                {meta.delivery_type === "delivery" ? (
+                  <L lab="Адрес" full><input value={meta.address} onChange={(e) => setMeta({ ...meta, address: e.target.value })} className={inp} /></L>
+                ) : (
+                  <L lab="Точка самовывоза" full><input value={meta.pickup_point} onChange={(e) => setMeta({ ...meta, pickup_point: e.target.value })} className={inp} /></L>
+                )}
+                <L lab="Время"><input value={meta.delivery_time} onChange={(e) => setMeta({ ...meta, delivery_time: e.target.value })} className={inp} placeholder="ASAP или 19:30" /></L>
+                <L lab="Персон"><input type="number" value={meta.persons} onChange={(e) => setMeta({ ...meta, persons: Number(e.target.value) })} className={inp} /></L>
+                <L lab="Сдача с"><input type="number" value={meta.change_from} onChange={(e) => setMeta({ ...meta, change_from: e.target.value })} className={inp} /></L>
+                <L lab="Доставка ₽"><input type="number" value={meta.delivery_cost} onChange={(e) => setMeta({ ...meta, delivery_cost: Number(e.target.value) })} className={inp} /></L>
+                <L lab="Скидка ₽"><input type="number" value={meta.discount} onChange={(e) => setMeta({ ...meta, discount: Number(e.target.value) })} className={inp} /></L>
+                <L lab="Комментарий" full><textarea value={meta.comment} onChange={(e) => setMeta({ ...meta, comment: e.target.value })} className={`${inp} min-h-[60px]`} /></L>
+              </div>
+              <button onClick={saveMeta} className="px-4 py-2 rounded-full bg-primary text-white font-semibold text-sm">💾 Сохранить данные</button>
+            </div>
+          )}
 
           <div className="flex gap-2 flex-wrap mb-4">
             <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${open.payment_status === "paid" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
@@ -170,7 +264,7 @@ function OrdersAdmin() {
           <div className="bg-neutral-50 rounded-2xl p-4 mb-5">
             <div className="flex justify-between items-center mb-3">
               <div className="font-bold">Товары</div>
-              <button onClick={() => setEditing(!editing)} className={`text-xs font-semibold px-3 py-1 rounded-full ${editing ? "bg-primary text-white" : "bg-white border"}`}>
+              <button onClick={() => (editing ? setEditing(false) : startEdit())} className={`text-xs font-semibold px-3 py-1 rounded-full ${editing ? "bg-primary text-white" : "bg-white border"}`}>
                 {editing ? "✓ Готово" : "✎ Редактировать"}
               </button>
             </div>
@@ -190,6 +284,28 @@ function OrdersAdmin() {
                 <span className="font-semibold w-20 text-right">{Number(it.total)} ₽</span>
               </div>
             ))}
+            {editing && (
+              <div className="mt-3 border-t pt-3">
+                <input value={productSearch} onChange={(e) => setProductSearch(e.target.value)}
+                  placeholder="🔍 Найти товар для добавления…"
+                  className="w-full px-3 py-2 rounded-lg border border-neutral-200 text-sm mb-2" />
+                {productSearch && (
+                  <div className="max-h-48 overflow-y-auto rounded-lg border border-neutral-200 bg-white divide-y">
+                    {products
+                      .filter((p) => p.name.toLowerCase().includes(productSearch.toLowerCase()))
+                      .slice(0, 20)
+                      .map((p) => (
+                        <button key={p.id} onClick={() => addProduct(p)}
+                          className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm hover:bg-primary/5">
+                          {p.image_url && <img src={p.image_url} className="h-8 w-8 rounded object-cover" alt="" />}
+                          <span className="flex-1 truncate">{p.name}</span>
+                          <span className="font-bold">{Number(p.price)} ₽</span>
+                        </button>
+                      ))}
+                  </div>
+                )}
+              </div>
+            )}
             <div className="border-t mt-3 pt-3 space-y-1">
               <div className="flex justify-between text-sm"><span className="text-neutral-600">Товары</span><span>{Number(open.subtotal)} ₽</span></div>
               <div className="flex justify-between text-sm"><span className="text-neutral-600">Доставка</span><span>{Number(open.delivery_cost)} ₽</span></div>
@@ -230,4 +346,14 @@ function FilterPill({ active, onClick, label }: any) {
 }
 function Info({ k, v }: any) {
   return <div><div className="text-xs text-neutral-500">{k}</div><div className="font-semibold">{v}</div></div>;
+}
+
+const inp = "w-full px-3 py-1.5 rounded-lg border border-neutral-200 bg-white text-sm";
+function L({ lab, children, full }: any) {
+  return (
+    <label className={`block ${full ? "col-span-2" : ""}`}>
+      <div className="text-[11px] text-neutral-500 mb-0.5">{lab}</div>
+      {children}
+    </label>
+  );
 }

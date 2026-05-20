@@ -30,6 +30,9 @@ function OrdersAdmin() {
   const [open, setOpen] = useState<Order | null>(null);
   const [items, setItems] = useState<any[]>([]);
   const [editing, setEditing] = useState(false);
+  const [meta, setMeta] = useState<any>(null);
+  const [products, setProducts] = useState<any[]>([]);
+  const [productSearch, setProductSearch] = useState("");
 
   async function load() {
     const q = supabase.from("orders").select("*").is("deleted_at", null).order("created_at", { ascending: false }).limit(200);
@@ -46,10 +49,69 @@ function OrdersAdmin() {
     return () => { supabase.removeChannel(ch); };
   }, []);
 
+  useEffect(() => {
+    if (editing && !products.length) {
+      supabase.from("products").select("id,name,price,image_url,category_id,is_active")
+        .eq("is_active", true).order("name").then(({ data }) => setProducts(data ?? []));
+    }
+  }, [editing]);
+
   async function openOrder(o: Order) {
-    setOpen(o); setEditing(false);
+    setOpen(o); setEditing(false); setMeta(null);
     const { data } = await supabase.from("order_items").select("*").eq("order_id", o.id);
     setItems(data ?? []);
+  }
+
+  function startEdit() {
+    setEditing(true);
+    setMeta({
+      customer_name: open.customer_name ?? "",
+      phone: open.phone ?? "",
+      delivery_type: open.delivery_type,
+      address: open.address ?? "",
+      pickup_point: open.pickup_point ?? "",
+      delivery_time: open.delivery_time ?? "",
+      payment_method: open.payment_method,
+      change_from: open.change_from ?? "",
+      persons: open.persons ?? 1,
+      comment: open.comment ?? "",
+      delivery_cost: Number(open.delivery_cost) || 0,
+      discount: Number(open.discount) || 0,
+    });
+  }
+
+  async function saveMeta() {
+    if (!meta || !open) return;
+    const payload: any = { ...meta, change_from: meta.change_from === "" ? null : Number(meta.change_from) };
+    const { error } = await (supabase.from("orders") as any).update(payload).eq("id", open.id);
+    if (error) return toast.error(error.message);
+    await recalcOrderTotals(open.id);
+    const { data: { user } } = await supabase.auth.getUser();
+    await (supabase.from("order_changes") as any).insert({
+      order_id: open.id, user_id: user?.id ?? null, action: "details_edited", details: payload,
+    });
+    toast.success("Сохранено");
+    const { data } = await supabase.from("orders").select("*").eq("id", open.id).maybeSingle();
+    if (data) setOpen(data);
+    load();
+  }
+
+  async function addProduct(p: any) {
+    const { error } = await (supabase.from("order_items") as any).insert({
+      order_id: open.id, product_id: p.id, name: p.name,
+      price: p.price, quantity: 1, total: Number(p.price), modifiers: [],
+    });
+    if (error) return toast.error(error.message);
+    await recalcOrderTotals(open.id);
+    const { data } = await supabase.from("order_items").select("*").eq("order_id", open.id);
+    setItems(data ?? []);
+    const { data: { user } } = await supabase.auth.getUser();
+    await (supabase.from("order_changes") as any).insert({
+      order_id: open.id, user_id: user?.id ?? null, action: "item_added",
+      details: { product_id: p.id, name: p.name, price: p.price },
+    });
+    toast.success(`+ ${p.name}`);
+    load();
   }
 
   async function setStatus(id: string, status: string) {

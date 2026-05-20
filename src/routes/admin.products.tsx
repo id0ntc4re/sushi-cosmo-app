@@ -189,6 +189,16 @@ function ProductsAdmin() {
             </Field>
             <Field label="Сортировка"><input type="number" className={inp} value={editing.sort_order ?? 0} onChange={(e) => setEditing({ ...editing, sort_order: Number(e.target.value) })} /></Field>
             <div className="md:col-span-2">
+              <span className="text-xs text-neutral-600 block mb-1">Пищевая ценность (на порцию, можно оставить пустым)</span>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                <Field label="Ккал"><input type="number" step="0.1" className={inp} value={editing.calories ?? ""} onChange={(e) => setEditing({ ...editing, calories: e.target.value === "" ? null : Number(e.target.value) })} /></Field>
+                <Field label="Белки, г"><input type="number" step="0.1" className={inp} value={editing.protein ?? ""} onChange={(e) => setEditing({ ...editing, protein: e.target.value === "" ? null : Number(e.target.value) })} /></Field>
+                <Field label="Жиры, г"><input type="number" step="0.1" className={inp} value={editing.fat ?? ""} onChange={(e) => setEditing({ ...editing, fat: e.target.value === "" ? null : Number(e.target.value) })} /></Field>
+                <Field label="Углев., г"><input type="number" step="0.1" className={inp} value={editing.carbs ?? ""} onChange={(e) => setEditing({ ...editing, carbs: e.target.value === "" ? null : Number(e.target.value) })} /></Field>
+              </div>
+            </div>
+
+            <div className="md:col-span-2">
               <Field label="Изображение">
                 <div className="flex items-start gap-3">
                   <div className="h-24 w-24 rounded-xl bg-neutral-100 grid place-items-center overflow-hidden text-3xl shrink-0">

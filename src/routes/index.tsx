@@ -331,10 +331,11 @@ function Index() {
                       aria-label={`Подробнее о ${p.name}`}
                     >
                       {p.image_url ? (
-                        <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" />
+                        <img src={p.image_url} alt={p.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                       ) : (
                         "🍣"
                       )}
+
                       <span
                         onClick={(e) => {
                           e.stopPropagation();

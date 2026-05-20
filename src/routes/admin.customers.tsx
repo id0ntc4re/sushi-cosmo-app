@@ -243,3 +243,12 @@ function Card({ label, v, accent }: { label: string; v: any; accent?: boolean })
     </div>
   );
 }
+
+function Field({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <label className="block">
+      <div className="text-xs text-neutral-500 mb-1">{label}</div>
+      {children}
+    </label>
+  );
+}

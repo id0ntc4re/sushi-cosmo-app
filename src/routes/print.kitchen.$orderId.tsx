@@ -9,38 +9,44 @@ function KitchenReceipt() {
   const [order, setOrder] = useState<any>(null);
   const [items, setItems] = useState<any[]>([]);
   const [branch, setBranch] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
-      const { data: o } = await supabase.from("orders").select("*").eq("id", orderId).maybeSingle();
-      if (!o) return;
-      setOrder(o);
-      const [{ data: it }, { data: br }] = await Promise.all([
-        supabase.from("order_items").select("*").eq("order_id", orderId),
-        o.branch_id
-          ? supabase.from("branches").select("*").eq("id", o.branch_id).maybeSingle()
-          : Promise.resolve({ data: null }),
-      ]);
-      setItems(it ?? []);
-      setBranch(br ?? null);
+      try {
+        const { data: o, error: oe } = await supabase.from("orders").select("*").eq("id", orderId).maybeSingle();
+        if (oe) { setError(oe.message); return; }
+        if (!o) { setError("Заказ не найден или нет доступа (проверьте, что вы вошли в админ-панель в этом браузере)."); return; }
+        setOrder(o);
+        const [{ data: it }, { data: br }] = await Promise.all([
+          supabase.from("order_items").select("*").eq("order_id", orderId),
+          o.branch_id
+            ? supabase.from("branches").select("*").eq("id", o.branch_id).maybeSingle()
+            : Promise.resolve({ data: null }),
+        ]);
+        setItems(it ?? []);
+        setBranch(br ?? null);
 
-      // mark printed (first time)
-      if (!o.kitchen_printed_at) {
-        await (supabase.from("orders") as any)
-          .update({ kitchen_printed_at: new Date().toISOString() })
-          .eq("id", orderId);
-        const { data: { user } } = await supabase.auth.getUser();
-        await (supabase.from("order_changes") as any).insert({
-          order_id: orderId,
-          user_id: user?.id ?? null,
-          action: "kitchen_printed",
-          details: {},
-        });
+        if (!o.kitchen_printed_at) {
+          await (supabase.from("orders") as any)
+            .update({ kitchen_printed_at: new Date().toISOString() })
+            .eq("id", orderId);
+          const { data: { user } } = await supabase.auth.getUser();
+          await (supabase.from("order_changes") as any).insert({
+            order_id: orderId,
+            user_id: user?.id ?? null,
+            action: "kitchen_printed",
+            details: {},
+          });
+        }
+        setTimeout(() => { try { window.focus(); window.print(); } catch {} }, 600);
+      } catch (e: any) {
+        setError(e?.message ?? String(e));
       }
-      setTimeout(() => { try { window.focus(); window.print(); } catch {} }, 600);
     })();
   }, [orderId]);
 
+  if (error) return <div className="p-10 text-red-600 font-mono whitespace-pre-wrap">{error}</div>;
   if (!order) return <div className="p-10">Загрузка…</div>;
 
   const created = new Date(order.created_at).toLocaleString("ru");

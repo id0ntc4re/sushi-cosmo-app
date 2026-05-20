@@ -24,7 +24,12 @@ type Product = {
   is_addon: boolean;
   is_recommended: boolean;
   tags: string[];
+  calories: number | null;
+  protein: number | null;
+  fat: number | null;
+  carbs: number | null;
 };
+
 
 const TAGS = [
   { id: "spicy", label: "🌶 Острое" },

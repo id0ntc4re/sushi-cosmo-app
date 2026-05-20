@@ -185,9 +185,12 @@ function PosPage() {
           items: cart,
         },
       });
+      if (holidayKind) {
+        await (supabase.from("orders") as any).update({ holiday_discount_kind: holidayKind }).eq("id", order.id);
+      }
       toast.success(`Заказ №${order.number} создан`);
       // Reset
-      setCart([]); setComment(""); setAdminNote(""); setDiscountPct(0); setBonusUse(0);
+      setCart([]); setComment(""); setAdminNote(""); setDiscountPct(0); setBonusUse(0); setHolidayKind(null);
     } catch (e: any) {
       const { ruError } = await import("@/lib/errors");
       toast.error(ruError(e, "Не удалось создать заказ"));

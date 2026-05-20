@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAdminRole, branchName } from "@/lib/admin-role";
+import { printKitchenReceipt } from "@/lib/kitchen-print";
 
 export const Route = createFileRoute("/admin/kanban")({ component: Kanban });
 
@@ -40,10 +41,14 @@ function Kanban() {
     list.forEach((o: any) => knownIds.current.add(o.id));
   }
 
-  function printKitchen(o: any) {
+  async function printKitchen(o: any) {
     if (o.kitchen_printed_at && !confirm("Чек уже печатался. Напечатать ещё раз?")) return;
-    window.open(`/print/kitchen/${o.id}`, "_blank", "width=420,height=720");
-    setTimeout(load, 1500);
+    try {
+      await printKitchenReceipt(o.id);
+      setTimeout(load, 500);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Не удалось открыть печать");
+    }
   }
 
   async function markPaid(o: any) {

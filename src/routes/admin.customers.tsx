@@ -190,7 +190,6 @@ function Customers() {
             <h2 className="text-xl font-extrabold mb-1">{edit.full_name ?? "Клиент"}</h2>
             <div className="text-sm text-neutral-500 mb-5">{edit.phone ?? "—"} · {edit.email ?? "—"}</div>
 
-            <div className="space-y-4">
             <div className="space-y-3 max-h-[70vh] overflow-y-auto pr-1">
               <Field label="Имя">
                 <input value={edit.full_name ?? ""} onChange={(e) => setEdit({ ...edit, full_name: e.target.value })}

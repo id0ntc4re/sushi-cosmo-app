@@ -104,7 +104,14 @@ function Customers() {
   async function saveEdit() {
     if (!edit) return;
     const { error } = await (supabase.from("profiles") as any)
-      .update({ birth_date: edit.birth_date || null, anniversary_date: edit.anniversary_date || null })
+      .update({
+        full_name: edit.full_name?.trim() || null,
+        phone: edit.phone?.trim() || null,
+        email: edit.email?.trim() || null,
+        bonus_balance: Number(edit.bonus_balance) || 0,
+        birth_date: edit.birth_date || null,
+        anniversary_date: edit.anniversary_date || null,
+      })
       .eq("id", edit.id);
     if (error) return toast.error(error.message);
     toast.success("Сохранено");

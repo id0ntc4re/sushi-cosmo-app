@@ -827,9 +827,12 @@ export type Database = {
       }
       products: {
         Row: {
+          calories: number | null
+          carbs: number | null
           category_id: string | null
           created_at: string
           description: string | null
+          fat: number | null
           id: string
           image_url: string | null
           in_stock: boolean
@@ -839,6 +842,7 @@ export type Database = {
           is_recommended: boolean
           name: string
           price: number
+          protein: number | null
           sku: string | null
           sort_order: number
           tags: string[]
@@ -847,9 +851,12 @@ export type Database = {
           weight: string | null
         }
         Insert: {
+          calories?: number | null
+          carbs?: number | null
           category_id?: string | null
           created_at?: string
           description?: string | null
+          fat?: number | null
           id?: string
           image_url?: string | null
           in_stock?: boolean
@@ -859,6 +866,7 @@ export type Database = {
           is_recommended?: boolean
           name: string
           price?: number
+          protein?: number | null
           sku?: string | null
           sort_order?: number
           tags?: string[]
@@ -867,9 +875,12 @@ export type Database = {
           weight?: string | null
         }
         Update: {
+          calories?: number | null
+          carbs?: number | null
           category_id?: string | null
           created_at?: string
           description?: string | null
+          fat?: number | null
           id?: string
           image_url?: string | null
           in_stock?: boolean
@@ -879,6 +890,7 @@ export type Database = {
           is_recommended?: boolean
           name?: string
           price?: number
+          protein?: number | null
           sku?: string | null
           sort_order?: number
           tags?: string[]

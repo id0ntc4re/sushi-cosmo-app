@@ -24,7 +24,12 @@ type Product = {
   is_addon: boolean;
   is_recommended: boolean;
   tags: string[];
+  calories: number | null;
+  protein: number | null;
+  fat: number | null;
+  carbs: number | null;
 };
+
 
 const TAGS = [
   { id: "spicy", label: "🌶 Острое" },
@@ -74,11 +79,16 @@ function ProductsAdmin() {
       is_addon: editing.is_addon ?? false,
       is_recommended: editing.is_recommended ?? false,
       tags: editing.tags ?? [],
+      calories: editing.calories === null || editing.calories === undefined || (editing.calories as any) === "" ? null : Number(editing.calories),
+      protein: editing.protein === null || editing.protein === undefined || (editing.protein as any) === "" ? null : Number(editing.protein),
+      fat: editing.fat === null || editing.fat === undefined || (editing.fat as any) === "" ? null : Number(editing.fat),
+      carbs: editing.carbs === null || editing.carbs === undefined || (editing.carbs as any) === "" ? null : Number(editing.carbs),
     };
     if (!payload.name) return toast.error("Укажите название");
     const res = editing.id
       ? await supabase.from("products").update(payload).eq("id", editing.id)
       : await supabase.from("products").insert(payload);
+
     if (res.error) return toast.error(res.error.message);
     toast.success(editing.id ? "Обновлено" : "Создано");
     setEditing(null);
@@ -178,6 +188,16 @@ function ProductsAdmin() {
               </select>
             </Field>
             <Field label="Сортировка"><input type="number" className={inp} value={editing.sort_order ?? 0} onChange={(e) => setEditing({ ...editing, sort_order: Number(e.target.value) })} /></Field>
+            <div className="md:col-span-2">
+              <span className="text-xs text-neutral-600 block mb-1">Пищевая ценность (на порцию, можно оставить пустым)</span>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                <Field label="Ккал"><input type="number" step="0.1" className={inp} value={editing.calories ?? ""} onChange={(e) => setEditing({ ...editing, calories: e.target.value === "" ? null : Number(e.target.value) })} /></Field>
+                <Field label="Белки, г"><input type="number" step="0.1" className={inp} value={editing.protein ?? ""} onChange={(e) => setEditing({ ...editing, protein: e.target.value === "" ? null : Number(e.target.value) })} /></Field>
+                <Field label="Жиры, г"><input type="number" step="0.1" className={inp} value={editing.fat ?? ""} onChange={(e) => setEditing({ ...editing, fat: e.target.value === "" ? null : Number(e.target.value) })} /></Field>
+                <Field label="Углев., г"><input type="number" step="0.1" className={inp} value={editing.carbs ?? ""} onChange={(e) => setEditing({ ...editing, carbs: e.target.value === "" ? null : Number(e.target.value) })} /></Field>
+              </div>
+            </div>
+
             <div className="md:col-span-2">
               <Field label="Изображение">
                 <div className="flex items-start gap-3">

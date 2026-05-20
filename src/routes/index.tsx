@@ -41,7 +41,12 @@ type Product = {
   ingredients?: string | null;
   is_addon?: boolean;
   tags?: string[];
+  calories?: number | null;
+  protein?: number | null;
+  fat?: number | null;
+  carbs?: number | null;
 };
+
 type Banner = {
   image_url: string | null;
   eyebrow: string | null;
@@ -79,9 +84,10 @@ function Index() {
         setLoadError(null);
         const prods = await supabase
           .from("products")
-          .select("id,name,price,weight,category_id,image_url,description,ingredients,is_addon,tags")
+          .select("id,name,price,weight,category_id,image_url,description,ingredients,is_addon,tags,calories,protein,fat,carbs")
           .eq("is_active", true)
           .order("sort_order");
+
         if (prods.error) throw prods.error;
         const list = (prods.data as Product[]) ?? [];
         setProducts(list);
@@ -325,10 +331,11 @@ function Index() {
                       aria-label={`Подробнее о ${p.name}`}
                     >
                       {p.image_url ? (
-                        <img src={p.image_url} alt={p.name} className="w-full h-full object-cover" />
+                        <img src={p.image_url} alt={p.name} loading="lazy" decoding="async" className="w-full h-full object-cover" />
                       ) : (
                         "🍣"
                       )}
+
                       <span
                         onClick={(e) => {
                           e.stopPropagation();
@@ -347,7 +354,16 @@ function Index() {
                         {p.weight && (
                           <div className="text-[11px] sm:text-xs text-neutral-500 mt-1">{p.weight}</div>
                         )}
+                        {(p.calories != null || p.protein != null || p.fat != null || p.carbs != null) && (
+                          <div className="text-[10px] sm:text-[11px] text-neutral-500 mt-0.5 flex flex-wrap gap-x-2">
+                            {p.calories != null && <span>{Number(p.calories)} ккал</span>}
+                            {p.protein != null && <span>Б {Number(p.protein)}</span>}
+                            {p.fat != null && <span>Ж {Number(p.fat)}</span>}
+                            {p.carbs != null && <span>У {Number(p.carbs)}</span>}
+                          </div>
+                        )}
                       </button>
+
                       <div className="mt-auto pt-3 sm:pt-4 flex items-center justify-between gap-1.5">
                         <span className="text-base sm:text-xl font-extrabold">{Number(p.price)} ₽</span>
                         {(() => {
@@ -525,7 +541,7 @@ function ProductModal({ product, onClose, onAdd }: { product: Product; onClose: 
       >
         <div className="relative h-64 sm:h-80 bg-neutral-100 grid place-items-center text-5xl overflow-hidden">
           {product.image_url ? (
-            <img src={product.image_url} alt={product.name} className="absolute inset-0 w-full h-full object-cover" />
+            <img src={product.image_url} alt={product.name} loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover" />
           ) : (
             "🍣"
           )}
@@ -549,6 +565,25 @@ function ProductModal({ product, onClose, onAdd }: { product: Product; onClose: 
               <p className="text-sm text-foreground/80">{product.ingredients}</p>
             </div>
           )}
+          {(product.calories != null || product.protein != null || product.fat != null || product.carbs != null) && (
+            <div className="mb-5 sm:mb-6">
+              <div className="text-xs uppercase tracking-wider font-bold text-primary mb-2">Пищевая ценность {product.weight ? `(на ${product.weight})` : ""}</div>
+              <div className="grid grid-cols-4 gap-2">
+                {[
+                  { label: "Ккал", v: product.calories },
+                  { label: "Белки", v: product.protein },
+                  { label: "Жиры", v: product.fat },
+                  { label: "Углев.", v: product.carbs },
+                ].map((x) => (
+                  <div key={x.label} className="rounded-xl bg-neutral-50 border border-neutral-100 px-2 py-2 text-center">
+                    <div className="text-base font-extrabold">{x.v != null ? Number(x.v) : "—"}</div>
+                    <div className="text-[10px] uppercase tracking-wider text-neutral-500">{x.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="mb-4 rounded-xl bg-amber-50 border border-amber-100 px-3 py-2 text-[12px] text-amber-800">
             ⚠️ Внешний вид блюда может отличаться от фотографии.
             {(/сет|set|набор/i.test(product.name) || (Array.isArray(product.tags) && product.tags.some((t) => /сет|set|набор/i.test(t))))

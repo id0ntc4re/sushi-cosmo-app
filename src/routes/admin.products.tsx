@@ -79,11 +79,16 @@ function ProductsAdmin() {
       is_addon: editing.is_addon ?? false,
       is_recommended: editing.is_recommended ?? false,
       tags: editing.tags ?? [],
+      calories: editing.calories === null || editing.calories === undefined || (editing.calories as any) === "" ? null : Number(editing.calories),
+      protein: editing.protein === null || editing.protein === undefined || (editing.protein as any) === "" ? null : Number(editing.protein),
+      fat: editing.fat === null || editing.fat === undefined || (editing.fat as any) === "" ? null : Number(editing.fat),
+      carbs: editing.carbs === null || editing.carbs === undefined || (editing.carbs as any) === "" ? null : Number(editing.carbs),
     };
     if (!payload.name) return toast.error("Укажите название");
     const res = editing.id
       ? await supabase.from("products").update(payload).eq("id", editing.id)
       : await supabase.from("products").insert(payload);
+
     if (res.error) return toast.error(res.error.message);
     toast.success(editing.id ? "Обновлено" : "Создано");
     setEditing(null);

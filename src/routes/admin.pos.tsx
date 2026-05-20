@@ -11,7 +11,7 @@ export const Route = createFileRoute("/admin/pos")({ component: PosPage });
 type Product = { id: string; name: string; price: number; image_url: string | null; category_id: string | null; is_addon: boolean };
 type Category = { id: string; name: string; sort_order: number };
 type CartLine = { product_id: string | null; name: string; price: number; quantity: number };
-type Profile = { id: string; full_name: string | null; phone: string | null; email: string | null; bonus_balance: number; total_spent: number };
+type Profile = { id: string; full_name: string | null; phone: string | null; email: string | null; bonus_balance: number; total_spent: number; birth_date: string | null; anniversary_date: string | null };
 type RecentOrder = { id: string; number: number; total: number; created_at: string; address: string | null; delivery_type: string; phone: string };
 
 function PosPage() {

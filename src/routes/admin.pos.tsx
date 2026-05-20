@@ -11,7 +11,7 @@ export const Route = createFileRoute("/admin/pos")({ component: PosPage });
 type Product = { id: string; name: string; price: number; image_url: string | null; category_id: string | null; is_addon: boolean };
 type Category = { id: string; name: string; sort_order: number };
 type CartLine = { product_id: string | null; name: string; price: number; quantity: number };
-type Profile = { id: string; full_name: string | null; phone: string | null; email: string | null; bonus_balance: number; total_spent: number };
+type Profile = { id: string; full_name: string | null; phone: string | null; email: string | null; bonus_balance: number; total_spent: number; birth_date: string | null; anniversary_date: string | null };
 type RecentOrder = { id: string; number: number; total: number; created_at: string; address: string | null; delivery_type: string; phone: string };
 
 function PosPage() {
@@ -38,7 +38,21 @@ function PosPage() {
   const [bonusUse, setBonusUse] = useState(0);
   const [posBranch, setPosBranch] = useState<string>("");
   const [adminNote, setAdminNote] = useState("");
+  const [holidayKind, setHolidayKind] = useState<"birthday" | "anniversary" | null>(null);
   const [busy, setBusy] = useState(false);
+
+  function daysToNext(dateStr: string | null): number | null {
+    if (!dateStr) return null;
+    const today = new Date();
+    const d = new Date(dateStr);
+    const next = new Date(today.getFullYear(), d.getMonth(), d.getDate());
+    if (next < new Date(today.getFullYear(), today.getMonth(), today.getDate()))
+      next.setFullYear(today.getFullYear() + 1);
+    return Math.round((next.getTime() - today.getTime()) / 86400000);
+  }
+  const holidayBirth = profile && daysToNext(profile.birth_date) != null && daysToNext(profile.birth_date)! <= 7;
+  const holidayAnniv = profile && daysToNext(profile.anniversary_date) != null && daysToNext(profile.anniversary_date)! <= 7;
+  const holidayPct = deliveryType === "delivery" ? 10 : 15;
 
   useEffect(() => {
     (async () => {
@@ -70,7 +84,7 @@ function PosPage() {
       }
       // Profile by phone (any match)
       const { data: profs } = await supabase
-        .from("profiles").select("id,full_name,phone,email,bonus_balance,total_spent")
+        .from("profiles").select("id,full_name,phone,email,bonus_balance,total_spent,birth_date,anniversary_date")
         .ilike("phone", `%${cleanPhone.slice(-10)}%`).limit(1);
       const p = (profs?.[0] ?? null) as Profile | null;
       if (p) {
@@ -171,9 +185,12 @@ function PosPage() {
           items: cart,
         },
       });
+      if (holidayKind) {
+        await (supabase.from("orders") as any).update({ holiday_discount_kind: holidayKind }).eq("id", order.id);
+      }
       toast.success(`Заказ №${order.number} создан`);
       // Reset
-      setCart([]); setComment(""); setAdminNote(""); setDiscountPct(0); setBonusUse(0);
+      setCart([]); setComment(""); setAdminNote(""); setDiscountPct(0); setBonusUse(0); setHolidayKind(null);
     } catch (e: any) {
       const { ruError } = await import("@/lib/errors");
       toast.error(ruError(e, "Не удалось создать заказ"));
@@ -313,6 +330,36 @@ function PosPage() {
                   }`}>{l}</button>
               ))}
             </div>
+            {(holidayBirth || holidayAnniv) && (
+              <div className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl p-3 space-y-2">
+                <div className="text-xs font-bold text-purple-900">
+                  🎉 У клиента праздник: {holidayBirth ? `🎂 День рождения (через ${daysToNext(profile!.birth_date)}д)` : ""}
+                  {holidayBirth && holidayAnniv ? " · " : ""}
+                  {holidayAnniv ? `💍 Годовщина (через ${daysToNext(profile!.anniversary_date)}д)` : ""}
+                </div>
+                <div className="flex gap-1.5 flex-wrap">
+                  {holidayBirth && (
+                    <button onClick={() => { setDiscountPct(holidayPct); setHolidayKind("birthday"); setBonusUse(0); }}
+                      className={`px-3 py-1.5 rounded-full text-xs font-bold ${holidayKind === "birthday" ? "bg-pink-500 text-white" : "bg-white border border-pink-300 text-pink-700"}`}>
+                      🎂 Применить {holidayPct}%
+                    </button>
+                  )}
+                  {holidayAnniv && (
+                    <button onClick={() => { setDiscountPct(holidayPct); setHolidayKind("anniversary"); setBonusUse(0); }}
+                      className={`px-3 py-1.5 rounded-full text-xs font-bold ${holidayKind === "anniversary" ? "bg-purple-500 text-white" : "bg-white border border-purple-300 text-purple-700"}`}>
+                      💍 Применить {holidayPct}%
+                    </button>
+                  )}
+                  {holidayKind && (
+                    <button onClick={() => { setHolidayKind(null); setDiscountPct(0); }}
+                      className="px-3 py-1.5 rounded-full text-xs bg-neutral-100">Убрать</button>
+                  )}
+                </div>
+                <div className="text-[10px] text-neutral-500">
+                  Доставка — 10%, самовывоз — 15% (текущий способ: {deliveryType === "delivery" ? "доставка" : "самовывоз"})
+                </div>
+              </div>
+            )}
             <div>
               <div className="text-xs text-neutral-600 mb-1">Скидка, %</div>
               <div className="flex gap-1.5 flex-wrap">

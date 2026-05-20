@@ -34,6 +34,8 @@ function OrdersAdmin() {
   const [meta, setMeta] = useState<any>(null);
   const [products, setProducts] = useState<any[]>([]);
   const [productSearch, setProductSearch] = useState("");
+  const [history, setHistory] = useState<any[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
 
   async function load() {
     const q = supabase.from("orders").select("*").is("deleted_at", null).order("created_at", { ascending: false }).limit(200);

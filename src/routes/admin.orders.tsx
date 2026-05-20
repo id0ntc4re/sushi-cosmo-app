@@ -201,17 +201,49 @@ function OrdersAdmin() {
 
       {open && (
         <Modal onClose={() => setOpen(null)} title={`Заказ #${open.number}`}>
-          <div className="grid sm:grid-cols-2 gap-3 text-sm mb-5">
-            <Info k="Клиент" v={open.customer_name} />
-            <Info k="Телефон" v={<a href={`tel:${open.phone}`} className="text-primary">{open.phone}</a>} />
-            <Info k="Тип" v={open.delivery_type === "delivery" ? "Доставка" : "Самовывоз"} />
-            <Info k={open.delivery_type === "delivery" ? "Адрес" : "Точка"} v={open.address || open.pickup_point || "—"} />
-            <Info k="Оплата" v={{ cash: "Наличные", card_courier: "Картой курьеру", card_online: "Онлайн" }[open.payment_method as string]} />
-            {open.change_from && <Info k="Сдача с" v={`${open.change_from} ₽`} />}
-            <Info k="Персон" v={open.persons} />
-            <Info k="Время" v={open.delivery_time || "—"} />
-            {open.comment && <div className="sm:col-span-2"><Info k="Комментарий" v={open.comment} /></div>}
-          </div>
+          {!editing ? (
+            <div className="grid sm:grid-cols-2 gap-3 text-sm mb-5">
+              <Info k="Клиент" v={open.customer_name} />
+              <Info k="Телефон" v={<a href={`tel:${open.phone}`} className="text-primary">{open.phone}</a>} />
+              <Info k="Тип" v={open.delivery_type === "delivery" ? "Доставка" : "Самовывоз"} />
+              <Info k={open.delivery_type === "delivery" ? "Адрес" : "Точка"} v={open.address || open.pickup_point || "—"} />
+              <Info k="Оплата" v={{ cash: "Наличные", card_courier: "Картой курьеру", card_online: "Онлайн" }[open.payment_method as string]} />
+              {open.change_from && <Info k="Сдача с" v={`${open.change_from} ₽`} />}
+              <Info k="Персон" v={open.persons} />
+              <Info k="Время" v={open.delivery_time || "—"} />
+              {open.comment && <div className="sm:col-span-2"><Info k="Комментарий" v={open.comment} /></div>}
+            </div>
+          ) : (
+            <div className="bg-blue-50/50 rounded-2xl p-4 mb-5 space-y-3">
+              <div className="font-bold text-sm mb-2">Данные заказа</div>
+              <div className="grid grid-cols-2 gap-3 text-sm">
+                <L lab="Клиент"><input value={meta.customer_name} onChange={(e) => setMeta({ ...meta, customer_name: e.target.value })} className={inp} /></L>
+                <L lab="Телефон"><input value={meta.phone} onChange={(e) => setMeta({ ...meta, phone: e.target.value })} className={inp} /></L>
+                <L lab="Тип">
+                  <select value={meta.delivery_type} onChange={(e) => setMeta({ ...meta, delivery_type: e.target.value })} className={inp}>
+                    <option value="delivery">Доставка</option><option value="pickup">Самовывоз</option>
+                  </select>
+                </L>
+                <L lab="Оплата">
+                  <select value={meta.payment_method} onChange={(e) => setMeta({ ...meta, payment_method: e.target.value })} className={inp}>
+                    <option value="cash">Наличные</option><option value="card_courier">Картой курьеру</option><option value="card_online">Онлайн</option>
+                  </select>
+                </L>
+                {meta.delivery_type === "delivery" ? (
+                  <L lab="Адрес" full><input value={meta.address} onChange={(e) => setMeta({ ...meta, address: e.target.value })} className={inp} /></L>
+                ) : (
+                  <L lab="Точка самовывоза" full><input value={meta.pickup_point} onChange={(e) => setMeta({ ...meta, pickup_point: e.target.value })} className={inp} /></L>
+                )}
+                <L lab="Время"><input value={meta.delivery_time} onChange={(e) => setMeta({ ...meta, delivery_time: e.target.value })} className={inp} placeholder="ASAP или 19:30" /></L>
+                <L lab="Персон"><input type="number" value={meta.persons} onChange={(e) => setMeta({ ...meta, persons: Number(e.target.value) })} className={inp} /></L>
+                <L lab="Сдача с"><input type="number" value={meta.change_from} onChange={(e) => setMeta({ ...meta, change_from: e.target.value })} className={inp} /></L>
+                <L lab="Доставка ₽"><input type="number" value={meta.delivery_cost} onChange={(e) => setMeta({ ...meta, delivery_cost: Number(e.target.value) })} className={inp} /></L>
+                <L lab="Скидка ₽"><input type="number" value={meta.discount} onChange={(e) => setMeta({ ...meta, discount: Number(e.target.value) })} className={inp} /></L>
+                <L lab="Комментарий" full><textarea value={meta.comment} onChange={(e) => setMeta({ ...meta, comment: e.target.value })} className={`${inp} min-h-[60px]`} /></L>
+              </div>
+              <button onClick={saveMeta} className="px-4 py-2 rounded-full bg-primary text-white font-semibold text-sm">💾 Сохранить данные</button>
+            </div>
+          )}
 
           <div className="flex gap-2 flex-wrap mb-4">
             <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${open.payment_status === "paid" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>

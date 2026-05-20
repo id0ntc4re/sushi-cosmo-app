@@ -41,7 +41,12 @@ type Product = {
   ingredients?: string | null;
   is_addon?: boolean;
   tags?: string[];
+  calories?: number | null;
+  protein?: number | null;
+  fat?: number | null;
+  carbs?: number | null;
 };
+
 type Banner = {
   image_url: string | null;
   eyebrow: string | null;

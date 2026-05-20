@@ -100,6 +100,7 @@ function OrdersAdmin() {
     await (supabase.from("order_changes") as any).insert({
       order_id: open.id, user_id: user?.id ?? null, action: "details_edited", details: payload,
     });
+    loadHistory(open.id);
     toast.success("Сохранено");
     const { data } = await supabase.from("orders").select("*").eq("id", open.id).maybeSingle();
     if (data) setOpen(data);

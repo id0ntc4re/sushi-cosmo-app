@@ -325,3 +325,13 @@ function FilterPill({ active, onClick, label }: any) {
 function Info({ k, v }: any) {
   return <div><div className="text-xs text-neutral-500">{k}</div><div className="font-semibold">{v}</div></div>;
 }
+
+const inp = "w-full px-3 py-1.5 rounded-lg border border-neutral-200 bg-white text-sm";
+function L({ lab, children, full }: any) {
+  return (
+    <label className={`block ${full ? "col-span-2" : ""}`}>
+      <div className="text-[11px] text-neutral-500 mb-0.5">{lab}</div>
+      {children}
+    </label>
+  );
+}

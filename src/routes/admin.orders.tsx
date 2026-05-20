@@ -284,6 +284,28 @@ function OrdersAdmin() {
                 <span className="font-semibold w-20 text-right">{Number(it.total)} ₽</span>
               </div>
             ))}
+            {editing && (
+              <div className="mt-3 border-t pt-3">
+                <input value={productSearch} onChange={(e) => setProductSearch(e.target.value)}
+                  placeholder="🔍 Найти товар для добавления…"
+                  className="w-full px-3 py-2 rounded-lg border border-neutral-200 text-sm mb-2" />
+                {productSearch && (
+                  <div className="max-h-48 overflow-y-auto rounded-lg border border-neutral-200 bg-white divide-y">
+                    {products
+                      .filter((p) => p.name.toLowerCase().includes(productSearch.toLowerCase()))
+                      .slice(0, 20)
+                      .map((p) => (
+                        <button key={p.id} onClick={() => addProduct(p)}
+                          className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm hover:bg-primary/5">
+                          {p.image_url && <img src={p.image_url} className="h-8 w-8 rounded object-cover" alt="" />}
+                          <span className="flex-1 truncate">{p.name}</span>
+                          <span className="font-bold">{Number(p.price)} ₽</span>
+                        </button>
+                      ))}
+                  </div>
+                )}
+              </div>
+            )}
             <div className="border-t mt-3 pt-3 space-y-1">
               <div className="flex justify-between text-sm"><span className="text-neutral-600">Товары</span><span>{Number(open.subtotal)} ₽</span></div>
               <div className="flex justify-between text-sm"><span className="text-neutral-600">Доставка</span><span>{Number(open.delivery_cost)} ₽</span></div>

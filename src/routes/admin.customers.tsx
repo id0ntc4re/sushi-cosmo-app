@@ -147,11 +147,12 @@ function Customers() {
                 <th className="text-right">Потрачено</th>
                 <th className="text-right">Ср. чек</th>
                 <th className="text-right">Бонусы</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
               {filtered.map((r) => (
-                <tr key={r.id} className="border-b last:border-0 hover:bg-neutral-50 cursor-pointer" onClick={() => setEdit(r)}>
+                <tr key={r.id} className="border-b last:border-0 hover:bg-neutral-50">
                   <td className="py-2.5 font-semibold flex items-center gap-2">
                     {r.full_name ?? "—"} {holidayBadge(r.birth_date, r.anniversary_date)}
                   </td>
@@ -162,9 +163,15 @@ function Customers() {
                   <td className="text-right font-bold text-primary">{Number(r.total_spent).toLocaleString("ru")} ₽</td>
                   <td className="text-right">{r.avg_check} ₽</td>
                   <td className="text-right text-amber-600 font-semibold">{Number(r.bonus_balance)}</td>
+                  <td className="text-right pl-2">
+                    <button onClick={() => setEdit(r)}
+                      className="px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-bold hover:bg-primary hover:text-white transition">
+                      ✏️ Редактировать
+                    </button>
+                  </td>
                 </tr>
               ))}
-              {!filtered.length && <tr><td colSpan={8} className="py-10 text-center text-neutral-400">Клиентов пока нет</td></tr>}
+              {!filtered.length && <tr><td colSpan={9} className="py-10 text-center text-neutral-400">Клиентов пока нет</td></tr>}
             </tbody>
           </table>
         </div>

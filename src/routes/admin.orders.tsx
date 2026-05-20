@@ -29,6 +29,7 @@ function OrdersAdmin() {
   const [filter, setFilter] = useState<string>("");
   const [open, setOpen] = useState<Order | null>(null);
   const [items, setItems] = useState<any[]>([]);
+  const [editing, setEditing] = useState(false);
 
   async function load() {
     const q = supabase.from("orders").select("*").is("deleted_at", null).order("created_at", { ascending: false }).limit(200);
@@ -46,7 +47,7 @@ function OrdersAdmin() {
   }, []);
 
   async function openOrder(o: Order) {
-    setOpen(o);
+    setOpen(o); setEditing(false);
     const { data } = await supabase.from("order_items").select("*").eq("order_id", o.id);
     setItems(data ?? []);
   }
@@ -57,6 +58,38 @@ function OrdersAdmin() {
     toast.success("Статус обновлён");
     load();
     if (open?.id === id) setOpen({ ...open, status });
+  }
+
+  async function changeQty(it: any, q: number) {
+    if (q <= 0) {
+      if (!confirm(`Удалить «${it.name}»? Ингредиенты вернутся на склад.`)) return;
+      const { error } = await supabase.from("order_items").delete().eq("id", it.id);
+      if (error) return toast.error(error.message);
+    } else {
+      const total = Number(it.price) * q;
+      const { error } = await (supabase.from("order_items") as any)
+        .update({ quantity: q, total }).eq("id", it.id);
+      if (error) return toast.error(error.message);
+    }
+    await recalcOrderTotals(open!.id);
+    const { data } = await supabase.from("order_items").select("*").eq("order_id", open!.id);
+    setItems(data ?? []);
+    const { data: { user } } = await supabase.auth.getUser();
+    await (supabase.from("order_changes") as any).insert({
+      order_id: open!.id, user_id: user?.id ?? null,
+      action: q <= 0 ? "item_removed" : "item_qty_changed",
+      details: { item_id: it.id, name: it.name, from: it.quantity, to: q },
+    });
+    load();
+  }
+
+  async function recalcOrderTotals(orderId: string) {
+    const { data: its } = await supabase.from("order_items").select("total").eq("order_id", orderId);
+    const subtotal = (its ?? []).reduce((a: number, x: any) => a + Number(x.total), 0);
+    const { data: o } = await supabase.from("orders").select("delivery_cost,discount,bonus_used").eq("id", orderId).maybeSingle();
+    const total = Math.max(0, subtotal + Number(o?.delivery_cost ?? 0) - Number(o?.discount ?? 0) - Number(o?.bonus_used ?? 0));
+    await (supabase.from("orders") as any).update({ subtotal, total }).eq("id", orderId);
+    if (open?.id === orderId) setOpen({ ...open, subtotal, total });
   }
 
   async function remove(id: string) {

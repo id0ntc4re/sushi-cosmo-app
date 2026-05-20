@@ -126,60 +126,60 @@ function Kanban() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-2">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         {COLS.map((col) => {
           const list = orders.filter((o) => o.status === col.key);
           return (
-            <div key={col.key} className={`rounded-xl border ${col.color} p-2 min-h-[300px]`}>
-              <div className="font-bold text-sm mb-2 px-1 flex justify-between">
+            <div key={col.key} className={`rounded-2xl border-2 ${col.color} p-3 min-h-[400px]`}>
+              <div className="font-extrabold mb-3 px-1 flex justify-between">
                 <span>{col.label}</span>
-                <span className="text-[10px] bg-white/70 px-1.5 rounded-full">{list.length}</span>
+                <span className="text-xs bg-white/70 px-2 rounded-full">{list.length}</span>
               </div>
-              <div className="space-y-1.5">
+              <div className="space-y-3">
                 {list.map((o) => {
                   const sec = (now - new Date(o.created_at).getTime()) / 1000;
                   const urgent = sec > 1800;
                   return (
-                    <div key={o.id} className={`bg-white rounded-lg p-2 shadow-sm ${urgent ? "ring-1 ring-red-400" : ""}`}>
-                      <div className="flex justify-between items-center">
-                        <div className="font-bold text-xs">#{o.number}</div>
-                        <div className={`text-[10px] font-mono font-bold ${urgent ? "text-red-600" : "text-neutral-400"}`}>
+                    <div key={o.id} className={`bg-white rounded-xl p-3 shadow-sm ${urgent ? "ring-2 ring-red-400" : ""}`}>
+                      <div className="flex justify-between items-start mb-1">
+                        <div className="font-extrabold">#{o.number}</div>
+                        <div className={`text-xs font-mono font-bold ${urgent ? "text-red-600" : "text-neutral-500"}`}>
                           {elapsed(o.created_at)}
                         </div>
                       </div>
                       {isSuper && (
-                        <div className="text-[9px] uppercase tracking-wide text-neutral-400 truncate">{branchName(branches, o.branch_id)}</div>
+                        <div className="text-[10px] uppercase tracking-wide text-neutral-400 mb-0.5">{branchName(branches, o.branch_id)}</div>
                       )}
-                      <div className="text-xs font-semibold truncate">{o.customer_name}</div>
-                      <div className="text-[10px] text-neutral-500 truncate">{o.phone}</div>
-                      {o.address && <div className="text-[10px] text-neutral-500 truncate">📍 {o.address}</div>}
-                      {o.comment && <div className="text-[10px] text-amber-700 truncate">💬 {o.comment}</div>}
-                      <div className="text-sm font-extrabold mt-1 text-primary flex items-center gap-1.5 flex-wrap">
+                      <div className="text-sm font-semibold truncate">{o.customer_name}</div>
+                      <div className="text-xs text-neutral-500 truncate">{o.phone}</div>
+                      {o.address && <div className="text-xs text-neutral-500 truncate mt-1">📍 {o.address}</div>}
+                      {o.comment && <div className="text-xs text-amber-700 truncate mt-1">💬 {o.comment}</div>}
+                      <div className="text-base font-extrabold mt-2 text-primary flex items-center gap-2">
                         {Number(o.total)} ₽
                         {o.payment_status === "paid" ? (
-                          <span className="text-[9px] font-bold bg-green-100 text-green-700 px-1 py-0.5 rounded">✓ ОПЛ</span>
+                          <span className="text-[10px] font-bold bg-green-100 text-green-700 px-1.5 py-0.5 rounded">ОПЛАЧЕН</span>
                         ) : (
-                          <span className="text-[9px] font-bold bg-red-100 text-red-700 px-1 py-0.5 rounded">НЕ ОПЛ</span>
+                          <span className="text-[10px] font-bold bg-red-100 text-red-700 px-1.5 py-0.5 rounded">НЕ ОПЛАЧЕН</span>
                         )}
                       </div>
-                      <div className="flex gap-1 mt-1.5 flex-wrap">
+                      <div className="flex gap-1 mt-2 flex-wrap">
                         {NEXT[o.status] && (
                           <button onClick={() => move(o.id, NEXT[o.status])}
-                            className="flex-1 min-w-[90px] px-1.5 py-1 rounded-md bg-primary text-white text-[10px] font-bold">→ {COLS.find(c => c.key === NEXT[o.status])?.label}</button>
+                            className="flex-1 min-w-[120px] px-2 py-1.5 rounded-lg bg-primary text-white text-xs font-bold">→ {COLS.find(c => c.key === NEXT[o.status])?.label}</button>
                         )}
                         <button onClick={() => printKitchen(o)} title="Печать кухонного чека"
-                          className={`px-1.5 py-1 rounded-md text-[10px] font-bold ${o.kitchen_printed_at ? "bg-neutral-100 text-neutral-500" : "bg-amber-500 text-white"}`}>🖨</button>
+                          className={`px-2 py-1.5 rounded-lg text-xs font-bold ${o.kitchen_printed_at ? "bg-neutral-100 text-neutral-500" : "bg-amber-500 text-white"}`}>🖨</button>
                         {o.payment_status !== "paid" && (
                           <button onClick={() => markPaid(o)} title="Принять оплату"
-                            className="px-1.5 py-1 rounded-md bg-green-600 text-white text-[10px] font-bold">💰</button>
+                            className="px-2 py-1.5 rounded-lg bg-green-600 text-white text-xs font-bold">💰</button>
                         )}
                         <button onClick={() => cancel(o.id)}
-                          className="px-1.5 py-1 rounded-md bg-neutral-100 text-[10px]">✕</button>
+                          className="px-2 py-1.5 rounded-lg bg-neutral-100 text-xs">✕</button>
                       </div>
                     </div>
                   );
                 })}
-                {!list.length && <div className="text-[10px] text-center text-neutral-400 py-4">пусто</div>}
+                {!list.length && <div className="text-xs text-center text-neutral-400 py-6">пусто</div>}
               </div>
             </div>
           );

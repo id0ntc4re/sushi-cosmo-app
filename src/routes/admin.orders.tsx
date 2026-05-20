@@ -154,6 +154,7 @@ function OrdersAdmin() {
       action: q <= 0 ? "item_removed" : "item_qty_changed",
       details: { item_id: it.id, name: it.name, from: it.quantity, to: q },
     });
+    loadHistory(open!.id);
     load();
   }
 

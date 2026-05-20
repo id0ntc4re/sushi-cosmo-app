@@ -42,6 +42,7 @@ import { Route as AdminCategoriesRouteImport } from './routes/admin.categories'
 import { Route as AdminCallbacksRouteImport } from './routes/admin.callbacks'
 import { Route as AdminBranchesRouteImport } from './routes/admin.branches'
 import { Route as AdminBannersRouteImport } from './routes/admin.banners'
+import { Route as PrintKitchenOrderIdRouteImport } from './routes/print.kitchen.$orderId'
 
 const OrderSuccessRoute = OrderSuccessRouteImport.update({
   id: '/order-success',
@@ -208,6 +209,11 @@ const AdminBannersRoute = AdminBannersRouteImport.update({
   path: '/banners',
   getParentRoute: () => AdminRoute,
 } as any)
+const PrintKitchenOrderIdRoute = PrintKitchenOrderIdRouteImport.update({
+  id: '/print/kitchen/$orderId',
+  path: '/print/kitchen/$orderId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -243,6 +249,7 @@ export interface FileRoutesByFullPath {
   '/news/$slug': typeof NewsSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/news/': typeof NewsIndexRoute
+  '/print/kitchen/$orderId': typeof PrintKitchenOrderIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -277,6 +284,7 @@ export interface FileRoutesByTo {
   '/news/$slug': typeof NewsSlugRoute
   '/admin': typeof AdminIndexRoute
   '/news': typeof NewsIndexRoute
+  '/print/kitchen/$orderId': typeof PrintKitchenOrderIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -313,6 +321,7 @@ export interface FileRoutesById {
   '/news/$slug': typeof NewsSlugRoute
   '/admin/': typeof AdminIndexRoute
   '/news/': typeof NewsIndexRoute
+  '/print/kitchen/$orderId': typeof PrintKitchenOrderIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -350,6 +359,7 @@ export interface FileRouteTypes {
     | '/news/$slug'
     | '/admin/'
     | '/news/'
+    | '/print/kitchen/$orderId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -384,6 +394,7 @@ export interface FileRouteTypes {
     | '/news/$slug'
     | '/admin'
     | '/news'
+    | '/print/kitchen/$orderId'
   id:
     | '__root__'
     | '/'
@@ -419,6 +430,7 @@ export interface FileRouteTypes {
     | '/news/$slug'
     | '/admin/'
     | '/news/'
+    | '/print/kitchen/$orderId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -434,6 +446,7 @@ export interface RootRouteChildren {
   OrderSuccessRoute: typeof OrderSuccessRoute
   NewsSlugRoute: typeof NewsSlugRoute
   NewsIndexRoute: typeof NewsIndexRoute
+  PrintKitchenOrderIdRoute: typeof PrintKitchenOrderIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -669,6 +682,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminBannersRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/print/kitchen/$orderId': {
+      id: '/print/kitchen/$orderId'
+      path: '/print/kitchen/$orderId'
+      fullPath: '/print/kitchen/$orderId'
+      preLoaderRoute: typeof PrintKitchenOrderIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -735,17 +755,8 @@ const rootRouteChildren: RootRouteChildren = {
   OrderSuccessRoute: OrderSuccessRoute,
   NewsSlugRoute: NewsSlugRoute,
   NewsIndexRoute: NewsIndexRoute,
+  PrintKitchenOrderIdRoute: PrintKitchenOrderIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

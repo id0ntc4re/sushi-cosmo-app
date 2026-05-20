@@ -596,6 +596,41 @@ export type Database = {
         }
         Relationships: []
       }
+      order_changes: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json
+          id: string
+          order_id: string
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json
+          id?: string
+          order_id: string
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json
+          id?: string
+          order_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_changes_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_items: {
         Row: {
           id: string
@@ -663,9 +698,17 @@ export type Database = {
           delivery_type: Database["public"]["Enums"]["delivery_type"]
           discount: number
           done_at: string | null
+          fiscal_receipt_number: string | null
+          fiscal_receipt_url: string | null
+          holiday_discount_kind:
+            | Database["public"]["Enums"]["holiday_discount_kind"]
+            | null
           id: string
+          kitchen_printed_at: string | null
           number: number
+          paid_at: string | null
           payment_method: Database["public"]["Enums"]["payment_method"]
+          payment_status: Database["public"]["Enums"]["payment_status"]
           persons: number | null
           phone: string
           pickup_point: string | null
@@ -695,9 +738,17 @@ export type Database = {
           delivery_type?: Database["public"]["Enums"]["delivery_type"]
           discount?: number
           done_at?: string | null
+          fiscal_receipt_number?: string | null
+          fiscal_receipt_url?: string | null
+          holiday_discount_kind?:
+            | Database["public"]["Enums"]["holiday_discount_kind"]
+            | null
           id?: string
+          kitchen_printed_at?: string | null
           number?: number
+          paid_at?: string | null
           payment_method?: Database["public"]["Enums"]["payment_method"]
+          payment_status?: Database["public"]["Enums"]["payment_status"]
           persons?: number | null
           phone: string
           pickup_point?: string | null
@@ -727,9 +778,17 @@ export type Database = {
           delivery_type?: Database["public"]["Enums"]["delivery_type"]
           discount?: number
           done_at?: string | null
+          fiscal_receipt_number?: string | null
+          fiscal_receipt_url?: string | null
+          holiday_discount_kind?:
+            | Database["public"]["Enums"]["holiday_discount_kind"]
+            | null
           id?: string
+          kitchen_printed_at?: string | null
           number?: number
+          paid_at?: string | null
           payment_method?: Database["public"]["Enums"]["payment_method"]
+          payment_status?: Database["public"]["Enums"]["payment_status"]
           persons?: number | null
           phone?: string
           pickup_point?: string | null
@@ -839,6 +898,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          anniversary_date: string | null
           birth_date: string | null
           bonus_balance: number
           created_at: string
@@ -851,6 +911,7 @@ export type Database = {
           total_spent: number
         }
         Insert: {
+          anniversary_date?: string | null
           birth_date?: string | null
           bonus_balance?: number
           created_at?: string
@@ -863,6 +924,7 @@ export type Database = {
           total_spent?: number
         }
         Update: {
+          anniversary_date?: string | null
           birth_date?: string | null
           bonus_balance?: number
           created_at?: string
@@ -1260,6 +1322,7 @@ export type Database = {
     Enums: {
       app_role: "admin" | "user" | "super_admin"
       delivery_type: "delivery" | "pickup"
+      holiday_discount_kind: "birthday" | "anniversary"
       order_status:
         | "new"
         | "confirmed"
@@ -1268,6 +1331,7 @@ export type Database = {
         | "done"
         | "cancelled"
       payment_method: "cash" | "card_courier" | "card_online"
+      payment_status: "unpaid" | "paid" | "refunded"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1397,6 +1461,7 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "user", "super_admin"],
       delivery_type: ["delivery", "pickup"],
+      holiday_discount_kind: ["birthday", "anniversary"],
       order_status: [
         "new",
         "confirmed",
@@ -1406,6 +1471,7 @@ export const Constants = {
         "cancelled",
       ],
       payment_method: ["cash", "card_courier", "card_online"],
+      payment_status: ["unpaid", "paid", "refunded"],
     },
   },
 } as const

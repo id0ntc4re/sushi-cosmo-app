@@ -29,7 +29,7 @@ function Kanban() {
 
   async function load() {
     let q = supabase.from("orders")
-      .select("id,number,customer_name,phone,address,total,status,payment_method,delivery_type,comment,created_at,courier_id,branch_id")
+      .select("id,number,customer_name,phone,address,total,status,payment_method,payment_status,delivery_type,comment,created_at,courier_id,branch_id,kitchen_printed_at,paid_at")
       .is("deleted_at", null)
       .in("status", ["new", "confirmed", "cooking", "delivering"])
       .order("created_at", { ascending: true });
@@ -38,6 +38,27 @@ function Kanban() {
     const list = data ?? [];
     setOrders(list);
     list.forEach((o: any) => knownIds.current.add(o.id));
+  }
+
+  function printKitchen(o: any) {
+    if (o.kitchen_printed_at && !confirm("Чек уже печатался. Напечатать ещё раз?")) return;
+    window.open(`/print/kitchen/${o.id}`, "_blank", "width=420,height=720");
+    setTimeout(load, 1500);
+  }
+
+  async function markPaid(o: any) {
+    const num = prompt("Номер фискального чека (можно оставить пустым):") ?? "";
+    const { error } = await (supabase.from("orders") as any)
+      .update({ payment_status: "paid", paid_at: new Date().toISOString(), fiscal_receipt_number: num || null })
+      .eq("id", o.id);
+    if (error) return toast.error(error.message);
+    const { data: { user } } = await supabase.auth.getUser();
+    await (supabase.from("order_changes") as any).insert({
+      order_id: o.id, user_id: user?.id ?? null, action: "paid",
+      details: { fiscal_receipt_number: num || null },
+    });
+    toast.success("Оплата принята");
+    load();
   }
 
   useEffect(() => {
@@ -128,11 +149,24 @@ function Kanban() {
                       <div className="text-xs text-neutral-500 truncate">{o.phone}</div>
                       {o.address && <div className="text-xs text-neutral-500 truncate mt-1">📍 {o.address}</div>}
                       {o.comment && <div className="text-xs text-amber-700 truncate mt-1">💬 {o.comment}</div>}
-                      <div className="text-base font-extrabold mt-2 text-primary">{Number(o.total)} ₽</div>
-                      <div className="flex gap-1 mt-2">
+                      <div className="text-base font-extrabold mt-2 text-primary flex items-center gap-2">
+                        {Number(o.total)} ₽
+                        {o.payment_status === "paid" ? (
+                          <span className="text-[10px] font-bold bg-green-100 text-green-700 px-1.5 py-0.5 rounded">ОПЛАЧЕН</span>
+                        ) : (
+                          <span className="text-[10px] font-bold bg-red-100 text-red-700 px-1.5 py-0.5 rounded">НЕ ОПЛАЧЕН</span>
+                        )}
+                      </div>
+                      <div className="flex gap-1 mt-2 flex-wrap">
                         {NEXT[o.status] && (
                           <button onClick={() => move(o.id, NEXT[o.status])}
-                            className="flex-1 px-2 py-1.5 rounded-lg bg-primary text-white text-xs font-bold">→ {COLS.find(c => c.key === NEXT[o.status])?.label}</button>
+                            className="flex-1 min-w-[120px] px-2 py-1.5 rounded-lg bg-primary text-white text-xs font-bold">→ {COLS.find(c => c.key === NEXT[o.status])?.label}</button>
+                        )}
+                        <button onClick={() => printKitchen(o)} title="Печать кухонного чека"
+                          className={`px-2 py-1.5 rounded-lg text-xs font-bold ${o.kitchen_printed_at ? "bg-neutral-100 text-neutral-500" : "bg-amber-500 text-white"}`}>🖨</button>
+                        {o.payment_status !== "paid" && (
+                          <button onClick={() => markPaid(o)} title="Принять оплату"
+                            className="px-2 py-1.5 rounded-lg bg-green-600 text-white text-xs font-bold">💰</button>
                         )}
                         <button onClick={() => cancel(o.id)}
                           className="px-2 py-1.5 rounded-lg bg-neutral-100 text-xs">✕</button>

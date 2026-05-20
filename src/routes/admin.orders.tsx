@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Modal } from "./admin.products";
+import { printKitchenReceipt } from "@/lib/kitchen-print";
 
 export const Route = createFileRoute("/admin/orders")({
   component: OrdersAdmin,
@@ -160,6 +161,17 @@ function OrdersAdmin() {
     if (error) return toast.error(error.message);
     toast.success("Заказ перемещён в Удалённые");
     setOpen(null); load();
+  }
+
+  async function printKitchen(orderId: string) {
+    try {
+      await printKitchenReceipt(orderId);
+      const { data } = await supabase.from("orders").select("*").eq("id", orderId).maybeSingle();
+      if (data) setOpen(data);
+      load();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Не удалось открыть печать");
+    }
   }
 
   const filtered = filter ? orders.filter((o) => o.status === filter) : orders;
@@ -330,7 +342,7 @@ function OrdersAdmin() {
           <div className="flex justify-between flex-wrap gap-2">
             <button onClick={() => remove(open.id)} className="px-4 py-2 rounded-full bg-red-50 text-red-600 font-semibold text-sm">Удалить</button>
             <div className="flex gap-2 flex-wrap">
-              <button onClick={() => window.open(`/print/kitchen/${open.id}`, "_blank", "width=420,height=720")}
+              <button onClick={() => printKitchen(open.id)}
                 className="px-4 py-2 rounded-full bg-amber-500 text-white font-semibold text-sm">🖨 Кухонный чек</button>
               <button onClick={() => setOpen(null)} className="px-5 py-2 rounded-full bg-neutral-900 text-white font-semibold text-sm">Закрыть</button>
             </div>

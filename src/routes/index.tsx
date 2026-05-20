@@ -84,9 +84,10 @@ function Index() {
         setLoadError(null);
         const prods = await supabase
           .from("products")
-          .select("id,name,price,weight,category_id,image_url,description,ingredients,is_addon,tags")
+          .select("id,name,price,weight,category_id,image_url,description,ingredients,is_addon,tags,calories,protein,fat,carbs")
           .eq("is_active", true)
           .order("sort_order");
+
         if (prods.error) throw prods.error;
         const list = (prods.data as Product[]) ?? [];
         setProducts(list);

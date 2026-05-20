@@ -25,7 +25,9 @@ type ReceiptItem = {
 type ReceiptBranch = { name?: string | null } | null;
 
 type UpdatableTable = {
-  update: (values: Record<string, unknown>) => { eq: (column: string, value: string) => Promise<unknown> };
+  update: (values: Record<string, unknown>) => {
+    eq: (column: string, value: string) => Promise<unknown>;
+  };
 };
 
 type InsertableTable = {
@@ -95,7 +97,9 @@ function buildReceiptHtml(order: ReceiptOrder, items: ReceiptItem[], branch: Rec
 
 export async function printKitchenReceipt(orderId: string) {
   const popup = window.open("", "_blank", "width=420,height=720");
-  if (!popup) throw new Error("Браузер заблокировал окно печати. Разрешите всплывающие окна для сайта.");
+  if (!popup) {
+    throw new Error("Браузер заблокировал окно печати. Разрешите всплывающие окна для сайта.");
+  }
   popup.document.write("<div style='font:16px monospace;padding:24px'>Готовим кухонный чек…</div>");
 
   const { data: order, error: orderError } = await supabase

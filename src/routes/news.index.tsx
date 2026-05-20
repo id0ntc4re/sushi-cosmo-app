@@ -58,7 +58,7 @@ function NewsList() {
               >
                 <div className="aspect-[4/3] bg-muted overflow-hidden">
                   {p.image_url ? (
-                    <img src={p.image_url} alt={p.title} className="w-full h-full object-cover group-hover:scale-105 transition" />
+                    <img src={p.image_url} alt={p.title} loading="lazy" decoding="async" className="w-full h-full object-cover group-hover:scale-105 transition" />
                   ) : (
                     <div className="w-full h-full grid place-items-center">
                       <Sparkles className="h-10 w-10 text-primary/60" />

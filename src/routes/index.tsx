@@ -541,7 +541,7 @@ function ProductModal({ product, onClose, onAdd }: { product: Product; onClose: 
       >
         <div className="relative h-64 sm:h-80 bg-neutral-100 grid place-items-center text-5xl overflow-hidden">
           {product.image_url ? (
-            <img src={product.image_url} alt={product.name} className="absolute inset-0 w-full h-full object-cover" />
+            <img src={product.image_url} alt={product.name} loading="lazy" decoding="async" className="absolute inset-0 w-full h-full object-cover" />
           ) : (
             "🍣"
           )}

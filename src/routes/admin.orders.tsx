@@ -34,6 +34,8 @@ function OrdersAdmin() {
   const [meta, setMeta] = useState<any>(null);
   const [products, setProducts] = useState<any[]>([]);
   const [productSearch, setProductSearch] = useState("");
+  const [history, setHistory] = useState<any[]>([]);
+  const [showHistory, setShowHistory] = useState(false);
 
   async function load() {
     const q = supabase.from("orders").select("*").is("deleted_at", null).order("created_at", { ascending: false }).limit(200);
@@ -57,10 +59,17 @@ function OrdersAdmin() {
     }
   }, [editing]);
 
+  async function loadHistory(orderId: string) {
+    const { data } = await (supabase.from("order_changes") as any)
+      .select("*").eq("order_id", orderId).order("created_at", { ascending: false });
+    setHistory(data ?? []);
+  }
+
   async function openOrder(o: Order) {
-    setOpen(o); setEditing(false); setMeta(null);
+    setOpen(o); setEditing(false); setMeta(null); setShowHistory(false);
     const { data } = await supabase.from("order_items").select("*").eq("order_id", o.id);
     setItems(data ?? []);
+    loadHistory(o.id);
   }
 
   function startEdit() {
@@ -91,6 +100,7 @@ function OrdersAdmin() {
     await (supabase.from("order_changes") as any).insert({
       order_id: open.id, user_id: user?.id ?? null, action: "details_edited", details: payload,
     });
+    loadHistory(open.id);
     toast.success("Сохранено");
     const { data } = await supabase.from("orders").select("*").eq("id", open.id).maybeSingle();
     if (data) setOpen(data);
@@ -111,6 +121,7 @@ function OrdersAdmin() {
       order_id: open.id, user_id: user?.id ?? null, action: "item_added",
       details: { product_id: p.id, name: p.name, price: p.price },
     });
+    loadHistory(open.id);
     toast.success(`+ ${p.name}`);
     load();
   }
@@ -143,6 +154,7 @@ function OrdersAdmin() {
       action: q <= 0 ? "item_removed" : "item_qty_changed",
       details: { item_id: it.id, name: it.name, from: it.quantity, to: q },
     });
+    loadHistory(open!.id);
     load();
   }
 
@@ -337,6 +349,46 @@ function OrdersAdmin() {
                   }`}>{STATUS_LABEL[s]}</button>
               ))}
             </div>
+          </div>
+
+          <div className="bg-neutral-50 rounded-2xl p-4 mb-5">
+            <button onClick={() => setShowHistory((v) => !v)} className="w-full flex justify-between items-center text-sm font-bold">
+              <span>📜 История изменений {history.length > 0 && <span className="text-neutral-500 font-normal">· {history.length}</span>}</span>
+              <span className="text-neutral-400">{showHistory ? "▲" : "▼"}</span>
+            </button>
+            {showHistory && (
+              <div className="mt-3 space-y-2 max-h-72 overflow-y-auto">
+                {history.length === 0 && <div className="text-xs text-neutral-400 py-2">Изменений пока нет</div>}
+                {history.map((h) => {
+                  const labels: Record<string, string> = {
+                    details_edited: "✎ Изменены данные заказа",
+                    item_added: "➕ Добавлен товар",
+                    item_removed: "🗑 Удалён товар",
+                    item_qty_changed: "🔢 Изменено количество",
+                    kitchen_printed: "🖨 Напечатан кухонный чек",
+                    status_changed: "🔄 Изменён статус",
+                  };
+                  const d = h.details || {};
+                  return (
+                    <div key={h.id} className="bg-white rounded-lg p-2.5 border border-neutral-200 text-xs">
+                      <div className="flex justify-between items-start gap-2">
+                        <div className="font-semibold">{labels[h.action] || h.action}</div>
+                        <div className="text-neutral-400 whitespace-nowrap">{new Date(h.created_at).toLocaleString("ru")}</div>
+                      </div>
+                      {h.action === "item_added" && d.name && (
+                        <div className="text-neutral-600 mt-1">{d.name} · {Number(d.price)} ₽</div>
+                      )}
+                      {(h.action === "item_removed" || h.action === "item_qty_changed") && d.name && (
+                        <div className="text-neutral-600 mt-1">{d.name} · {d.from} → {d.to}</div>
+                      )}
+                      {h.action === "details_edited" && (
+                        <div className="text-neutral-600 mt-1">Клиент: {d.customer_name}, тел: {d.phone}, тип: {d.delivery_type === "delivery" ? "доставка" : "самовывоз"}</div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
           <div className="flex justify-between flex-wrap gap-2">

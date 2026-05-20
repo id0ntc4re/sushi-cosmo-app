@@ -1,5 +1,37 @@
 import { supabase } from "@/integrations/supabase/client";
 
+type ReceiptOrder = {
+  id: string;
+  number: number | string;
+  created_at: string;
+  delivery_type: string;
+  customer_name: string;
+  phone: string;
+  address?: string | null;
+  delivery_time?: string | null;
+  persons?: number | string | null;
+  comment?: string | null;
+  branch_id?: string | null;
+  kitchen_printed_at?: string | null;
+};
+
+type ReceiptItem = {
+  id?: string;
+  name: string;
+  quantity: number | string;
+  modifiers_summary?: string | null;
+};
+
+type ReceiptBranch = { name?: string | null } | null;
+
+type UpdatableTable = {
+  update: (values: Record<string, unknown>) => { eq: (column: string, value: string) => Promise<unknown> };
+};
+
+type InsertableTable = {
+  insert: (values: Record<string, unknown>) => Promise<unknown>;
+};
+
 function esc(value: unknown) {
   return String(value ?? "")
     .replaceAll("&", "&amp;")
@@ -9,14 +41,18 @@ function esc(value: unknown) {
     .replaceAll("'", "&#039;");
 }
 
-function buildReceiptHtml(order: any, items: any[], branch: any) {
+function buildReceiptHtml(order: ReceiptOrder, items: ReceiptItem[], branch: ReceiptBranch) {
   const created = new Date(order.created_at).toLocaleString("ru");
-  const rows = items.map((it) => `
+  const rows = items
+    .map(
+      (it) => `
     <div class="item">
       <div class="item-main"><span>${esc(it.name).toUpperCase()}</span><b>× ${esc(it.quantity)}</b></div>
       ${it.modifiers_summary ? `<div class="mods">+ ${esc(it.modifiers_summary)}</div>` : ""}
     </div>
-  `).join("");
+  `,
+    )
+    .join("");
 
   return `<!doctype html>
 <html lang="ru"><head><meta charset="utf-8" /><title>Кухня #${esc(order.number)}</title>
@@ -53,25 +89,40 @@ function buildReceiptHtml(order: any, items: any[], branch: any) {
     <div class="line"></div><div class="center small">— конец заказа —</div>
     <div class="actions"><button class="print" onclick="window.print()">🖨 Печать</button><button class="close" onclick="window.close()">Закрыть</button></div>
   </main>
-  <script>window.addEventListener('load', function(){ setTimeout(function(){ window.focus(); window.print(); }, 250); });<\/script>
+  <script>window.addEventListener('load', function(){ setTimeout(function(){ window.focus(); window.print(); }, 250); });</script>
 </body></html>`;
 }
 
 export async function printKitchenReceipt(orderId: string) {
-  const { data: order, error: orderError } = await supabase.from("orders").select("*").eq("id", orderId).maybeSingle();
+  const popup = window.open("", "_blank", "width=420,height=720");
+  if (!popup) throw new Error("Браузер заблокировал окно печати. Разрешите всплывающие окна для сайта.");
+  popup.document.write("<div style='font:16px monospace;padding:24px'>Готовим кухонный чек…</div>");
+
+  const { data: order, error: orderError } = await supabase
+    .from("orders")
+    .select("*")
+    .eq("id", orderId)
+    .maybeSingle();
+
   if (orderError) throw new Error(orderError.message);
   if (!order) throw new Error("Заказ не найден или нет доступа");
 
   const [{ data: items, error: itemsError }, { data: branch }] = await Promise.all([
     supabase.from("order_items").select("*").eq("order_id", orderId),
-    order.branch_id ? supabase.from("branches").select("*").eq("id", order.branch_id).maybeSingle() : Promise.resolve({ data: null }),
+    order.branch_id
+      ? supabase.from("branches").select("*").eq("id", order.branch_id).maybeSingle()
+      : Promise.resolve({ data: null }),
   ]);
   if (itemsError) throw new Error(itemsError.message);
 
   if (!order.kitchen_printed_at) {
-    await (supabase.from("orders") as any).update({ kitchen_printed_at: new Date().toISOString() }).eq("id", orderId);
-    const { data: { user } } = await supabase.auth.getUser();
-    await (supabase.from("order_changes") as any).insert({
+    await (supabase.from("orders") as unknown as UpdatableTable)
+      .update({ kitchen_printed_at: new Date().toISOString() })
+      .eq("id", orderId);
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    await (supabase.from("order_changes") as unknown as InsertableTable).insert({
       order_id: orderId,
       user_id: user?.id ?? null,
       action: "kitchen_printed",
@@ -79,8 +130,6 @@ export async function printKitchenReceipt(orderId: string) {
     });
   }
 
-  const popup = window.open("", "_blank", "width=420,height=720");
-  if (!popup) throw new Error("Браузер заблокировал окно печати. Разрешите всплывающие окна для сайта.");
   popup.document.open();
   popup.document.write(buildReceiptHtml(order, items ?? [], branch));
   popup.document.close();

@@ -264,7 +264,7 @@ function OrdersAdmin() {
           <div className="bg-neutral-50 rounded-2xl p-4 mb-5">
             <div className="flex justify-between items-center mb-3">
               <div className="font-bold">Товары</div>
-              <button onClick={() => setEditing(!editing)} className={`text-xs font-semibold px-3 py-1 rounded-full ${editing ? "bg-primary text-white" : "bg-white border"}`}>
+              <button onClick={() => (editing ? setEditing(false) : startEdit())} className={`text-xs font-semibold px-3 py-1 rounded-full ${editing ? "bg-primary text-white" : "bg-white border"}`}>
                 {editing ? "✓ Готово" : "✎ Редактировать"}
               </button>
             </div>

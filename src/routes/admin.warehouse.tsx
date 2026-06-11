@@ -57,16 +57,20 @@ function Warehouse() {
         </select>
       </div>
       <div className="flex gap-2 mb-5 overflow-x-auto">
-        <Tab on={tab === "stock"} onClick={() => setTab("stock")}>📦 Остатки</Tab>
+        <Tab on={tab === "stock"} onClick={() => setTab("stock")}>📦 Остатки ингредиентов</Tab>
+        <Tab on={tab === "products"} onClick={() => setTab("products")}>🥤 Готовые товары</Tab>
         <Tab on={tab === "transfers"} onClick={() => setTab("transfers")}>🔁 Перемещения</Tab>
         <Tab on={tab === "writeoffs"} onClick={() => setTab("writeoffs")}>🗑️ Списания</Tab>
         <Tab on={tab === "inventory"} onClick={() => setTab("inventory")}>📋 Инвентаризация</Tab>
+        <Tab on={tab === "schedules"} onClick={() => setTab("schedules")}>⏰ Авто-списания</Tab>
       </div>
 
       {tab === "stock" && <StockTab branchId={branchId} ingredients={ingredients} />}
+      {tab === "products" && <ProductStockTab branchId={branchId} />}
       {tab === "transfers" && <TransfersTab branchId={branchId} branches={branches} ingredients={ingredients} isSuper={isSuper} userBranch={userBranch} />}
       {tab === "writeoffs" && <WriteoffsTab branchId={branchId} ingredients={ingredients} />}
       {tab === "inventory" && <InventoryTab branchId={branchId} ingredients={ingredients} />}
+      {tab === "schedules" && <SchedulesTab branches={branches} />}
     </div>
   );
 }

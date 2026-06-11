@@ -28,6 +28,7 @@ type Product = {
   protein: number | null;
   fat: number | null;
   carbs: number | null;
+  is_semi_product: boolean;
 };
 
 
@@ -42,7 +43,7 @@ const TAGS = [
 const empty: Partial<Product> = {
   name: "", price: 0, weight: "", description: "", ingredients: "", image_url: "",
   category_id: null, is_active: true, in_stock: true, sort_order: 0, sku: "",
-  is_addon: false, is_recommended: false, tags: [],
+  is_addon: false, is_recommended: false, tags: [], is_semi_product: false,
 };
 
 function ProductsAdmin() {
@@ -83,6 +84,7 @@ function ProductsAdmin() {
       protein: editing.protein === null || editing.protein === undefined || (editing.protein as any) === "" ? null : Number(editing.protein),
       fat: editing.fat === null || editing.fat === undefined || (editing.fat as any) === "" ? null : Number(editing.fat),
       carbs: editing.carbs === null || editing.carbs === undefined || (editing.carbs as any) === "" ? null : Number(editing.carbs),
+      is_semi_product: editing.is_semi_product ?? false,
     };
     if (!payload.name) return toast.error("Укажите название");
     const res = editing.id
@@ -235,6 +237,7 @@ function ProductsAdmin() {
             <label className="flex items-center gap-2"><input type="checkbox" checked={editing.in_stock ?? true} onChange={(e) => setEditing({ ...editing, in_stock: e.target.checked })} /> В наличии</label>
             <label className="flex items-center gap-2"><input type="checkbox" checked={editing.is_addon ?? false} onChange={(e) => setEditing({ ...editing, is_addon: e.target.checked })} /> Доп. товар (соус/палочки)</label>
             <label className="flex items-center gap-2"><input type="checkbox" checked={editing.is_recommended ?? false} onChange={(e) => setEditing({ ...editing, is_recommended: e.target.checked })} /> Рекомендуемый («с этим заказывают»)</label>
+            <label className="flex items-center gap-2"><input type="checkbox" checked={editing.is_semi_product ?? false} onChange={(e) => setEditing({ ...editing, is_semi_product: e.target.checked })} /> 🧪 Полуфабрикат (не показывать на витрине, использовать в ТТК)</label>
             <div className="md:col-span-2">
               <span className="text-xs text-neutral-600 block mb-1">Теги</span>
               <div className="flex flex-wrap gap-2">

@@ -840,6 +840,7 @@ export type Database = {
           is_active: boolean
           is_addon: boolean
           is_recommended: boolean
+          is_semi_product: boolean
           name: string
           price: number
           protein: number | null
@@ -864,6 +865,7 @@ export type Database = {
           is_active?: boolean
           is_addon?: boolean
           is_recommended?: boolean
+          is_semi_product?: boolean
           name: string
           price?: number
           protein?: number | null
@@ -888,6 +890,7 @@ export type Database = {
           is_active?: boolean
           is_addon?: boolean
           is_recommended?: boolean
+          is_semi_product?: boolean
           name?: string
           price?: number
           protein?: number | null
@@ -1089,24 +1092,45 @@ export type Database = {
       }
       recipes: {
         Row: {
+          branch_id: string | null
+          component_product_id: string | null
           id: string
-          ingredient_id: string
+          ingredient_id: string | null
           product_id: string
           qty: number
         }
         Insert: {
+          branch_id?: string | null
+          component_product_id?: string | null
           id?: string
-          ingredient_id: string
+          ingredient_id?: string | null
           product_id: string
           qty?: number
         }
         Update: {
+          branch_id?: string | null
+          component_product_id?: string | null
           id?: string
-          ingredient_id?: string
+          ingredient_id?: string | null
           product_id?: string
           qty?: number
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "recipes_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recipes_component_product_id_fkey"
+            columns: ["component_product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       reviews: {
         Row: {
@@ -1155,6 +1179,7 @@ export type Database = {
       }
       stock_movements: {
         Row: {
+          branch_id: string | null
           created_at: string
           delta: number
           id: string
@@ -1163,6 +1188,7 @@ export type Database = {
           reason: string
         }
         Insert: {
+          branch_id?: string | null
           created_at?: string
           delta: number
           id?: string
@@ -1171,6 +1197,7 @@ export type Database = {
           reason: string
         }
         Update: {
+          branch_id?: string | null
           created_at?: string
           delta?: number
           id?: string
@@ -1178,7 +1205,15 @@ export type Database = {
           order_id?: string | null
           reason?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "stock_movements_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       stock_transfers: {
         Row: {
@@ -1316,6 +1351,13 @@ export type Database = {
       can_access_branch: {
         Args: { _branch_id: string; _user_id: string }
         Returns: boolean
+      }
+      expand_product: {
+        Args: { _branch_id: string; _multiplier: number; _product_id: string }
+        Returns: {
+          ingredient_id: string
+          qty: number
+        }[]
       }
       has_role: {
         Args: {

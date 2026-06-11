@@ -86,6 +86,7 @@ function Index() {
           .from("products")
           .select("id,name,price,weight,category_id,image_url,description,ingredients,is_addon,tags,calories,protein,fat,carbs")
           .eq("is_active", true)
+          .eq("is_semi_product", false)
           .order("sort_order");
 
         if (prods.error) throw prods.error;
@@ -527,6 +528,7 @@ function ProductModal({ product, onClose, onAdd }: { product: Product; onClose: 
         .eq("is_active", true)
         .eq("in_stock", true)
         .eq("is_recommended", true)
+        .eq("is_semi_product", false)
         .neq("id", product.id)
         .limit(8);
       setRecos((data as Reco[]) ?? []);

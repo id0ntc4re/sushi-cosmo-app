@@ -90,7 +90,7 @@ function Checkout() {
     (async () => {
       const [{ data: st }, { data: ad }, { data: br }, { data: zn }] = await Promise.all([
         supabase.from("settings").select("value").eq("key", "general").maybeSingle(),
-        supabase.from("products").select("id,name,price,image_url,weight").eq("is_active", true).eq("in_stock", true).eq("is_addon", true).order("sort_order"),
+        supabase.from("products").select("id,name,price,image_url,weight").eq("is_active", true).eq("in_stock", true).eq("is_addon", true).eq("is_semi_product", false).order("sort_order"),
         supabase.from("branches").select("id,name,address").eq("is_active", true).order("sort_order"),
         supabase.from("delivery_zones").select("id,name,cost,free_from,min_order").eq("is_active", true).order("sort_order"),
       ]);

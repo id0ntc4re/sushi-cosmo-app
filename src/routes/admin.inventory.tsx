@@ -113,28 +113,52 @@ function Stock() {
 function Recipes() {
   const [products, setProducts] = useState<any[]>([]);
   const [ingredients, setIngredients] = useState<any[]>([]);
+  const [branches, setBranches] = useState<any[]>([]);
   const [recipes, setRecipes] = useState<any[]>([]);
   const [productId, setProductId] = useState<string>("");
+  const [branchId, setBranchId] = useState<string>(""); // "" = базовый рецепт (все филиалы)
+  const [mode, setMode] = useState<"ingredient" | "component">("ingredient");
   const [ingId, setIngId] = useState<string>("");
+  const [componentId, setComponentId] = useState<string>("");
   const [qty, setQty] = useState(0);
 
   async function load() {
-    const [{ data: p }, { data: i }, { data: r }] = await Promise.all([
-      supabase.from("products").select("id,name").order("name"),
+    const [{ data: p }, { data: i }, { data: r }, { data: b }] = await Promise.all([
+      supabase.from("products").select("id,name,is_semi_product").order("is_semi_product", { ascending: false }).order("name"),
       supabase.from("ingredients").select("id,name,unit").order("name"),
       supabase.from("recipes").select("*"),
+      supabase.from("branches").select("id,name").order("name"),
     ]);
-    setProducts(p ?? []); setIngredients(i ?? []); setRecipes(r ?? []);
+    setProducts(p ?? []);
+    setIngredients(i ?? []);
+    setRecipes(r ?? []);
+    setBranches(b ?? []);
     if (!productId && p?.[0]) setProductId(p[0].id);
     if (!ingId && i?.[0]) setIngId(i[0].id);
+    if (!componentId && p?.[0]) setComponentId(p.find((x: any) => x.is_semi_product)?.id ?? p[0].id);
   }
   useEffect(() => { load(); }, []);
 
-  const current = recipes.filter((r) => r.product_id === productId);
+  const current = recipes.filter((r) =>
+    r.product_id === productId &&
+    (branchId ? r.branch_id === branchId : r.branch_id === null)
+  );
 
   async function add() {
-    if (!productId || !ingId || !qty) return;
-    const { error } = await supabase.from("recipes").upsert({ product_id: productId, ingredient_id: ingId, qty }, { onConflict: "product_id,ingredient_id" });
+    if (!productId || !qty) return toast.error("Заполните поля");
+    const payload: any = {
+      product_id: productId,
+      branch_id: branchId || null,
+      qty,
+      ingredient_id: mode === "ingredient" ? ingId : null,
+      component_product_id: mode === "component" ? componentId : null,
+    };
+    if (mode === "ingredient" && !ingId) return toast.error("Выберите ингредиент");
+    if (mode === "component") {
+      if (!componentId) return toast.error("Выберите полуфабрикат");
+      if (componentId === productId) return toast.error("Товар не может ссылаться на себя");
+    }
+    const { error } = await supabase.from("recipes").insert(payload);
     if (error) return toast.error(error.message);
     setQty(0); load();
   }
@@ -143,40 +167,82 @@ function Recipes() {
     load();
   }
 
+  const selectedProduct = products.find((p) => p.id === productId);
+  const semiProducts = products.filter((p) => p.is_semi_product && p.id !== productId);
+
   return (
     <div className="grid lg:grid-cols-2 gap-5">
       <div className="bg-white rounded-3xl p-5">
-        <h3 className="font-extrabold mb-3">Выберите блюдо</h3>
-        <select value={productId} onChange={(e) => setProductId(e.target.value)} className={inp + " mb-4"}>
-          {products.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+        <h3 className="font-extrabold mb-3">Выберите блюдо и филиал</h3>
+        <select value={productId} onChange={(e) => setProductId(e.target.value)} className={inp + " mb-3"}>
+          {products.map((p) => (
+            <option key={p.id} value={p.id}>{p.is_semi_product ? "🧪 " : ""}{p.name}</option>
+          ))}
         </select>
-        <h4 className="font-bold mb-2 text-sm">Состав:</h4>
+        <select value={branchId} onChange={(e) => setBranchId(e.target.value)} className={inp + " mb-4"}>
+          <option value="">📋 Базовая ТТК (для всех филиалов)</option>
+          {branches.map((b) => <option key={b.id} value={b.id}>🏪 {b.name}</option>)}
+        </select>
+        {selectedProduct?.is_semi_product && (
+          <div className="mb-3 p-2 rounded-lg bg-amber-50 text-amber-800 text-xs">
+            🧪 Это полуфабрикат — его можно добавлять компонентом в другие ТТК
+          </div>
+        )}
+        <h4 className="font-bold mb-2 text-sm">
+          Состав {branchId ? `для «${branches.find((b) => b.id === branchId)?.name}»` : "(базовый)"}:
+        </h4>
         <ul className="space-y-1 mb-4">
           {current.map((r) => {
             const ing = ingredients.find((i) => i.id === r.ingredient_id);
+            const comp = products.find((p) => p.id === r.component_product_id);
             return (
               <li key={r.id} className="flex justify-between bg-neutral-50 rounded-lg px-3 py-2 text-sm">
-                <span>{ing?.name ?? "?"}</span>
+                <span>{r.component_product_id ? `🧪 ${comp?.name ?? "?"}` : (ing?.name ?? "?")}</span>
                 <span className="flex items-center gap-3">
-                  <b>{r.qty} {ing?.unit}</b>
+                  <b>{r.qty}{r.ingredient_id ? ` ${ing?.unit ?? ""}` : " шт"}</b>
                   <button onClick={() => del(r.id)} className="text-red-500 text-xs">✕</button>
                 </span>
               </li>
             );
           })}
-          {!current.length && <li className="text-xs text-neutral-400">Состав не задан</li>}
+          {!current.length && <li className="text-xs text-neutral-400">Состав не задан{branchId ? " для этого филиала (будет использован базовый)" : ""}</li>}
         </ul>
+        {branchId && (
+          <p className="text-xs text-neutral-500">
+            ℹ Если для филиала задан хотя бы один компонент — для него используется ИМЕННО эта ТТК (без базовой).
+          </p>
+        )}
       </div>
 
       <div className="bg-white rounded-3xl p-5">
-        <h3 className="font-extrabold mb-3">Добавить ингредиент</h3>
-        <select value={ingId} onChange={(e) => setIngId(e.target.value)} className={inp + " mb-3"}>
-          {ingredients.map((i) => <option key={i.id} value={i.id}>{i.name} ({i.unit})</option>)}
-        </select>
-        <input type="number" value={qty} onChange={(e) => setQty(Number(e.target.value))} placeholder="Кол-во"
+        <h3 className="font-extrabold mb-3">Добавить компонент</h3>
+        <div className="flex gap-2 mb-3">
+          <button onClick={() => setMode("ingredient")} className={`flex-1 px-3 py-2 rounded-xl font-bold text-sm ${mode === "ingredient" ? "bg-primary text-white" : "bg-neutral-100"}`}>
+            🥬 Ингредиент
+          </button>
+          <button onClick={() => setMode("component")} className={`flex-1 px-3 py-2 rounded-xl font-bold text-sm ${mode === "component" ? "bg-primary text-white" : "bg-neutral-100"}`}>
+            🧪 Полуфабрикат
+          </button>
+        </div>
+        {mode === "ingredient" ? (
+          <select value={ingId} onChange={(e) => setIngId(e.target.value)} className={inp + " mb-3"}>
+            {ingredients.map((i) => <option key={i.id} value={i.id}>{i.name} ({i.unit})</option>)}
+          </select>
+        ) : (
+          <select value={componentId} onChange={(e) => setComponentId(e.target.value)} className={inp + " mb-3"}>
+            {semiProducts.length === 0 && <option value="">— нет полуфабрикатов —</option>}
+            {semiProducts.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+          </select>
+        )}
+        <input type="number" step="0.01" value={qty} onChange={(e) => setQty(Number(e.target.value))} placeholder="Кол-во"
           className={inp + " mb-3"} />
         <button onClick={add} className="w-full px-4 py-2.5 rounded-xl bg-primary text-white font-bold">+ Добавить в техкарту</button>
-        <p className="text-xs text-neutral-500 mt-3">При создании заказа склад автоматически уменьшится на эти кол-ва × кол-во в заказе.</p>
+        <p className="text-xs text-neutral-500 mt-3">
+          При заказе склад филиала уменьшится по этой ТТК (с раскрытием полуфабрикатов в ингредиенты).
+        </p>
+        <p className="text-xs text-neutral-500 mt-2">
+          Чтобы создать полуфабрикат (например «Чесночный соус»): в разделе Товары создайте позицию и отметьте 🧪 «Полуфабрикат», затем добавьте сюда его ТТК из ингредиентов.
+        </p>
       </div>
     </div>
   );

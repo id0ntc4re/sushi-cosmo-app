@@ -119,6 +119,48 @@ export type Database = {
         }
         Relationships: []
       }
+      branch_product_stock: {
+        Row: {
+          branch_id: string
+          id: string
+          min_stock: number
+          product_id: string
+          stock: number
+          updated_at: string
+        }
+        Insert: {
+          branch_id: string
+          id?: string
+          min_stock?: number
+          product_id: string
+          stock?: number
+          updated_at?: string
+        }
+        Update: {
+          branch_id?: string
+          id?: string
+          min_stock?: number
+          product_id?: string
+          stock?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "branch_product_stock_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "branch_product_stock_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       branch_stock: {
         Row: {
           branch_id: string
@@ -850,6 +892,7 @@ export type Database = {
           unit: string | null
           updated_at: string
           weight: string | null
+          writeoff_mode: string
         }
         Insert: {
           calories?: number | null
@@ -875,6 +918,7 @@ export type Database = {
           unit?: string | null
           updated_at?: string
           weight?: string | null
+          writeoff_mode?: string
         }
         Update: {
           calories?: number | null
@@ -900,6 +944,7 @@ export type Database = {
           unit?: string | null
           updated_at?: string
           weight?: string | null
+          writeoff_mode?: string
         }
         Relationships: [
           {
@@ -1343,6 +1388,56 @@ export type Database = {
           },
         ]
       }
+      writeoff_schedules: {
+        Row: {
+          active: boolean
+          branch_id: string | null
+          created_at: string
+          days_of_week: number[]
+          id: string
+          last_run_at: string | null
+          name: string
+          scope: string
+          target_id: string
+          time_of_day: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          branch_id?: string | null
+          created_at?: string
+          days_of_week?: number[]
+          id?: string
+          last_run_at?: string | null
+          name: string
+          scope: string
+          target_id: string
+          time_of_day?: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          branch_id?: string | null
+          created_at?: string
+          days_of_week?: number[]
+          id?: string
+          last_run_at?: string | null
+          name?: string
+          scope?: string
+          target_id?: string
+          time_of_day?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "writeoff_schedules_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -1372,6 +1467,7 @@ export type Database = {
         Returns: undefined
       }
       product_cost: { Args: { _product_id: string }; Returns: number }
+      run_writeoff_schedule: { Args: { _schedule_id: string }; Returns: Json }
       user_branch: { Args: { _user_id: string }; Returns: string }
     }
     Enums: {

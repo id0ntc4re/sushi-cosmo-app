@@ -12,7 +12,7 @@ type Branch = { id: string; name: string };
 type Ingredient = { id: string; name: string; unit: string };
 
 function Warehouse() {
-  const [tab, setTab] = useState<"stock" | "transfers" | "writeoffs" | "inventory">("stock");
+  const [tab, setTab] = useState<"stock" | "products" | "transfers" | "writeoffs" | "inventory" | "schedules">("stock");
   const [branches, setBranches] = useState<Branch[]>([]);
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [isSuper, setIsSuper] = useState(false);
@@ -57,16 +57,20 @@ function Warehouse() {
         </select>
       </div>
       <div className="flex gap-2 mb-5 overflow-x-auto">
-        <Tab on={tab === "stock"} onClick={() => setTab("stock")}>📦 Остатки</Tab>
+        <Tab on={tab === "stock"} onClick={() => setTab("stock")}>📦 Остатки ингредиентов</Tab>
+        <Tab on={tab === "products"} onClick={() => setTab("products")}>🥤 Готовые товары</Tab>
         <Tab on={tab === "transfers"} onClick={() => setTab("transfers")}>🔁 Перемещения</Tab>
         <Tab on={tab === "writeoffs"} onClick={() => setTab("writeoffs")}>🗑️ Списания</Tab>
         <Tab on={tab === "inventory"} onClick={() => setTab("inventory")}>📋 Инвентаризация</Tab>
+        <Tab on={tab === "schedules"} onClick={() => setTab("schedules")}>⏰ Авто-списания</Tab>
       </div>
 
       {tab === "stock" && <StockTab branchId={branchId} ingredients={ingredients} />}
+      {tab === "products" && <ProductStockTab branchId={branchId} />}
       {tab === "transfers" && <TransfersTab branchId={branchId} branches={branches} ingredients={ingredients} isSuper={isSuper} userBranch={userBranch} />}
       {tab === "writeoffs" && <WriteoffsTab branchId={branchId} ingredients={ingredients} />}
       {tab === "inventory" && <InventoryTab branchId={branchId} ingredients={ingredients} />}
+      {tab === "schedules" && <SchedulesTab branches={branches} />}
     </div>
   );
 }
@@ -433,6 +437,221 @@ function InventoryTab({ branchId, ingredients }: { branchId: string; ingredients
             </tbody>
           </table>
         </div>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- ГОТОВЫЕ ТОВАРЫ (writeoff_mode='self') ---------- */
+function ProductStockTab({ branchId }: { branchId: string }) {
+  const [products, setProducts] = useState<any[]>([]);
+  const [rows, setRows] = useState<any[]>([]);
+  const [q, setQ] = useState("");
+
+  async function load() {
+    const [{ data: p }, { data: bs }] = await Promise.all([
+      supabase.from("products").select("id,name,unit,writeoff_mode,is_active").eq("writeoff_mode", "self").order("name"),
+      supabase.from("branch_product_stock").select("*").eq("branch_id", branchId),
+    ]);
+    setProducts(p ?? []);
+    setRows(bs ?? []);
+  }
+  useEffect(() => { load(); }, [branchId]);
+
+  const view = useMemo(() => {
+    const map = new Map(rows.map((r) => [r.product_id, r]));
+    return products
+      .map((p) => ({ ...p, ...(map.get(p.id) ?? { stock: 0, min_stock: 0 }) }))
+      .filter((r) => !q || r.name.toLowerCase().includes(q.toLowerCase()));
+  }, [products, rows, q]);
+
+  async function upsert(product_id: string, patch: any) {
+    const existing = rows.find((r) => r.product_id === product_id);
+    if (existing) {
+      const { error } = await supabase.from("branch_product_stock").update({ ...patch, updated_at: new Date().toISOString() }).eq("id", existing.id);
+      if (error) return toast.error(error.message);
+    } else {
+      const { error } = await supabase.from("branch_product_stock").insert({ branch_id: branchId, product_id, ...patch });
+      if (error) return toast.error(error.message);
+    }
+    load();
+  }
+
+  return (
+    <div className="bg-white rounded-3xl p-5">
+      <div className="flex gap-3 mb-4 items-center">
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="🔍 Поиск товара" className="px-4 py-2 rounded-xl border border-neutral-200 flex-1" />
+        <span className="text-xs text-neutral-500">Только товары с методом списания «Само блюдо»</span>
+      </div>
+      <table className="w-full text-sm">
+        <thead className="bg-neutral-50 text-left text-neutral-600">
+          <tr>
+            <th className="p-3">Товар</th>
+            <th>Остаток</th>
+            <th>Мин. остаток</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {view.map((r) => (
+            <tr key={r.id} className="border-t">
+              <td className="p-3 font-semibold">{r.name} {r.unit && <span className="text-xs text-neutral-500">({r.unit})</span>}</td>
+              <td>
+                <input type="number" step="0.01" defaultValue={r.stock} onBlur={(e) => Number(e.target.value) !== Number(r.stock) && upsert(r.id, { stock: Number(e.target.value) })}
+                  className={`px-2 py-1 rounded-lg border w-28 ${Number(r.stock) <= Number(r.min_stock) && Number(r.min_stock) > 0 ? "border-red-300 bg-red-50" : "border-neutral-200"}`} />
+              </td>
+              <td>
+                <input type="number" step="0.01" defaultValue={r.min_stock} onBlur={(e) => Number(e.target.value) !== Number(r.min_stock) && upsert(r.id, { min_stock: Number(e.target.value) })}
+                  className="px-2 py-1 rounded-lg border border-neutral-200 w-28" />
+              </td>
+              <td className="text-right pr-3">
+                {Number(r.stock) <= Number(r.min_stock) && Number(r.min_stock) > 0 && <span className="text-xs text-red-600 font-bold">⚠ закончился</span>}
+              </td>
+            </tr>
+          ))}
+          {!view.length && <tr><td colSpan={4} className="py-8 text-center text-neutral-400">Нет товаров с методом списания «Само блюдо». Откройте карточку товара и переключите метод.</td></tr>}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/* ---------- АВТО-СПИСАНИЯ ПРОСРОЧКИ ---------- */
+function SchedulesTab({ branches }: { branches: Branch[] }) {
+  const [items, setItems] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
+  const [ingredients, setIngredients] = useState<any[]>([]);
+  const [draft, setDraft] = useState<any>({
+    name: "", branch_id: "", scope: "category", target_id: "", time_of_day: "23:00",
+    days_of_week: [0,1,2,3,4,5,6], active: true,
+  });
+
+  async function load() {
+    const [{ data: s }, { data: c }, { data: p }, { data: i }] = await Promise.all([
+      supabase.from("writeoff_schedules").select("*").order("created_at", { ascending: false }),
+      supabase.from("categories").select("id,name").order("name"),
+      supabase.from("products").select("id,name,writeoff_mode").order("name"),
+      supabase.from("ingredients").select("id,name").order("name"),
+    ]);
+    setItems(s ?? []);
+    setCategories(c ?? []);
+    setProducts(p ?? []);
+    setIngredients(i ?? []);
+  }
+  useEffect(() => { load(); }, []);
+
+  async function save() {
+    if (!draft.name || !draft.target_id) return toast.error("Заполните название и цель");
+    const payload = { ...draft, branch_id: draft.branch_id || null };
+    const { error } = await supabase.from("writeoff_schedules").insert(payload);
+    if (error) return toast.error(error.message);
+    toast.success("Расписание добавлено");
+    setDraft({ name: "", branch_id: "", scope: "category", target_id: "", time_of_day: "23:00", days_of_week: [0,1,2,3,4,5,6], active: true });
+    load();
+  }
+
+  async function toggle(id: string, active: boolean) {
+    await supabase.from("writeoff_schedules").update({ active }).eq("id", id);
+    load();
+  }
+  async function del(id: string) {
+    if (!confirm("Удалить расписание?")) return;
+    await supabase.from("writeoff_schedules").delete().eq("id", id);
+    load();
+  }
+  async function runNow(id: string) {
+    const { data, error } = await supabase.rpc("run_writeoff_schedule", { _schedule_id: id });
+    if (error) return toast.error(error.message);
+    toast.success(`✅ Списано. Филиалов обработано: ${(data as any)?.branches_processed ?? "?"}`);
+    load();
+  }
+
+  const targets = draft.scope === "category" ? categories
+                : draft.scope === "product" ? products.filter((p) => p.writeoff_mode === "self")
+                : ingredients;
+  const targetLabel = (s: any) => {
+    if (s.scope === "category") return categories.find((c) => c.id === s.target_id)?.name ?? "?";
+    if (s.scope === "product") return products.find((p) => p.id === s.target_id)?.name ?? "?";
+    return ingredients.find((i) => i.id === s.target_id)?.name ?? "?";
+  };
+  const dayShort = ["Вс","Пн","Вт","Ср","Чт","Пт","Сб"];
+
+  return (
+    <div className="space-y-5">
+      <div className="bg-white rounded-3xl p-5">
+        <h3 className="font-extrabold mb-3">Новое расписание</h3>
+        <div className="grid md:grid-cols-2 gap-3">
+          <label className="block"><span className="text-xs text-neutral-600 block mb-1">Название</span>
+            <input value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} placeholder="Списание выпечки в конце дня"
+              className="w-full px-3 py-2 rounded-xl border border-neutral-200" /></label>
+          <label className="block"><span className="text-xs text-neutral-600 block mb-1">Филиал</span>
+            <select value={draft.branch_id} onChange={(e) => setDraft({ ...draft, branch_id: e.target.value })}
+              className="w-full px-3 py-2 rounded-xl border border-neutral-200">
+              <option value="">🏪 Все филиалы</option>
+              {branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+            </select></label>
+          <label className="block"><span className="text-xs text-neutral-600 block mb-1">Что списываем</span>
+            <select value={draft.scope} onChange={(e) => setDraft({ ...draft, scope: e.target.value, target_id: "" })}
+              className="w-full px-3 py-2 rounded-xl border border-neutral-200">
+              <option value="category">Категория товаров (только режим «само блюдо»)</option>
+              <option value="product">Конкретный товар (режим «само блюдо»)</option>
+              <option value="ingredient">Ингредиент</option>
+            </select></label>
+          <label className="block"><span className="text-xs text-neutral-600 block mb-1">Цель</span>
+            <select value={draft.target_id} onChange={(e) => setDraft({ ...draft, target_id: e.target.value })}
+              className="w-full px-3 py-2 rounded-xl border border-neutral-200">
+              <option value="">— выберите —</option>
+              {targets.map((t: any) => <option key={t.id} value={t.id}>{t.name}</option>)}
+            </select></label>
+          <label className="block"><span className="text-xs text-neutral-600 block mb-1">Время</span>
+            <input type="time" value={draft.time_of_day} onChange={(e) => setDraft({ ...draft, time_of_day: e.target.value })}
+              className="w-full px-3 py-2 rounded-xl border border-neutral-200" /></label>
+          <div className="block">
+            <span className="text-xs text-neutral-600 block mb-1">Дни недели</span>
+            <div className="flex gap-1 flex-wrap">
+              {dayShort.map((d, i) => {
+                const on = draft.days_of_week.includes(i);
+                return <button key={i} type="button"
+                  onClick={() => setDraft({ ...draft, days_of_week: on ? draft.days_of_week.filter((x: number) => x !== i) : [...draft.days_of_week, i].sort() })}
+                  className={`px-3 py-2 rounded-lg text-xs font-bold ${on ? "bg-primary text-white" : "bg-neutral-100"}`}>{d}</button>;
+              })}
+            </div>
+          </div>
+        </div>
+        <button onClick={save} className="mt-4 px-5 py-2.5 rounded-full bg-primary text-white font-bold">+ Добавить</button>
+      </div>
+
+      <div className="bg-white rounded-3xl p-5">
+        <h3 className="font-extrabold mb-3">Расписания</h3>
+        <table className="w-full text-sm">
+          <thead className="bg-neutral-50 text-left text-neutral-600">
+            <tr>
+              <th className="p-3">Название</th><th>Филиал</th><th>Что</th><th>Время</th><th>Дни</th><th>Последний запуск</th><th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.map((s) => (
+              <tr key={s.id} className={`border-t ${!s.active ? "opacity-50" : ""}`}>
+                <td className="p-3 font-semibold">{s.name}</td>
+                <td>{s.branch_id ? (branches.find((b) => b.id === s.branch_id)?.name ?? "?") : "Все"}</td>
+                <td>{s.scope === "category" ? "📂" : s.scope === "product" ? "📦" : "🥬"} {targetLabel(s)}</td>
+                <td>{(s.time_of_day || "").slice(0,5)}</td>
+                <td className="text-xs">{(s.days_of_week ?? []).map((d: number) => dayShort[d]).join(", ")}</td>
+                <td className="text-xs text-neutral-500">{s.last_run_at ? new Date(s.last_run_at).toLocaleString("ru-RU") : "—"}</td>
+                <td className="text-right pr-3 whitespace-nowrap">
+                  <button onClick={() => runNow(s.id)} className="px-2 py-1 rounded-lg bg-green-100 text-green-700 text-xs font-bold mr-1" title="Запустить сейчас">▶</button>
+                  <button onClick={() => toggle(s.id, !s.active)} className="px-2 py-1 rounded-lg hover:bg-neutral-100 text-sm">{s.active ? "⏸" : "▶"}</button>
+                  <button onClick={() => del(s.id)} className="px-2 py-1 rounded-lg hover:bg-red-50 text-red-600">🗑</button>
+                </td>
+              </tr>
+            ))}
+            {!items.length && <tr><td colSpan={7} className="py-8 text-center text-neutral-400">Нет расписаний</td></tr>}
+          </tbody>
+        </table>
+        <p className="text-xs text-neutral-500 mt-3">
+          Расписания запускаются автоматически по таймеру (раз в 15 мин). Также можно списать вручную кнопкой ▶.
+        </p>
       </div>
     </div>
   );

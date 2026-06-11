@@ -29,6 +29,7 @@ type Product = {
   fat: number | null;
   carbs: number | null;
   is_semi_product: boolean;
+  writeoff_mode: "ingredients" | "self";
 };
 
 
@@ -44,6 +45,7 @@ const empty: Partial<Product> = {
   name: "", price: 0, weight: "", description: "", ingredients: "", image_url: "",
   category_id: null, is_active: true, in_stock: true, sort_order: 0, sku: "",
   is_addon: false, is_recommended: false, tags: [], is_semi_product: false,
+  writeoff_mode: "ingredients",
 };
 
 function ProductsAdmin() {
@@ -85,6 +87,7 @@ function ProductsAdmin() {
       fat: editing.fat === null || editing.fat === undefined || (editing.fat as any) === "" ? null : Number(editing.fat),
       carbs: editing.carbs === null || editing.carbs === undefined || (editing.carbs as any) === "" ? null : Number(editing.carbs),
       is_semi_product: editing.is_semi_product ?? false,
+      writeoff_mode: editing.writeoff_mode ?? "ingredients",
     };
     if (!payload.name) return toast.error("Укажите название");
     const res = editing.id
@@ -238,6 +241,17 @@ function ProductsAdmin() {
             <label className="flex items-center gap-2"><input type="checkbox" checked={editing.is_addon ?? false} onChange={(e) => setEditing({ ...editing, is_addon: e.target.checked })} /> Доп. товар (соус/палочки)</label>
             <label className="flex items-center gap-2"><input type="checkbox" checked={editing.is_recommended ?? false} onChange={(e) => setEditing({ ...editing, is_recommended: e.target.checked })} /> Рекомендуемый («с этим заказывают»)</label>
             <label className="flex items-center gap-2"><input type="checkbox" checked={editing.is_semi_product ?? false} onChange={(e) => setEditing({ ...editing, is_semi_product: e.target.checked })} /> 🧪 Полуфабрикат (не показывать на витрине, использовать в ТТК)</label>
+            <div className="md:col-span-2">
+              <Field label="Метод списания со склада">
+                <select className={inp} value={editing.writeoff_mode ?? "ingredients"} onChange={(e) => setEditing({ ...editing, writeoff_mode: e.target.value as any })}>
+                  <option value="ingredients">🥬 Ингредиенты по ТТК (для блюд)</option>
+                  <option value="self">📦 Само блюдо/товар (для готовых: вода, кола, упаковка)</option>
+                </select>
+                <span className="text-xs text-neutral-500 mt-1 block">
+                  «Само блюдо» — отслеживается остаток самого товара по филиалам (как ингредиент). Используйте для напитков, готовых соусов в бутылках, упаковки и т.п.
+                </span>
+              </Field>
+            </div>
             <div className="md:col-span-2">
               <span className="text-xs text-neutral-600 block mb-1">Теги</span>
               <div className="flex flex-wrap gap-2">

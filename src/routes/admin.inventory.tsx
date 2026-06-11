@@ -197,11 +197,13 @@ function Recipes() {
           {current.map((r) => {
             const ing = ingredients.find((i) => i.id === r.ingredient_id);
             const comp = products.find((p) => p.id === r.component_product_id);
+            const lineCost = r.ingredient_id ? Number(r.qty) * Number(ing?.cost_price ?? 0) : null;
             return (
               <li key={r.id} className="flex justify-between bg-neutral-50 rounded-lg px-3 py-2 text-sm">
                 <span>{r.component_product_id ? `🧪 ${comp?.name ?? "?"}` : (ing?.name ?? "?")}</span>
                 <span className="flex items-center gap-3">
                   <b>{r.qty}{r.ingredient_id ? ` ${ing?.unit ?? ""}` : " шт"}</b>
+                  {lineCost !== null && <span className="text-xs text-neutral-500 w-16 text-right">{lineCost.toFixed(2)} ₽</span>}
                   <button onClick={() => del(r.id)} className="text-red-500 text-xs">✕</button>
                 </span>
               </li>
@@ -209,7 +211,36 @@ function Recipes() {
           })}
           {!current.length && <li className="text-xs text-neutral-400">Состав не задан</li>}
         </ul>
+        {current.length > 0 && (
+          <div className="rounded-2xl bg-neutral-900 text-white p-4 space-y-1 text-sm">
+            <div className="flex justify-between">
+              <span className="text-neutral-300">💰 Себестоимость:</span>
+              <b className="text-lg">{cost?.toFixed(2) ?? "—"} ₽</b>
+            </div>
+            {!selectedProduct?.is_semi_product && price !== null && price > 0 && cost !== null && (
+              <>
+                <div className="flex justify-between">
+                  <span className="text-neutral-300">🏷 Цена продажи:</span>
+                  <span>{price.toFixed(2)} ₽</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-neutral-300">📈 Маржа:</span>
+                  <b className={price - cost > 0 ? "text-green-400" : "text-red-400"}>
+                    {(price - cost).toFixed(2)} ₽ ({((1 - cost / price) * 100).toFixed(1)}%)
+                  </b>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-neutral-300">📊 Наценка:</span>
+                  <span>{cost > 0 ? (((price - cost) / cost) * 100).toFixed(1) : "∞"}%</span>
+                </div>
+              </>
+            )}
+            <p className="text-xs text-neutral-400 pt-1">Учитывает закупочную цену ингредиентов (средневзвешенную по приходным накладным) и рекурсивно раскрывает полуфабрикаты.</p>
+          </div>
+        )}
       </div>
+
+
 
       <div className="bg-white rounded-3xl p-5">
         <h3 className="font-extrabold mb-3">Добавить компонент</h3>

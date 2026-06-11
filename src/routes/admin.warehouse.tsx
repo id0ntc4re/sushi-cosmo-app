@@ -12,7 +12,7 @@ type Branch = { id: string; name: string };
 type Ingredient = { id: string; name: string; unit: string };
 
 function Warehouse() {
-  const [tab, setTab] = useState<"stock" | "products" | "transfers" | "writeoffs" | "inventory" | "schedules">("stock");
+  const [tab, setTab] = useState<"stock" | "products" | "prepared" | "transfers" | "writeoffs" | "inventory" | "schedules">("stock");
   const [branches, setBranches] = useState<Branch[]>([]);
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [isSuper, setIsSuper] = useState(false);
@@ -59,6 +59,7 @@ function Warehouse() {
       <div className="flex gap-2 mb-5 overflow-x-auto">
         <Tab on={tab === "stock"} onClick={() => setTab("stock")}>📦 Остатки ингредиентов</Tab>
         <Tab on={tab === "products"} onClick={() => setTab("products")}>🥤 Готовые товары</Tab>
+        <Tab on={tab === "prepared"} onClick={() => setTab("prepared")}>🧪 Заготовки/соусы</Tab>
         <Tab on={tab === "transfers"} onClick={() => setTab("transfers")}>🔁 Перемещения</Tab>
         <Tab on={tab === "writeoffs"} onClick={() => setTab("writeoffs")}>🗑️ Списания</Tab>
         <Tab on={tab === "inventory"} onClick={() => setTab("inventory")}>📋 Инвентаризация</Tab>
@@ -67,6 +68,10 @@ function Warehouse() {
 
       {tab === "stock" && <StockTab branchId={branchId} ingredients={ingredients} />}
       {tab === "products" && <ProductStockTab branchId={branchId} />}
+      {tab === "prepared" && <PreparedTab ingredients={ingredients} reloadIngredients={async () => {
+        const { data: ing } = await supabase.from("ingredients").select("id,name,unit").order("name");
+        setIngredients(ing ?? []);
+      }} />}
       {tab === "transfers" && <TransfersTab branchId={branchId} branches={branches} ingredients={ingredients} isSuper={isSuper} userBranch={userBranch} />}
       {tab === "writeoffs" && <WriteoffsTab branchId={branchId} ingredients={ingredients} />}
       {tab === "inventory" && <InventoryTab branchId={branchId} ingredients={ingredients} />}
@@ -652,6 +657,177 @@ function SchedulesTab({ branches }: { branches: Branch[] }) {
         <p className="text-xs text-neutral-500 mt-3">
           Расписания запускаются автоматически по таймеру (раз в 15 мин). Также можно списать вручную кнопкой ▶.
         </p>
+      </div>
+    </div>
+  );
+}
+
+/* ---------- PREPARED INGREDIENTS (соусы/заготовки своего пр-ва) ---------- */
+function PreparedTab({ ingredients, reloadIngredients }: { ingredients: Ingredient[]; reloadIngredients: () => Promise<void> }) {
+  const [list, setList] = useState<any[]>([]);
+  const [allIng, setAllIng] = useState<any[]>([]);
+  const [selectedId, setSelectedId] = useState<string>("");
+  const [components, setComponents] = useState<any[]>([]);
+  const [draft, setDraft] = useState({ name: "", unit: "г", prep_yield: 1 });
+  const [addComp, setAddComp] = useState({ component_ingredient_id: "", qty: 0 });
+
+  async function load() {
+    const { data: prepared } = await supabase.from("ingredients").select("id,name,unit,prep_yield,cost_price").eq("is_prepared", true).order("name");
+    setList(prepared ?? []);
+    const { data: all } = await supabase.from("ingredients").select("id,name,unit,is_prepared,cost_price").order("name");
+    setAllIng(all ?? []);
+  }
+  useEffect(() => { load(); }, []);
+
+  async function loadComps(id: string) {
+    setSelectedId(id);
+    const { data } = await supabase.from("ingredient_components").select("id,component_ingredient_id,qty").eq("parent_ingredient_id", id).is("branch_id", null);
+    setComponents(data ?? []);
+  }
+
+  async function createPrepared() {
+    if (!draft.name.trim()) return toast.error("Введите название");
+    const { error, data } = await supabase.from("ingredients").insert({
+      name: draft.name.trim(), unit: draft.unit, is_prepared: true, prep_yield: Number(draft.prep_yield) || 1,
+    }).select("id").single();
+    if (error) return toast.error(error.message);
+    toast.success("Заготовка создана");
+    setDraft({ name: "", unit: "г", prep_yield: 1 });
+    await load();
+    await reloadIngredients();
+    if (data?.id) loadComps(data.id);
+  }
+
+  async function markExistingAsPrepared(id: string) {
+    const { error } = await supabase.from("ingredients").update({ is_prepared: true, prep_yield: 1 }).eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("Помечено как заготовка");
+    await load();
+    loadComps(id);
+  }
+
+  async function updateYield(id: string, val: number) {
+    await supabase.from("ingredients").update({ prep_yield: val || 1 }).eq("id", id);
+    await load();
+  }
+
+  async function addComponent() {
+    if (!selectedId || !addComp.component_ingredient_id || !addComp.qty) return toast.error("Заполните компонент и кол-во");
+    if (addComp.component_ingredient_id === selectedId) return toast.error("Нельзя добавить заготовку саму в себя");
+    const { error } = await supabase.from("ingredient_components").insert({
+      parent_ingredient_id: selectedId, component_ingredient_id: addComp.component_ingredient_id, qty: Number(addComp.qty), branch_id: null,
+    });
+    if (error) return toast.error(error.message);
+    setAddComp({ component_ingredient_id: "", qty: 0 });
+    loadComps(selectedId);
+  }
+
+  async function removeComponent(id: string) {
+    if (!confirm("Удалить компонент?")) return;
+    await supabase.from("ingredient_components").delete().eq("id", id);
+    loadComps(selectedId);
+  }
+
+  async function recompute() {
+    const { error } = await supabase.rpc("recompute_prepared_costs");
+    if (error) return toast.error(error.message);
+    toast.success("Себестоимость пересчитана");
+    await load();
+    await reloadIngredients();
+  }
+
+  const ingName = (id: string) => allIng.find((i) => i.id === id)?.name ?? id.slice(0, 6);
+  const ingUnit = (id: string) => allIng.find((i) => i.id === id)?.unit ?? "";
+  const ingCost = (id: string) => Number(allIng.find((i) => i.id === id)?.cost_price ?? 0);
+  const selected = list.find((p) => p.id === selectedId);
+  const compsCost = components.reduce((s, c) => s + Number(c.qty) * ingCost(c.component_ingredient_id), 0);
+  const perUnit = selected ? compsCost / (Number(selected.prep_yield) || 1) : 0;
+
+  return (
+    <div className="grid lg:grid-cols-2 gap-5">
+      <div className="bg-white rounded-2xl p-5 border">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-bold">🧪 Заготовки и соуса</h2>
+          <button onClick={recompute} className="px-3 py-1.5 rounded-lg bg-neutral-900 text-white text-xs font-bold">Пересчитать себестоимость</button>
+        </div>
+        <p className="text-xs text-neutral-500 mb-3">Соус/заготовка собственного производства из других ингредиентов. При продаже блюда автоматически раскрывается и списываются базовые ингредиенты.</p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 mb-3">
+          <input placeholder="Название (Чесночный соус)" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className="px-3 py-2 rounded-xl border sm:col-span-2" />
+          <input placeholder="Ед. (г, мл, шт)" value={draft.unit} onChange={(e) => setDraft({ ...draft, unit: e.target.value })} className="px-3 py-2 rounded-xl border" />
+          <input type="number" placeholder="Выход" value={draft.prep_yield} onChange={(e) => setDraft({ ...draft, prep_yield: Number(e.target.value) })} className="px-3 py-2 rounded-xl border" />
+        </div>
+        <button onClick={createPrepared} className="w-full px-4 py-2 rounded-xl bg-primary text-white font-bold mb-4">+ Создать заготовку</button>
+
+        <div className="mb-3">
+          <label className="text-xs text-neutral-500">Или пометить существующий ингредиент:</label>
+          <select onChange={(e) => e.target.value && markExistingAsPrepared(e.target.value)} value="" className="w-full mt-1 px-3 py-2 rounded-xl border">
+            <option value="">— выбрать ингредиент —</option>
+            {allIng.filter((i) => !i.is_prepared).map((i) => <option key={i.id} value={i.id}>{i.name} ({i.unit})</option>)}
+          </select>
+        </div>
+
+        <div className="border-t pt-3">
+          <h3 className="text-sm font-bold mb-2">Список заготовок</h3>
+          <div className="space-y-1 max-h-96 overflow-y-auto">
+            {list.length === 0 && <p className="text-xs text-neutral-400">Пока нет</p>}
+            {list.map((p) => (
+              <button key={p.id} onClick={() => loadComps(p.id)}
+                className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center justify-between ${selectedId === p.id ? "bg-primary/10 ring-1 ring-primary" : "hover:bg-neutral-50"}`}>
+                <span className="font-semibold">{p.name}</span>
+                <span className="text-xs text-neutral-500">выход {p.prep_yield} {p.unit} · {Number(p.cost_price).toFixed(2)} ₽/{p.unit}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-2xl p-5 border">
+        {!selected ? (
+          <p className="text-sm text-neutral-500">← Выберите заготовку слева для редактирования состава</p>
+        ) : (
+          <>
+            <div className="flex items-center justify-between mb-1">
+              <h3 className="text-lg font-bold">{selected.name}</h3>
+              <span className="text-xs text-neutral-500">себестоимость батча: {compsCost.toFixed(2)} ₽</span>
+            </div>
+            <div className="flex items-center gap-2 mb-4 text-sm">
+              <label>Выход батча:</label>
+              <input type="number" defaultValue={selected.prep_yield} onBlur={(e) => updateYield(selected.id, Number(e.target.value))} className="w-24 px-2 py-1 rounded-lg border" />
+              <span className="text-neutral-500">{selected.unit}</span>
+              <span className="ml-auto font-bold">≈ {perUnit.toFixed(2)} ₽ / {selected.unit}</span>
+            </div>
+
+            <h4 className="text-sm font-bold mb-2">Компоненты</h4>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
+              <select value={addComp.component_ingredient_id} onChange={(e) => setAddComp({ ...addComp, component_ingredient_id: e.target.value })} className="px-3 py-2 rounded-xl border sm:col-span-2">
+                <option value="">— ингредиент —</option>
+                {allIng.filter((i) => i.id !== selectedId).map((i) => <option key={i.id} value={i.id}>{i.name} ({i.unit}){i.is_prepared ? " 🧪" : ""}</option>)}
+              </select>
+              <div className="flex gap-2">
+                <input type="number" placeholder="Кол-во" value={addComp.qty || ""} onChange={(e) => setAddComp({ ...addComp, qty: Number(e.target.value) })} className="px-3 py-2 rounded-xl border w-full" />
+                <button onClick={addComponent} className="px-3 py-2 rounded-xl bg-primary text-white font-bold">+</button>
+              </div>
+            </div>
+
+            <table className="w-full text-sm">
+              <thead className="text-left text-neutral-500 text-xs">
+                <tr><th className="py-1">Ингредиент</th><th>Кол-во</th><th>Сумма</th><th></th></tr>
+              </thead>
+              <tbody>
+                {components.length === 0 && <tr><td colSpan={4} className="py-3 text-neutral-400 text-xs">Добавьте компоненты</td></tr>}
+                {components.map((c) => (
+                  <tr key={c.id} className="border-t">
+                    <td className="py-2">{ingName(c.component_ingredient_id)}</td>
+                    <td>{c.qty} {ingUnit(c.component_ingredient_id)}</td>
+                    <td>{(Number(c.qty) * ingCost(c.component_ingredient_id)).toFixed(2)} ₽</td>
+                    <td className="text-right"><button onClick={() => removeComponent(c.id)} className="text-red-600 text-xs">✕</button></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </>
+        )}
       </div>
     </div>
   );

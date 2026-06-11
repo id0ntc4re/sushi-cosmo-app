@@ -87,6 +87,7 @@ function ProductsAdmin() {
       fat: editing.fat === null || editing.fat === undefined || (editing.fat as any) === "" ? null : Number(editing.fat),
       carbs: editing.carbs === null || editing.carbs === undefined || (editing.carbs as any) === "" ? null : Number(editing.carbs),
       is_semi_product: editing.is_semi_product ?? false,
+      writeoff_mode: editing.writeoff_mode ?? "ingredients",
     };
     if (!payload.name) return toast.error("Укажите название");
     const res = editing.id

@@ -43,6 +43,7 @@ import { Route as AdminCallbacksRouteImport } from './routes/admin.callbacks'
 import { Route as AdminBranchesRouteImport } from './routes/admin.branches'
 import { Route as AdminBannersRouteImport } from './routes/admin.banners'
 import { Route as PrintKitchenOrderIdRouteImport } from './routes/print.kitchen.$orderId'
+import { Route as ApiPublicHooksRunWriteoffSchedulesRouteImport } from './routes/api/public/hooks/run-writeoff-schedules'
 
 const OrderSuccessRoute = OrderSuccessRouteImport.update({
   id: '/order-success',
@@ -214,6 +215,12 @@ const PrintKitchenOrderIdRoute = PrintKitchenOrderIdRouteImport.update({
   path: '/print/kitchen/$orderId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHooksRunWriteoffSchedulesRoute =
+  ApiPublicHooksRunWriteoffSchedulesRouteImport.update({
+    id: '/api/public/hooks/run-writeoff-schedules',
+    path: '/api/public/hooks/run-writeoff-schedules',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -250,6 +257,7 @@ export interface FileRoutesByFullPath {
   '/admin/': typeof AdminIndexRoute
   '/news/': typeof NewsIndexRoute
   '/print/kitchen/$orderId': typeof PrintKitchenOrderIdRoute
+  '/api/public/hooks/run-writeoff-schedules': typeof ApiPublicHooksRunWriteoffSchedulesRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -285,6 +293,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AdminIndexRoute
   '/news': typeof NewsIndexRoute
   '/print/kitchen/$orderId': typeof PrintKitchenOrderIdRoute
+  '/api/public/hooks/run-writeoff-schedules': typeof ApiPublicHooksRunWriteoffSchedulesRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -322,6 +331,7 @@ export interface FileRoutesById {
   '/admin/': typeof AdminIndexRoute
   '/news/': typeof NewsIndexRoute
   '/print/kitchen/$orderId': typeof PrintKitchenOrderIdRoute
+  '/api/public/hooks/run-writeoff-schedules': typeof ApiPublicHooksRunWriteoffSchedulesRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -360,6 +370,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/news/'
     | '/print/kitchen/$orderId'
+    | '/api/public/hooks/run-writeoff-schedules'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -395,6 +406,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/news'
     | '/print/kitchen/$orderId'
+    | '/api/public/hooks/run-writeoff-schedules'
   id:
     | '__root__'
     | '/'
@@ -431,6 +443,7 @@ export interface FileRouteTypes {
     | '/admin/'
     | '/news/'
     | '/print/kitchen/$orderId'
+    | '/api/public/hooks/run-writeoff-schedules'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -447,6 +460,7 @@ export interface RootRouteChildren {
   NewsSlugRoute: typeof NewsSlugRoute
   NewsIndexRoute: typeof NewsIndexRoute
   PrintKitchenOrderIdRoute: typeof PrintKitchenOrderIdRoute
+  ApiPublicHooksRunWriteoffSchedulesRoute: typeof ApiPublicHooksRunWriteoffSchedulesRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -689,6 +703,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrintKitchenOrderIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/run-writeoff-schedules': {
+      id: '/api/public/hooks/run-writeoff-schedules'
+      path: '/api/public/hooks/run-writeoff-schedules'
+      fullPath: '/api/public/hooks/run-writeoff-schedules'
+      preLoaderRoute: typeof ApiPublicHooksRunWriteoffSchedulesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -756,6 +777,8 @@ const rootRouteChildren: RootRouteChildren = {
   NewsSlugRoute: NewsSlugRoute,
   NewsIndexRoute: NewsIndexRoute,
   PrintKitchenOrderIdRoute: PrintKitchenOrderIdRoute,
+  ApiPublicHooksRunWriteoffSchedulesRoute:
+    ApiPublicHooksRunWriteoffSchedulesRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

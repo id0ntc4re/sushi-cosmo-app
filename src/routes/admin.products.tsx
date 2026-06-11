@@ -84,6 +84,7 @@ function ProductsAdmin() {
       protein: editing.protein === null || editing.protein === undefined || (editing.protein as any) === "" ? null : Number(editing.protein),
       fat: editing.fat === null || editing.fat === undefined || (editing.fat as any) === "" ? null : Number(editing.fat),
       carbs: editing.carbs === null || editing.carbs === undefined || (editing.carbs as any) === "" ? null : Number(editing.carbs),
+      is_semi_product: editing.is_semi_product ?? false,
     };
     if (!payload.name) return toast.error("Укажите название");
     const res = editing.id

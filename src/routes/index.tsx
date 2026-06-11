@@ -528,6 +528,7 @@ function ProductModal({ product, onClose, onAdd }: { product: Product; onClose: 
         .eq("is_active", true)
         .eq("in_stock", true)
         .eq("is_recommended", true)
+        .eq("is_semi_product", false)
         .neq("id", product.id)
         .limit(8);
       setRecos((data as Reco[]) ?? []);

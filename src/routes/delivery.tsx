@@ -47,14 +47,10 @@ function DeliveryPage() {
         </div>
 
         <Section title="Стоимость доставки по районам">
-          <div className="overflow-hidden rounded-2xl border bg-card">
-            {ZONES.map((z, i) => (
-              <div key={i} className={`flex items-start justify-between gap-4 px-5 py-4 ${i ? "border-t" : ""}`}>
-                <div className="text-sm">{z.area}</div>
-                <div className="font-bold whitespace-nowrap text-primary">{z.price} ₽</div>
-              </div>
-            ))}
-          </div>
+          <h3 className="font-bold mb-3">Филиал на пр-те Шахтёров, 68</h3>
+          <ZoneTable zones={ZONES_SHAHTEROV} />
+          <h3 className="font-bold mb-3 mt-6">Филиал на бульваре Строителей, 21</h3>
+          <ZoneTable zones={ZONES_BULVAR} />
           <p className="text-sm text-muted-foreground mt-3">
             Условия и стоимость доставки в более отдалённые районы и за пределы города уточняйте у оператора.
           </p>

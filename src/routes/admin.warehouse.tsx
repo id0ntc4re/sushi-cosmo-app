@@ -12,7 +12,7 @@ type Branch = { id: string; name: string };
 type Ingredient = { id: string; name: string; unit: string };
 
 function Warehouse() {
-  const [tab, setTab] = useState<"stock" | "transfers" | "writeoffs" | "inventory">("stock");
+  const [tab, setTab] = useState<"stock" | "products" | "transfers" | "writeoffs" | "inventory" | "schedules">("stock");
   const [branches, setBranches] = useState<Branch[]>([]);
   const [ingredients, setIngredients] = useState<Ingredient[]>([]);
   const [isSuper, setIsSuper] = useState(false);

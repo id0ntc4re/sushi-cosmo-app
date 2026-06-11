@@ -482,13 +482,67 @@ export type Database = {
         }
         Relationships: []
       }
+      ingredient_components: {
+        Row: {
+          branch_id: string | null
+          component_ingredient_id: string
+          created_at: string
+          id: string
+          parent_ingredient_id: string
+          qty: number
+          updated_at: string
+        }
+        Insert: {
+          branch_id?: string | null
+          component_ingredient_id: string
+          created_at?: string
+          id?: string
+          parent_ingredient_id: string
+          qty: number
+          updated_at?: string
+        }
+        Update: {
+          branch_id?: string | null
+          component_ingredient_id?: string
+          created_at?: string
+          id?: string
+          parent_ingredient_id?: string
+          qty?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ingredient_components_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ingredient_components_component_ingredient_id_fkey"
+            columns: ["component_ingredient_id"]
+            isOneToOne: false
+            referencedRelation: "ingredients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ingredient_components_parent_ingredient_id_fkey"
+            columns: ["parent_ingredient_id"]
+            isOneToOne: false
+            referencedRelation: "ingredients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ingredients: {
         Row: {
           cost_price: number
           created_at: string
           id: string
+          is_prepared: boolean
           min_stock: number
           name: string
+          prep_yield: number
           stock: number
           unit: string
           updated_at: string
@@ -497,8 +551,10 @@ export type Database = {
           cost_price?: number
           created_at?: string
           id?: string
+          is_prepared?: boolean
           min_stock?: number
           name: string
+          prep_yield?: number
           stock?: number
           unit?: string
           updated_at?: string
@@ -507,8 +563,10 @@ export type Database = {
           cost_price?: number
           created_at?: string
           id?: string
+          is_prepared?: boolean
           min_stock?: number
           name?: string
+          prep_yield?: number
           stock?: number
           unit?: string
           updated_at?: string
@@ -1466,7 +1524,12 @@ export type Database = {
         Args: { _invoice_id: string }
         Returns: undefined
       }
+      prepared_ingredient_cost: {
+        Args: { _ingredient_id: string }
+        Returns: number
+      }
       product_cost: { Args: { _product_id: string }; Returns: number }
+      recompute_prepared_costs: { Args: never; Returns: undefined }
       run_writeoff_schedule: { Args: { _schedule_id: string }; Returns: Json }
       user_branch: { Args: { _user_id: string }; Returns: string }
     }

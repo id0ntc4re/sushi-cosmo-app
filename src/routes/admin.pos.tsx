@@ -58,7 +58,7 @@ function PosPage() {
     (async () => {
       const [{ data: c }, { data: p }] = await Promise.all([
         supabase.from("categories").select("id,name,sort_order").eq("is_active", true).order("sort_order"),
-        supabase.from("products").select("id,name,price,image_url,category_id,is_addon").eq("is_active", true).eq("in_stock", true).order("sort_order").limit(500),
+        supabase.from("products").select("id,name,price,image_url,category_id,is_addon").eq("is_active", true).eq("in_stock", true).eq("is_semi_product", false).order("sort_order").limit(500),
       ]);
       setCats((c ?? []) as Category[]);
       setProds((p ?? []) as Product[]);

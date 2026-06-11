@@ -237,6 +237,7 @@ function ProductsAdmin() {
             <label className="flex items-center gap-2"><input type="checkbox" checked={editing.in_stock ?? true} onChange={(e) => setEditing({ ...editing, in_stock: e.target.checked })} /> В наличии</label>
             <label className="flex items-center gap-2"><input type="checkbox" checked={editing.is_addon ?? false} onChange={(e) => setEditing({ ...editing, is_addon: e.target.checked })} /> Доп. товар (соус/палочки)</label>
             <label className="flex items-center gap-2"><input type="checkbox" checked={editing.is_recommended ?? false} onChange={(e) => setEditing({ ...editing, is_recommended: e.target.checked })} /> Рекомендуемый («с этим заказывают»)</label>
+            <label className="flex items-center gap-2"><input type="checkbox" checked={editing.is_semi_product ?? false} onChange={(e) => setEditing({ ...editing, is_semi_product: e.target.checked })} /> 🧪 Полуфабрикат (не показывать на витрине, использовать в ТТК)</label>
             <div className="md:col-span-2">
               <span className="text-xs text-neutral-600 block mb-1">Теги</span>
               <div className="flex flex-wrap gap-2">

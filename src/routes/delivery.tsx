@@ -15,14 +15,21 @@ export const Route = createFileRoute("/delivery")({
   component: DeliveryPage,
 });
 
-const ZONES = [
-  { area: "Рудничный район, Ленинский район", price: 500 },
-  { area: "Центр города, Кировский район, ФПК, Металлплощадка, Сухово", price: 700 },
-  { area: "Лесная Поляна, Андреевка, Журавлёвы горы, д. Солнечная, ш. Бутовская, пос. Боровой, Южный, Аэропорт", price: 1000 },
-  { area: "Кедровка, Промышленновский, Завокзальная часть, пос. Новостройка", price: 1300 },
-  { area: "Д. Журавлёво, пос. Пионер, мкр. Ягуновский, д. Пугачи, с. Берёзово", price: 1800 },
-  { area: "С. Мазурово, пос. Ясногорский, д. Мозжуха, с. Верхотомское", price: 2000 },
+const ZONES_SHAHTEROV = [
+  { area: "Рудничный район, Кировский", price: 700 },
+  { area: "Лесная Поляна, Андреевка, Солнечная, Боровой, Бутовская, Журавлёвы горы", price: 1000 },
+  { area: "Кедровка, Промышленновский", price: 1300 },
+  { area: "Д. Журавлёво", price: 1800 },
+  { area: "Верхотомское", price: 2000 },
   { area: "Берёзовский", price: 2500 },
+];
+
+const ZONES_BULVAR = [
+  { area: "Ленинский район, Центральный, ФПК, Металлплощадка, Сухово", price: 700 },
+  { area: "Южный, Аэропорт", price: 1000 },
+  { area: "Завокзальная часть, Новостройка", price: 1300 },
+  { area: "Пионер, Ягуновский, Берёзово, Пугачи", price: 1800 },
+  { area: "Мазурово, Мозжуха, Ясногорский", price: 2000 },
 ];
 
 function DeliveryPage() {
@@ -40,14 +47,10 @@ function DeliveryPage() {
         </div>
 
         <Section title="Стоимость доставки по районам">
-          <div className="overflow-hidden rounded-2xl border bg-card">
-            {ZONES.map((z, i) => (
-              <div key={i} className={`flex items-start justify-between gap-4 px-5 py-4 ${i ? "border-t" : ""}`}>
-                <div className="text-sm">{z.area}</div>
-                <div className="font-bold whitespace-nowrap text-primary">{z.price} ₽</div>
-              </div>
-            ))}
-          </div>
+          <h3 className="font-bold mb-3">Филиал на пр-те Шахтёров, 68</h3>
+          <ZoneTable zones={ZONES_SHAHTEROV} />
+          <h3 className="font-bold mb-3 mt-6">Филиал на бульваре Строителей, 21</h3>
+          <ZoneTable zones={ZONES_BULVAR} />
           <p className="text-sm text-muted-foreground mt-3">
             Условия и стоимость доставки в более отдалённые районы и за пределы города уточняйте у оператора.
           </p>
@@ -103,6 +106,19 @@ function Section({ title, children }: { title: string; children: React.ReactNode
       <h2 className="text-2xl font-extrabold mb-4">{title}</h2>
       {children}
     </section>
+  );
+}
+
+function ZoneTable({ zones }: { zones: { area: string; price: number }[] }) {
+  return (
+    <div className="overflow-hidden rounded-2xl border bg-card">
+      {zones.map((z, i) => (
+        <div key={i} className={`flex items-start justify-between gap-4 px-5 py-4 ${i ? "border-t" : ""}`}>
+          <div className="text-sm">{z.area}</div>
+          <div className="font-bold whitespace-nowrap text-primary">{z.price} ₽</div>
+        </div>
+      ))}
+    </div>
   );
 }
 

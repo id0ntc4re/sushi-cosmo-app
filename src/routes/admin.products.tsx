@@ -29,6 +29,7 @@ type Product = {
   fat: number | null;
   carbs: number | null;
   is_semi_product: boolean;
+  writeoff_mode: "ingredients" | "self";
 };
 
 
@@ -44,6 +45,7 @@ const empty: Partial<Product> = {
   name: "", price: 0, weight: "", description: "", ingredients: "", image_url: "",
   category_id: null, is_active: true, in_stock: true, sort_order: 0, sku: "",
   is_addon: false, is_recommended: false, tags: [], is_semi_product: false,
+  writeoff_mode: "ingredients",
 };
 
 function ProductsAdmin() {

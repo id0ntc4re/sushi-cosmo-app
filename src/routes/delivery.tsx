@@ -109,6 +109,19 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
+function ZoneTable({ zones }: { zones: { area: string; price: number }[] }) {
+  return (
+    <div className="overflow-hidden rounded-2xl border bg-card">
+      {zones.map((z, i) => (
+        <div key={i} className={`flex items-start justify-between gap-4 px-5 py-4 ${i ? "border-t" : ""}`}>
+          <div className="text-sm">{z.area}</div>
+          <div className="font-bold whitespace-nowrap text-primary">{z.price} ₽</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function Highlight({ Icon, title, text }: { Icon: any; title: string; text: string }) {
   return (
     <div className="rounded-2xl border bg-card p-5">

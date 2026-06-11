@@ -242,6 +242,17 @@ function ProductsAdmin() {
             <label className="flex items-center gap-2"><input type="checkbox" checked={editing.is_recommended ?? false} onChange={(e) => setEditing({ ...editing, is_recommended: e.target.checked })} /> Рекомендуемый («с этим заказывают»)</label>
             <label className="flex items-center gap-2"><input type="checkbox" checked={editing.is_semi_product ?? false} onChange={(e) => setEditing({ ...editing, is_semi_product: e.target.checked })} /> 🧪 Полуфабрикат (не показывать на витрине, использовать в ТТК)</label>
             <div className="md:col-span-2">
+              <Field label="Метод списания со склада">
+                <select className={inp} value={editing.writeoff_mode ?? "ingredients"} onChange={(e) => setEditing({ ...editing, writeoff_mode: e.target.value as any })}>
+                  <option value="ingredients">🥬 Ингредиенты по ТТК (для блюд)</option>
+                  <option value="self">📦 Само блюдо/товар (для готовых: вода, кола, упаковка)</option>
+                </select>
+                <span className="text-xs text-neutral-500 mt-1 block">
+                  «Само блюдо» — отслеживается остаток самого товара по филиалам (как ингредиент). Используйте для напитков, готовых соусов в бутылках, упаковки и т.п.
+                </span>
+              </Field>
+            </div>
+            <div className="md:col-span-2">
               <span className="text-xs text-neutral-600 block mb-1">Теги</span>
               <div className="flex flex-wrap gap-2">
                 {TAGS.map((t) => {

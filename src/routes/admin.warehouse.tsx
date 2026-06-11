@@ -59,6 +59,7 @@ function Warehouse() {
       <div className="flex gap-2 mb-5 overflow-x-auto">
         <Tab on={tab === "stock"} onClick={() => setTab("stock")}>📦 Остатки ингредиентов</Tab>
         <Tab on={tab === "products"} onClick={() => setTab("products")}>🥤 Готовые товары</Tab>
+        <Tab on={tab === "prepared"} onClick={() => setTab("prepared")}>🧪 Заготовки/соусы</Tab>
         <Tab on={tab === "transfers"} onClick={() => setTab("transfers")}>🔁 Перемещения</Tab>
         <Tab on={tab === "writeoffs"} onClick={() => setTab("writeoffs")}>🗑️ Списания</Tab>
         <Tab on={tab === "inventory"} onClick={() => setTab("inventory")}>📋 Инвентаризация</Tab>
@@ -67,6 +68,10 @@ function Warehouse() {
 
       {tab === "stock" && <StockTab branchId={branchId} ingredients={ingredients} />}
       {tab === "products" && <ProductStockTab branchId={branchId} />}
+      {tab === "prepared" && <PreparedTab ingredients={ingredients} reloadIngredients={async () => {
+        const { data: ing } = await supabase.from("ingredients").select("id,name,unit").order("name");
+        setIngredients(ing ?? []);
+      }} />}
       {tab === "transfers" && <TransfersTab branchId={branchId} branches={branches} ingredients={ingredients} isSuper={isSuper} userBranch={userBranch} />}
       {tab === "writeoffs" && <WriteoffsTab branchId={branchId} ingredients={ingredients} />}
       {tab === "inventory" && <InventoryTab branchId={branchId} ingredients={ingredients} />}

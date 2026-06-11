@@ -119,11 +119,13 @@ function Recipes() {
   const [ingId, setIngId] = useState<string>("");
   const [componentId, setComponentId] = useState<string>("");
   const [qty, setQty] = useState(0);
+  const [cost, setCost] = useState<number | null>(null);
+  const [price, setPrice] = useState<number | null>(null);
 
   async function load() {
     const [{ data: p }, { data: i }, { data: r }] = await Promise.all([
-      supabase.from("products").select("id,name,is_semi_product").order("is_semi_product", { ascending: false }).order("name"),
-      supabase.from("ingredients").select("id,name,unit").order("name"),
+      supabase.from("products").select("id,name,is_semi_product,price").order("is_semi_product", { ascending: false }).order("name"),
+      supabase.from("ingredients").select("id,name,unit,cost_price").order("name"),
       supabase.from("recipes").select("*"),
     ]);
     setProducts(p ?? []);
@@ -134,6 +136,17 @@ function Recipes() {
     if (!componentId && p?.[0]) setComponentId(p.find((x: any) => x.is_semi_product)?.id ?? p[0].id);
   }
   useEffect(() => { load(); }, []);
+
+  // Себестоимость: рекурсивно раскрываем ТТК через RPC
+  useEffect(() => {
+    if (!productId) { setCost(null); setPrice(null); return; }
+    (async () => {
+      const { data, error } = await supabase.rpc("product_cost", { _product_id: productId });
+      setCost(error ? null : Number(data ?? 0));
+      const p = products.find((x) => x.id === productId);
+      setPrice(p ? Number(p.price ?? 0) : null);
+    })();
+  }, [productId, recipes, products]);
 
   // ТТК единая для всех филиалов (branch_id IS NULL).
   // Старые филиальные строки тоже показываем — их можно удалить вручную.

@@ -1371,6 +1371,7 @@ export type Database = {
         Args: { _invoice_id: string }
         Returns: undefined
       }
+      product_cost: { Args: { _product_id: string }; Returns: number }
       user_branch: { Args: { _user_id: string }; Returns: string }
     }
     Enums: {

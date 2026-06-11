@@ -113,42 +113,37 @@ function Stock() {
 function Recipes() {
   const [products, setProducts] = useState<any[]>([]);
   const [ingredients, setIngredients] = useState<any[]>([]);
-  const [branches, setBranches] = useState<any[]>([]);
   const [recipes, setRecipes] = useState<any[]>([]);
   const [productId, setProductId] = useState<string>("");
-  const [branchId, setBranchId] = useState<string>(""); // "" = базовый рецепт (все филиалы)
   const [mode, setMode] = useState<"ingredient" | "component">("ingredient");
   const [ingId, setIngId] = useState<string>("");
   const [componentId, setComponentId] = useState<string>("");
   const [qty, setQty] = useState(0);
 
   async function load() {
-    const [{ data: p }, { data: i }, { data: r }, { data: b }] = await Promise.all([
+    const [{ data: p }, { data: i }, { data: r }] = await Promise.all([
       supabase.from("products").select("id,name,is_semi_product").order("is_semi_product", { ascending: false }).order("name"),
       supabase.from("ingredients").select("id,name,unit").order("name"),
       supabase.from("recipes").select("*"),
-      supabase.from("branches").select("id,name").order("name"),
     ]);
     setProducts(p ?? []);
     setIngredients(i ?? []);
     setRecipes(r ?? []);
-    setBranches(b ?? []);
     if (!productId && p?.[0]) setProductId(p[0].id);
     if (!ingId && i?.[0]) setIngId(i[0].id);
     if (!componentId && p?.[0]) setComponentId(p.find((x: any) => x.is_semi_product)?.id ?? p[0].id);
   }
   useEffect(() => { load(); }, []);
 
-  const current = recipes.filter((r) =>
-    r.product_id === productId &&
-    (branchId ? r.branch_id === branchId : r.branch_id === null)
-  );
+  // ТТК единая для всех филиалов (branch_id IS NULL).
+  // Старые филиальные строки тоже показываем — их можно удалить вручную.
+  const current = recipes.filter((r) => r.product_id === productId);
 
   async function add() {
     if (!productId || !qty) return toast.error("Заполните поля");
     const payload: any = {
       product_id: productId,
-      branch_id: branchId || null,
+      branch_id: null,
       qty,
       ingredient_id: mode === "ingredient" ? ingId : null,
       component_product_id: mode === "component" ? componentId : null,
@@ -173,24 +168,18 @@ function Recipes() {
   return (
     <div className="grid lg:grid-cols-2 gap-5">
       <div className="bg-white rounded-3xl p-5">
-        <h3 className="font-extrabold mb-3">Выберите блюдо и филиал</h3>
-        <select value={productId} onChange={(e) => setProductId(e.target.value)} className={inp + " mb-3"}>
+        <h3 className="font-extrabold mb-3">Выберите блюдо</h3>
+        <select value={productId} onChange={(e) => setProductId(e.target.value)} className={inp + " mb-4"}>
           {products.map((p) => (
             <option key={p.id} value={p.id}>{p.is_semi_product ? "🧪 " : ""}{p.name}</option>
           ))}
-        </select>
-        <select value={branchId} onChange={(e) => setBranchId(e.target.value)} className={inp + " mb-4"}>
-          <option value="">📋 Базовая ТТК (для всех филиалов)</option>
-          {branches.map((b) => <option key={b.id} value={b.id}>🏪 {b.name}</option>)}
         </select>
         {selectedProduct?.is_semi_product && (
           <div className="mb-3 p-2 rounded-lg bg-amber-50 text-amber-800 text-xs">
             🧪 Это полуфабрикат — его можно добавлять компонентом в другие ТТК
           </div>
         )}
-        <h4 className="font-bold mb-2 text-sm">
-          Состав {branchId ? `для «${branches.find((b) => b.id === branchId)?.name}»` : "(базовый)"}:
-        </h4>
+        <h4 className="font-bold mb-2 text-sm">Состав (единый для всех филиалов):</h4>
         <ul className="space-y-1 mb-4">
           {current.map((r) => {
             const ing = ingredients.find((i) => i.id === r.ingredient_id);
@@ -205,13 +194,8 @@ function Recipes() {
               </li>
             );
           })}
-          {!current.length && <li className="text-xs text-neutral-400">Состав не задан{branchId ? " для этого филиала (будет использован базовый)" : ""}</li>}
+          {!current.length && <li className="text-xs text-neutral-400">Состав не задан</li>}
         </ul>
-        {branchId && (
-          <p className="text-xs text-neutral-500">
-            ℹ Если для филиала задан хотя бы один компонент — для него используется ИМЕННО эта ТТК (без базовой).
-          </p>
-        )}
       </div>
 
       <div className="bg-white rounded-3xl p-5">
@@ -238,10 +222,7 @@ function Recipes() {
           className={inp + " mb-3"} />
         <button onClick={add} className="w-full px-4 py-2.5 rounded-xl bg-primary text-white font-bold">+ Добавить в техкарту</button>
         <p className="text-xs text-neutral-500 mt-3">
-          При заказе склад филиала уменьшится по этой ТТК (с раскрытием полуфабрикатов в ингредиенты).
-        </p>
-        <p className="text-xs text-neutral-500 mt-2">
-          Чтобы создать полуфабрикат (например «Чесночный соус»): в разделе Товары создайте позицию и отметьте 🧪 «Полуфабрикат», затем добавьте сюда его ТТК из ингредиентов.
+          ТТК единая для всех филиалов. Списание идёт со склада того филиала, к которому привязан заказ — с раскрытием полуфабрикатов в ингредиенты.
         </p>
       </div>
     </div>

@@ -86,6 +86,7 @@ function Index() {
           .from("products")
           .select("id,name,price,weight,category_id,image_url,description,ingredients,is_addon,tags,calories,protein,fat,carbs")
           .eq("is_active", true)
+          .eq("is_semi_product", false)
           .order("sort_order");
 
         if (prods.error) throw prods.error;

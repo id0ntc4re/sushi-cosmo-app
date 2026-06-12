@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as OrderSuccessRouteImport } from './routes/order-success'
+import { Route as MenuRouteImport } from './routes/menu'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as DeliveryRouteImport } from './routes/delivery'
@@ -48,6 +49,11 @@ import { Route as ApiPublicHooksRunWriteoffSchedulesRouteImport } from './routes
 const OrderSuccessRoute = OrderSuccessRouteImport.update({
   id: '/order-success',
   path: '/order-success',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MenuRoute = MenuRouteImport.update({
+  id: '/menu',
+  path: '/menu',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -232,6 +238,7 @@ export interface FileRoutesByFullPath {
   '/delivery': typeof DeliveryRoute
   '/faq': typeof FaqRoute
   '/login': typeof LoginRoute
+  '/menu': typeof MenuRoute
   '/order-success': typeof OrderSuccessRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/branches': typeof AdminBranchesRoute
@@ -268,6 +275,7 @@ export interface FileRoutesByTo {
   '/delivery': typeof DeliveryRoute
   '/faq': typeof FaqRoute
   '/login': typeof LoginRoute
+  '/menu': typeof MenuRoute
   '/order-success': typeof OrderSuccessRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/branches': typeof AdminBranchesRoute
@@ -306,6 +314,7 @@ export interface FileRoutesById {
   '/delivery': typeof DeliveryRoute
   '/faq': typeof FaqRoute
   '/login': typeof LoginRoute
+  '/menu': typeof MenuRoute
   '/order-success': typeof OrderSuccessRoute
   '/admin/banners': typeof AdminBannersRoute
   '/admin/branches': typeof AdminBranchesRoute
@@ -345,6 +354,7 @@ export interface FileRouteTypes {
     | '/delivery'
     | '/faq'
     | '/login'
+    | '/menu'
     | '/order-success'
     | '/admin/banners'
     | '/admin/branches'
@@ -381,6 +391,7 @@ export interface FileRouteTypes {
     | '/delivery'
     | '/faq'
     | '/login'
+    | '/menu'
     | '/order-success'
     | '/admin/banners'
     | '/admin/branches'
@@ -418,6 +429,7 @@ export interface FileRouteTypes {
     | '/delivery'
     | '/faq'
     | '/login'
+    | '/menu'
     | '/order-success'
     | '/admin/banners'
     | '/admin/branches'
@@ -456,6 +468,7 @@ export interface RootRouteChildren {
   DeliveryRoute: typeof DeliveryRoute
   FaqRoute: typeof FaqRoute
   LoginRoute: typeof LoginRoute
+  MenuRoute: typeof MenuRoute
   OrderSuccessRoute: typeof OrderSuccessRoute
   NewsSlugRoute: typeof NewsSlugRoute
   NewsIndexRoute: typeof NewsIndexRoute
@@ -470,6 +483,13 @@ declare module '@tanstack/react-router' {
       path: '/order-success'
       fullPath: '/order-success'
       preLoaderRoute: typeof OrderSuccessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/menu': {
+      id: '/menu'
+      path: '/menu'
+      fullPath: '/menu'
+      preLoaderRoute: typeof MenuRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -773,6 +793,7 @@ const rootRouteChildren: RootRouteChildren = {
   DeliveryRoute: DeliveryRoute,
   FaqRoute: FaqRoute,
   LoginRoute: LoginRoute,
+  MenuRoute: MenuRoute,
   OrderSuccessRoute: OrderSuccessRoute,
   NewsSlugRoute: NewsSlugRoute,
   NewsIndexRoute: NewsIndexRoute,

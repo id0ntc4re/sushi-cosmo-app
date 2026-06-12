@@ -158,7 +158,7 @@ function Index() {
                           </span>
                         )}
                         {s.title && (
-                          <h1 className="mt-2 sm:mt-4 text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-extrabold leading-tight drop-shadow-lg">
+                          <h1 className="mt-2 sm:mt-4 text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-extrabold leading-tight drop-shadow-lg">
                             {s.title}
                           </h1>
                         )}

@@ -62,9 +62,9 @@ export function CallbackButton() {
             <h3 className="text-2xl font-extrabold mb-1">Заказать звонок</h3>
             <p className="text-neutral-500 text-sm mb-5">Оставьте контакты — администратор перезвонит в ближайшее время.</p>
             <form onSubmit={submit} className="space-y-3">
-              <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ваше имя" maxLength={100}
+              <input value={name} onChange={(e) => setName(e.target.value.replace(/[^A-Za-zА-Яа-яЁё\s-]/g, ""))} placeholder="Ваше имя" maxLength={50}
                 className="w-full px-4 py-3 rounded-xl border border-neutral-200 focus:border-primary outline-none" />
-              <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+7 ___ ___ __ __" type="tel" maxLength={20}
+              <input value={phone} onChange={(e) => setPhone(formatRuPhone(e.target.value))} onFocus={(e) => { if (!e.target.value) setPhone("+7 ("); }} placeholder="+7 (___) ___-__-__" type="tel" inputMode="tel" maxLength={18}
                 className="w-full px-4 py-3 rounded-xl border border-neutral-200 focus:border-primary outline-none" />
               {branches.length > 0 && (
                 <div>

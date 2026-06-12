@@ -213,6 +213,8 @@ function Checkout() {
 
     const parsed = schema.safeParse(form);
     if (!parsed.success) return setError(parsed.error.issues[0].message);
+    if (!isValidName(parsed.data.customer_name)) return setError("Имя: только буквы, 2–50 символов");
+    if (!isValidRuPhone(parsed.data.phone)) return setError("Введите корректный номер телефона");
     if (parsed.data.delivery_type === "delivery" && !parsed.data.address)
       return setError("Укажите адрес доставки");
     if (parsed.data.delivery_type === "delivery" && !zone)

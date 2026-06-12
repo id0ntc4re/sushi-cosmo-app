@@ -131,7 +131,7 @@ function Index() {
       {/* HERO SLIDER */}
       <section className="bg-white">
         <div className="mx-auto max-w-[1280px] px-3 sm:px-6 pt-3 sm:pt-6">
-          <div className="relative rounded-2xl sm:rounded-[32px] overflow-hidden aspect-[4/5] sm:aspect-[16/7] md:aspect-[16/6] bg-neutral-900 text-white">
+          <div className="relative rounded-2xl sm:rounded-[32px] overflow-hidden aspect-[4/5] sm:aspect-[16/8] md:aspect-[16/7] lg:aspect-[16/6] bg-neutral-900 text-white">
             {banners.map((s, i) => (
               <div
                 key={i}

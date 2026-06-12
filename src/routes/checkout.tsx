@@ -10,6 +10,7 @@ import { validatePromo, type PromoCode } from "@/lib/promo";
 import { getDeliverySlots } from "@/lib/timeSlots";
 import logo from "@/assets/logo.svg";
 import { detectBranchKey, branchKeyFromName } from "@/lib/branch-detect";
+import { detectBranchByAddress } from "@/lib/geocode.functions";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({ meta: [{ title: "Оформление заказа — КосмоСуши" }] }),
@@ -124,19 +125,36 @@ function Checkout() {
     })();
   }, []);
 
-  // Автоопределение филиала по адресу доставки
+  // Автоопределение филиала по адресу доставки (геокодинг + фолбэк по ключевым словам)
+  const geocodeBranch = useServerFn(detectBranchByAddress);
   useEffect(() => {
     if (form.delivery_type !== "delivery") return;
     if (branchManual) return;
     if (!branches.length) return;
-    const key = detectBranchKey(form.address);
-    if (!key) return;
-    const match = branches.find((b) => branchKeyFromName(b.name) === key);
-    if (match && match.id !== branchId) {
-      setBranchId(match.id);
-      setBranchAutoSet(true);
-    }
+    const addr = form.address.trim();
+    if (addr.length < 5) return;
+
+    let cancelled = false;
+    const t = setTimeout(async () => {
+      let key: "shahterov" | "stroiteley" | null = null;
+      try {
+        const res = await geocodeBranch({ data: { address: addr } });
+        if (res.ok) key = res.branchKey;
+      } catch {
+        // fallback to keyword detection
+      }
+      if (!key) key = detectBranchKey(addr);
+      if (cancelled || !key) return;
+      const match = branches.find((b) => branchKeyFromName(b.name) === key);
+      if (match && match.id !== branchId) {
+        setBranchId(match.id);
+        setBranchAutoSet(true);
+      }
+    }, 700);
+
+    return () => { cancelled = true; clearTimeout(t); };
   }, [form.address, form.delivery_type, branches, branchManual]);
+
 
   // re-validate promo when subtotal changes
   useEffect(() => {

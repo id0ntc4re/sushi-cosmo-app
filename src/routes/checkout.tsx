@@ -106,7 +106,7 @@ function Checkout() {
       if (bl.length && !branchId) {
         setBranchId(bl[0].id);
         const b0 = bl[0];
-        setForm((f) => ({ ...f, pickup_point: b0.address ? `${b0.name} · ${b0.address}` : b0.name }));
+        setForm((f) => ({ ...f, pickup_point: branchLabel(b0) }));
       }
       const zl = (zn ?? []) as typeof zones;
       setZones(zl);

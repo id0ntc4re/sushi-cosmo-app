@@ -228,7 +228,7 @@ function Checkout() {
     if (!isValidRuPhone(parsed.data.phone)) return setError("Введите корректный номер телефона");
     if (parsed.data.delivery_type === "delivery" && !parsed.data.address)
       return setError("Укажите адрес доставки");
-    if (parsed.data.delivery_type === "delivery" && !zone)
+    if (parsed.data.delivery_type === "delivery" && zones.length > 0 && !zone)
       return setError("Выберите зону доставки");
 
     setSubmitting(true);
@@ -242,7 +242,7 @@ function Checkout() {
           customer_name: parsed.data.customer_name,
           phone: parsed.data.phone,
           delivery_type: parsed.data.delivery_type,
-          address: parsed.data.delivery_type === "delivery" ? `[${zone!.name}] ${parsed.data.address}` : null,
+          address: parsed.data.delivery_type === "delivery" ? (zone ? `[${zone.name}] ${parsed.data.address}` : parsed.data.address) : null,
           pickup_point: parsed.data.delivery_type === "pickup" ? parsed.data.pickup_point : null,
           payment_method: parsed.data.payment_method,
           change_from: parsed.data.change_from ? Number(parsed.data.change_from) : null,

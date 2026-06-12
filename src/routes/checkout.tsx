@@ -469,22 +469,56 @@ function Checkout() {
                           placeholder="Улица, дом, кв., подъезд, этаж" required />
                       </Field>
                       {zones.length > 0 && (
-                        <Field label="Зона доставки*">
-                          <select className={inputCls} value={zoneId} onChange={(e) => setZoneId(e.target.value)} required>
-                            {zones.map((z) => (
-                              <option key={z.id} value={z.id}>
-                                {z.name} · доставка {Number(z.cost)} ₽
-                                {Number(z.min_order) > 0 ? ` · мин. заказ ${Number(z.min_order)} ₽` : ""}
-                                {z.free_from != null ? ` · бесплатно от ${Number(z.free_from)} ₽` : ""}
-                              </option>
-                            ))}
-                          </select>
-                          {zone && (
-                            <p className="text-xs text-neutral-500 mt-1.5">
-                              Не уверены в зоне? Уточните у оператора по телефону — стоимость и время доставки в отдалённые районы могут отличаться.
-                            </p>
+                        <div className="space-y-2">
+                          {zoneStatus.kind === "checking" && (
+                            <div className="px-3 py-2 rounded-xl bg-neutral-100 text-sm text-neutral-600">
+                              Определяем зону доставки по адресу…
+                            </div>
                           )}
-                        </Field>
+                          {zoneStatus.kind === "detected" && !zoneManual && zone && (
+                            <div className="px-3 py-2 rounded-xl bg-emerald-50 text-emerald-800 text-sm">
+                              <b>Зона: «{zone.name}»</b> · доставка {Number(zone.cost)} ₽
+                              {zone.free_from != null ? ` (бесплатно от ${Number(zone.free_from)} ₽)` : ""}
+                              <div className="text-xs opacity-70 mt-0.5">Определено автоматически по адресу.</div>
+                            </div>
+                          )}
+                          {zoneStatus.kind === "out_of_area" && (
+                            <div className="px-3 py-2 rounded-xl bg-red-50 text-red-700 text-sm">
+                              Этот адрес <b>вне зоны доставки</b>. Уточните у оператора по телефону или выберите зону вручную.
+                            </div>
+                          )}
+                          {zoneStatus.kind === "out_of_city" && (
+                            <div className="px-3 py-2 rounded-xl bg-red-50 text-red-700 text-sm">
+                              Адрес не в Кемерово. Проверьте написание адреса.
+                            </div>
+                          )}
+                          {zoneStatus.kind === "no_match" && (
+                            <div className="px-3 py-2 rounded-xl bg-amber-50 text-amber-800 text-sm">
+                              Не удалось определить зону по адресу. Выберите вручную ниже.
+                            </div>
+                          )}
+                          {(zoneManual || zoneStatus.kind === "out_of_area" || zoneStatus.kind === "no_match" || zoneStatus.kind === "unavailable") && (
+                            <Field label="Зона доставки*">
+                              <select className={inputCls} value={zoneId}
+                                onChange={(e) => { setZoneId(e.target.value); setZoneManual(true); }} required>
+                                <option value="">— выберите зону —</option>
+                                {zones.map((z) => (
+                                  <option key={z.id} value={z.id}>
+                                    {z.name} · доставка {Number(z.cost)} ₽
+                                    {Number(z.min_order) > 0 ? ` · мин. заказ ${Number(z.min_order)} ₽` : ""}
+                                    {z.free_from != null ? ` · бесплатно от ${Number(z.free_from)} ₽` : ""}
+                                  </option>
+                                ))}
+                              </select>
+                            </Field>
+                          )}
+                          {zoneStatus.kind === "detected" && !zoneManual && (
+                            <button type="button" onClick={() => setZoneManual(true)}
+                              className="text-xs text-primary underline">
+                              Выбрать зону вручную
+                            </button>
+                          )}
+                        </div>
                       )}
                     </>
                   ) : (

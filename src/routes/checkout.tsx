@@ -11,6 +11,7 @@ import { getDeliverySlots } from "@/lib/timeSlots";
 import logo from "@/assets/logo.svg";
 import { detectBranchKey, branchKeyFromName } from "@/lib/branch-detect";
 import { detectBranchByAddress } from "@/lib/geocode.functions";
+import { formatRuPhone, isValidRuPhone, isValidName } from "@/lib/phone-format";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({ meta: [{ title: "Оформление заказа — КосмоСуши" }] }),

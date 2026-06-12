@@ -42,7 +42,7 @@ function DeliveryPage() {
 
         <div className="grid sm:grid-cols-3 gap-3 mb-10">
           <Highlight Icon={Clock} title="10:00–22:00" text="Доставка ежедневно" />
-          <Highlight Icon={Truck} title="от 500 ₽" text="Минимальная сумма заказа" />
+          <Highlight Icon={Truck} title="от 700 ₽" text="Минимальная сумма заказа" />
           <Highlight Icon={MapPin} title="2 точки" text="Самовывоз в Кемерово" />
         </div>
 

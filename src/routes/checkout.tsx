@@ -422,7 +422,7 @@ function Checkout() {
                           setBranchManual(true);
                           setBranchAutoSet(false);
                           const b = branches.find((x) => x.id === id);
-                          if (b) set("pickup_point", b.address ? `${b.name} · ${b.address}` : b.name);
+                          if (b) set("pickup_point", branchLabel(b));
                         }}
                       >
                         {branches.length === 0 && <option value="">Загрузка…</option>}

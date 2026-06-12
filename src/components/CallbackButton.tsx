@@ -65,11 +65,14 @@ export function CallbackButton() {
                 className="w-full px-4 py-3 rounded-xl border border-neutral-200 focus:border-primary outline-none" />
               <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+7 ___ ___ __ __" type="tel" maxLength={20}
                 className="w-full px-4 py-3 rounded-xl border border-neutral-200 focus:border-primary outline-none" />
-              {branches.length > 1 && (
-                <select value={branchId} onChange={(e) => setBranchId(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-neutral-200 focus:border-primary outline-none bg-white">
-                  {branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
-                </select>
+              {branches.length > 0 && (
+                <div>
+                  <label className="block text-xs font-semibold text-neutral-600 mb-1.5 ml-1">Выберите филиал</label>
+                  <select value={branchId} onChange={(e) => setBranchId(e.target.value)}
+                    className="w-full px-4 py-3 rounded-xl border border-neutral-200 focus:border-primary outline-none bg-white">
+                    {branches.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+                  </select>
+                </div>
               )}
               <button disabled={busy} className="w-full py-3 rounded-full bg-primary text-white font-bold hover:opacity-90 disabled:opacity-50">
                 {busy ? "Отправляем…" : "Перезвоните мне"}

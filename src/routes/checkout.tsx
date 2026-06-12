@@ -9,6 +9,7 @@ import { createCheckoutOrder } from "@/lib/orders.functions";
 import { validatePromo, type PromoCode } from "@/lib/promo";
 import { getDeliverySlots } from "@/lib/timeSlots";
 import logo from "@/assets/logo.svg";
+import { detectBranchKey, branchKeyFromName } from "@/lib/branch-detect";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({ meta: [{ title: "Оформление заказа — КосмоСуши" }] }),
@@ -67,6 +68,8 @@ function Checkout() {
   const [bonusUse, setBonusUse] = useState(0);
   const [branches, setBranches] = useState<{ id: string; name: string; address: string | null }[]>([]);
   const [branchId, setBranchId] = useState<string>("");
+  const [branchAutoSet, setBranchAutoSet] = useState(false);
+  const [branchManual, setBranchManual] = useState(false);
   const [zones, setZones] = useState<{ id: string; name: string; cost: number; free_from: number | null; min_order: number }[]>([]);
   const [zoneId, setZoneId] = useState<string>("");
 
@@ -120,6 +123,20 @@ function Checkout() {
       }
     })();
   }, []);
+
+  // Автоопределение филиала по адресу доставки
+  useEffect(() => {
+    if (form.delivery_type !== "delivery") return;
+    if (branchManual) return;
+    if (!branches.length) return;
+    const key = detectBranchKey(form.address);
+    if (!key) return;
+    const match = branches.find((b) => branchKeyFromName(b.name) === key);
+    if (match && match.id !== branchId) {
+      setBranchId(match.id);
+      setBranchAutoSet(true);
+    }
+  }, [form.address, form.delivery_type, branches, branchManual]);
 
   // re-validate promo when subtotal changes
   useEffect(() => {
@@ -378,15 +395,30 @@ function Checkout() {
 
                   {branches.length > 1 && (
                     <Field label={form.delivery_type === "pickup" ? "Филиал самовывоза" : "Готовит филиал"}>
-                      <select className={inputCls} value={branchId} onChange={(e) => setBranchId(e.target.value)}>
+                      <select
+                        className={inputCls}
+                        value={branchId}
+                        onChange={(e) => { setBranchId(e.target.value); setBranchManual(true); setBranchAutoSet(false); }}
+                      >
                         {branches.map((b) => (
                           <option key={b.id} value={b.id}>
                             {b.name}{b.address ? ` · ${b.address}` : ""}
                           </option>
                         ))}
                       </select>
+                      {form.delivery_type === "delivery" && branchAutoSet && !branchManual && (
+                        <p className="text-xs text-emerald-600 mt-1.5">
+                          Филиал выбран автоматически по адресу. Можно изменить вручную.
+                        </p>
+                      )}
+                      {form.delivery_type === "delivery" && !branchAutoSet && !branchManual && form.address.trim().length >= 3 && (
+                        <p className="text-xs text-neutral-500 mt-1.5">
+                          Не удалось определить филиал по адресу — выберите вручную.
+                        </p>
+                      )}
                     </Field>
                   )}
+
 
                   <div className="grid grid-cols-2 gap-3">
                     <Field label="Время доставки">

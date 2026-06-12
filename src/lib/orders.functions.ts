@@ -235,7 +235,8 @@ export const createOrderAsAdmin = createServerFn({ method: "POST" })
         .from("profiles").select("bonus_balance,total_spent")
         .eq("id", data.customer_user_id).maybeSingle();
       if (profile) {
-        const newBalance = Number(profile.bonus_balance || 0) - data.order.bonus_used + data.order.bonus_earned;
+        // Кэшбэк начисляется только после доставки (триггер credit_bonus_on_delivery).
+        const newBalance = Number(profile.bonus_balance || 0) - data.order.bonus_used;
         const newSpent = Number(profile.total_spent || 0) + data.order.total;
         await supabaseAdmin.from("profiles")
           .update({ bonus_balance: newBalance, total_spent: newSpent })
@@ -245,13 +246,6 @@ export const createOrderAsAdmin = createServerFn({ method: "POST" })
             user_id: data.customer_user_id, order_id: order.id,
             amount: -data.order.bonus_used,
             reason: `Списание · заказ №${order.number}`,
-          });
-        }
-        if (data.order.bonus_earned > 0) {
-          await supabaseAdmin.from("bonus_transactions").insert({
-            user_id: data.customer_user_id, order_id: order.id,
-            amount: data.order.bonus_earned,
-            reason: `Кэшбэк · заказ №${order.number}`,
           });
         }
       }

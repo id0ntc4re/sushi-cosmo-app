@@ -76,23 +76,25 @@ export function NewsletterPopup() {
           </div>
         ) : (
           <>
-            <button
-              onClick={openVk}
-              className="w-full py-3 rounded-full bg-[#0077FF] text-white font-bold hover:opacity-90 flex items-center justify-center gap-2"
-            >
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-                <path d="M12.79 16.46c-5.06 0-8.21-3.6-8.34-9.6h2.55c.09 4.4 2.07 6.27 3.66 6.66V6.86h2.43v3.66c1.56-.17 3.2-1.97 3.75-3.66h2.42c-.42 2.09-2.16 3.89-3.4 4.63 1.24.6 3.23 2.17 3.99 5h-2.66c-.6-1.87-2.1-3.32-4.1-3.52v3.52h-.3z"/>
-              </svg>
-              Подписаться на ВКонтакте
-            </button>
-
-            <button
-              onClick={claim}
-              disabled={!visited || busy}
-              className="w-full mt-3 py-3 rounded-full bg-primary text-white font-bold hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              {busy ? "Генерируем…" : visited ? "Я подписался — получить промокод" : "Сначала подпишитесь"}
-            </button>
+            {visited ? (
+              <button
+                onClick={claim}
+                disabled={busy}
+                className="w-full py-3 rounded-full bg-primary text-white font-bold hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {busy ? "Генерируем…" : "Получить промокод"}
+              </button>
+            ) : (
+              <button
+                onClick={openVk}
+                className="w-full py-3 rounded-full bg-[#0077FF] text-white font-bold hover:opacity-90 flex items-center justify-center gap-2"
+              >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+                  <path d="M12.79 16.46c-5.06 0-8.21-3.6-8.34-9.6h2.55c.09 4.4 2.07 6.27 3.66 6.66V6.86h2.43v3.66c1.56-.17 3.2-1.97 3.75-3.66h2.42c-.42 2.09-2.16 3.89-3.4 4.63 1.24.6 3.23 2.17 3.99 5h-2.66c-.6-1.87-2.1-3.32-4.1-3.52v3.52h-.3z"/>
+                </svg>
+                Подписаться на ВКонтакте
+              </button>
+            )}
 
             <p className="text-xs text-neutral-400 mt-3 text-center">Промокод одноразовый, действует 30 дней.</p>
           </>

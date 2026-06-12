@@ -10,7 +10,8 @@ import { validatePromo, type PromoCode } from "@/lib/promo";
 import { getDeliverySlots } from "@/lib/timeSlots";
 import logo from "@/assets/logo.svg";
 import { detectBranchKey, branchKeyFromName } from "@/lib/branch-detect";
-import { detectBranchByAddress, resolveDeliveryZoneByAddress } from "@/lib/geocode.functions";
+import { detectBranchByAddress } from "@/lib/geocode.functions";
+import { matchZoneByAddress } from "@/lib/zone-match";
 import { formatRuPhone, isValidRuPhone, isValidName } from "@/lib/phone-format";
 
 export const Route = createFileRoute("/checkout")({
@@ -79,17 +80,13 @@ function Checkout() {
   const [branchId, setBranchId] = useState<string>("");
   const [branchAutoSet, setBranchAutoSet] = useState(false);
   const [branchManual, setBranchManual] = useState(false);
-  const [zones, setZones] = useState<{ id: string; name: string; cost: number; free_from: number | null; min_order: number }[]>([]);
+  const [zones, setZones] = useState<{ id: string; name: string; cost: number; free_from: number | null; min_order: number; streets: string | null }[]>([]);
   const [zoneId, setZoneId] = useState<string>("");
   const [zoneManual, setZoneManual] = useState(false);
   type ZoneStatus =
     | { kind: "idle" }
-    | { kind: "checking" }
-    | { kind: "detected"; name: string; cost: number; formatted: string }
-    | { kind: "out_of_area"; formatted?: string }
-    | { kind: "out_of_city"; formatted?: string }
-    | { kind: "no_match" }
-    | { kind: "unavailable" };
+    | { kind: "detected"; name: string; cost: number; matchedStreet: string }
+    | { kind: "no_match" };
   const [zoneStatus, setZoneStatus] = useState<ZoneStatus>({ kind: "idle" });
 
   const [form, setForm] = useState({
@@ -114,7 +111,7 @@ function Checkout() {
         supabase.from("settings").select("value").eq("key", "general").maybeSingle(),
         supabase.from("products").select("id,name,price,image_url,weight").eq("is_active", true).eq("in_stock", true).eq("is_addon", true).eq("is_semi_product", false).order("sort_order"),
         supabase.from("branches").select("id,name,address").eq("is_active", true).order("sort_order"),
-        supabase.from("delivery_zones").select("id,name,cost,free_from,min_order").eq("is_active", true).order("sort_order"),
+        supabase.from("delivery_zones").select("id,name,cost,free_from,min_order,streets").eq("is_active", true).order("sort_order"),
       ]);
       if (st?.value) setSettings({ ...DEFAULT_SETTINGS, ...(st.value as any) });
       setAddons((ad as Addon[]) ?? []);
@@ -177,8 +174,7 @@ function Checkout() {
     return () => { cancelled = true; clearTimeout(t); };
   }, [form.address, form.delivery_type, branches, branchManual]);
 
-  // Автоопределение зоны доставки по адресу через геокодинг
-  const resolveZone = useServerFn(resolveDeliveryZoneByAddress);
+  // Автоопределение зоны доставки по названию улицы из адреса
   useEffect(() => {
     if (form.delivery_type !== "delivery") {
       setZoneStatus({ kind: "idle" });
@@ -190,45 +186,26 @@ function Checkout() {
     }
     if (zoneManual) return;
     const addr = form.address.trim();
-    if (addr.length < 5) {
+    if (addr.length < 3) {
       setZoneStatus({ kind: "idle" });
       setZoneId("");
       return;
     }
-    // Если хотя бы у одной зоны не заданы координаты — авто-режим невозможен
-    const hasGeo = zones.some((z: any) => z.center_lat != null && z.center_lng != null && z.radius_km);
-    if (!hasGeo) {
-      setZoneStatus({ kind: "unavailable" });
-      return;
+    const match = matchZoneByAddress(addr, zones);
+    if (match) {
+      setZoneId(match.zone.id);
+      setZoneStatus({
+        kind: "detected",
+        name: match.zone.name,
+        cost: Number(match.zone.cost),
+        matchedStreet: match.matchedStreet,
+      });
+    } else {
+      setZoneId("");
+      setZoneStatus({ kind: "no_match" });
     }
-
-    let cancelled = false;
-    setZoneStatus({ kind: "checking" });
-    const t = setTimeout(async () => {
-      try {
-        const res: any = await resolveZone({ data: { address: addr } });
-        if (cancelled) return;
-        if (res.ok) {
-          setZoneId(res.zoneId);
-          setZoneStatus({ kind: "detected", name: res.zoneName, cost: res.cost, formatted: res.formatted });
-        } else if (res.reason === "no_zone") {
-          setZoneId("");
-          setZoneStatus({ kind: "out_of_area", formatted: res.formatted });
-        } else if (res.reason === "out_of_city") {
-          setZoneId("");
-          setZoneStatus({ kind: "out_of_city", formatted: res.formatted });
-        } else if (res.reason === "no_credentials") {
-          setZoneStatus({ kind: "unavailable" });
-        } else {
-          setZoneId("");
-          setZoneStatus({ kind: "no_match" });
-        }
-      } catch {
-        if (!cancelled) setZoneStatus({ kind: "no_match" });
-      }
-    }, 700);
-    return () => { cancelled = true; clearTimeout(t); };
   }, [form.address, form.delivery_type, zones, zoneManual]);
+
 
 
 
@@ -294,10 +271,7 @@ function Checkout() {
     if (parsed.data.delivery_type === "delivery" && !parsed.data.address)
       return setError("Укажите адрес доставки");
     if (parsed.data.delivery_type === "delivery" && zones.length > 0 && !zone) {
-      if (zoneStatus.kind === "out_of_area") return setError("Этот адрес вне зоны доставки. Уточните у оператора по телефону.");
-      if (zoneStatus.kind === "out_of_city") return setError("Адрес не в Кемерово. Проверьте написание или позвоните оператору.");
-      if (zoneStatus.kind === "checking") return setError("Определяем зону доставки, подождите секунду…");
-      return setError("Не удалось определить зону доставки по адресу — проверьте адрес или выберите зону вручную.");
+      return setError("Не удалось определить зону доставки по адресу. Проверьте название улицы или выберите зону вручную.");
     }
 
     setSubmitting(true);
@@ -470,34 +444,21 @@ function Checkout() {
                       </Field>
                       {zones.length > 0 && (
                         <div className="space-y-2">
-                          {zoneStatus.kind === "checking" && (
-                            <div className="px-3 py-2 rounded-xl bg-neutral-100 text-sm text-neutral-600">
-                              Определяем зону доставки по адресу…
-                            </div>
-                          )}
                           {zoneStatus.kind === "detected" && !zoneManual && zone && (
                             <div className="px-3 py-2 rounded-xl bg-emerald-50 text-emerald-800 text-sm">
                               <b>Зона: «{zone.name}»</b> · доставка {Number(zone.cost)} ₽
                               {zone.free_from != null ? ` (бесплатно от ${Number(zone.free_from)} ₽)` : ""}
-                              <div className="text-xs opacity-70 mt-0.5">Определено автоматически по адресу.</div>
+                              <div className="text-xs opacity-70 mt-0.5">
+                                Определено автоматически по улице «{zoneStatus.matchedStreet}».
+                              </div>
                             </div>
                           )}
-                          {zoneStatus.kind === "out_of_area" && (
-                            <div className="px-3 py-2 rounded-xl bg-red-50 text-red-700 text-sm">
-                              Этот адрес <b>вне зоны доставки</b>. Уточните у оператора по телефону или выберите зону вручную.
-                            </div>
-                          )}
-                          {zoneStatus.kind === "out_of_city" && (
-                            <div className="px-3 py-2 rounded-xl bg-red-50 text-red-700 text-sm">
-                              Адрес не в Кемерово. Проверьте написание адреса.
-                            </div>
-                          )}
-                          {zoneStatus.kind === "no_match" && (
+                          {zoneStatus.kind === "no_match" && !zoneManual && (
                             <div className="px-3 py-2 rounded-xl bg-amber-50 text-amber-800 text-sm">
-                              Не удалось определить зону по адресу. Выберите вручную ниже.
+                              Не удалось определить зону по названию улицы. Проверьте адрес или выберите зону вручную.
                             </div>
                           )}
-                          {(zoneManual || zoneStatus.kind === "out_of_area" || zoneStatus.kind === "no_match" || zoneStatus.kind === "unavailable") && (
+                          {(zoneManual || zoneStatus.kind === "no_match") && (
                             <Field label="Зона доставки*">
                               <select className={inputCls} value={zoneId}
                                 onChange={(e) => { setZoneId(e.target.value); setZoneManual(true); }} required>

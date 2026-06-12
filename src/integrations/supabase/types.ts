@@ -411,6 +411,7 @@ export type Database = {
           name: string
           radius_km: number | null
           sort_order: number
+          streets: string | null
         }
         Insert: {
           center_lat?: number | null
@@ -424,6 +425,7 @@ export type Database = {
           name: string
           radius_km?: number | null
           sort_order?: number
+          streets?: string | null
         }
         Update: {
           center_lat?: number | null
@@ -437,6 +439,7 @@ export type Database = {
           name?: string
           radius_km?: number | null
           sort_order?: number
+          streets?: string | null
         }
         Relationships: []
       }

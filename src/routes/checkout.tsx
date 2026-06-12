@@ -395,15 +395,30 @@ function Checkout() {
 
                   {branches.length > 1 && (
                     <Field label={form.delivery_type === "pickup" ? "Филиал самовывоза" : "Готовит филиал"}>
-                      <select className={inputCls} value={branchId} onChange={(e) => setBranchId(e.target.value)}>
+                      <select
+                        className={inputCls}
+                        value={branchId}
+                        onChange={(e) => { setBranchId(e.target.value); setBranchManual(true); setBranchAutoSet(false); }}
+                      >
                         {branches.map((b) => (
                           <option key={b.id} value={b.id}>
                             {b.name}{b.address ? ` · ${b.address}` : ""}
                           </option>
                         ))}
                       </select>
+                      {form.delivery_type === "delivery" && branchAutoSet && !branchManual && (
+                        <p className="text-xs text-emerald-600 mt-1.5">
+                          Филиал выбран автоматически по адресу. Можно изменить вручную.
+                        </p>
+                      )}
+                      {form.delivery_type === "delivery" && !branchAutoSet && !branchManual && form.address.trim().length >= 3 && (
+                        <p className="text-xs text-neutral-500 mt-1.5">
+                          Не удалось определить филиал по адресу — выберите вручную.
+                        </p>
+                      )}
                     </Field>
                   )}
+
 
                   <div className="grid grid-cols-2 gap-3">
                     <Field label="Время доставки">

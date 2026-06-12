@@ -81,6 +81,16 @@ function Checkout() {
   const [branchManual, setBranchManual] = useState(false);
   const [zones, setZones] = useState<{ id: string; name: string; cost: number; free_from: number | null; min_order: number }[]>([]);
   const [zoneId, setZoneId] = useState<string>("");
+  const [zoneManual, setZoneManual] = useState(false);
+  type ZoneStatus =
+    | { kind: "idle" }
+    | { kind: "checking" }
+    | { kind: "detected"; name: string; cost: number; formatted: string }
+    | { kind: "out_of_area"; formatted?: string }
+    | { kind: "out_of_city"; formatted?: string }
+    | { kind: "no_match" }
+    | { kind: "unavailable" };
+  const [zoneStatus, setZoneStatus] = useState<ZoneStatus>({ kind: "idle" });
 
   const [form, setForm] = useState({
     customer_name: "",

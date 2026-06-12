@@ -109,7 +109,7 @@ function Couriers() {
 
 function Zones() {
   const [list, setList] = useState<any[]>([]);
-  const [draft, setDraft] = useState({ name: "", cost: 0, min_order: 0, free_from: 0 });
+  const [draft, setDraft] = useState({ name: "", cost: 0, min_order: 0, free_from: 0, center_lat: "" as string, center_lng: "" as string, radius_km: "" as string });
 
   async function load() {
     const { data } = await supabase.from("delivery_zones").select("*").order("sort_order");
@@ -120,10 +120,16 @@ function Zones() {
   async function add() {
     if (!draft.name) return;
     const { error } = await supabase.from("delivery_zones").insert({
-      ...draft, free_from: draft.free_from || null,
+      name: draft.name,
+      cost: draft.cost,
+      min_order: draft.min_order,
+      free_from: draft.free_from || null,
+      center_lat: draft.center_lat ? Number(draft.center_lat) : null,
+      center_lng: draft.center_lng ? Number(draft.center_lng) : null,
+      radius_km: draft.radius_km ? Number(draft.radius_km) : null,
     });
     if (error) return toast.error(error.message);
-    setDraft({ name: "", cost: 0, min_order: 0, free_from: 0 }); load();
+    setDraft({ name: "", cost: 0, min_order: 0, free_from: 0, center_lat: "", center_lng: "", radius_km: "" }); load();
   }
   async function update(id: string, patch: any) {
     await supabase.from("delivery_zones").update(patch).eq("id", id); load();
@@ -135,16 +141,28 @@ function Zones() {
 
   return (
     <div className="bg-white rounded-3xl p-5">
-      <div className="grid grid-cols-12 gap-2 mb-5">
-        <input className={inp + " col-span-4"} placeholder="Район / зона" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
+      <p className="text-xs text-neutral-500 mb-3">
+        Для автоопределения зоны по адресу заполните <b>широту/долготу центра</b> и <b>радиус (км)</b>.
+        Координаты можно взять на Google Maps: правый клик по точке → первая строка (например <code>55.3877, 86.1244</code>).
+      </p>
+      <div className="grid grid-cols-12 gap-2 mb-2">
+        <input className={inp + " col-span-3"} placeholder="Район / зона" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
         <input type="number" className={inp + " col-span-2"} placeholder="Доставка ₽" value={draft.cost} onChange={(e) => setDraft({ ...draft, cost: Number(e.target.value) })} />
         <input type="number" className={inp + " col-span-2"} placeholder="Мин.заказ" value={draft.min_order} onChange={(e) => setDraft({ ...draft, min_order: Number(e.target.value) })} />
         <input type="number" className={inp + " col-span-2"} placeholder="Бесплатно от" value={draft.free_from} onChange={(e) => setDraft({ ...draft, free_from: Number(e.target.value) })} />
-        <button onClick={add} className="col-span-2 rounded-xl bg-primary text-white font-bold">+ Добавить</button>
+        <button onClick={add} className="col-span-3 rounded-xl bg-primary text-white font-bold">+ Добавить</button>
+      </div>
+      <div className="grid grid-cols-12 gap-2 mb-5">
+        <input className={inp + " col-span-3"} placeholder="Широта центра (lat)" value={draft.center_lat} onChange={(e) => setDraft({ ...draft, center_lat: e.target.value })} />
+        <input className={inp + " col-span-3"} placeholder="Долгота центра (lng)" value={draft.center_lng} onChange={(e) => setDraft({ ...draft, center_lng: e.target.value })} />
+        <input className={inp + " col-span-2"} placeholder="Радиус, км" value={draft.radius_km} onChange={(e) => setDraft({ ...draft, radius_km: e.target.value })} />
       </div>
       <table className="w-full text-sm">
         <thead className="text-left text-neutral-500 border-b">
-          <tr><th className="py-2">Зона</th><th>Стоимость</th><th>Мин. заказ</th><th>Бесплатно от</th><th>Активна</th><th></th></tr>
+          <tr>
+            <th className="py-2">Зона</th><th>Стоимость</th><th>Мин. заказ</th><th>Бесплатно от</th>
+            <th>Lat</th><th>Lng</th><th>Радиус, км</th><th>Активна</th><th></th>
+          </tr>
         </thead>
         <tbody>
           {list.map((z) => (
@@ -153,15 +171,19 @@ function Zones() {
               <td><input type="number" defaultValue={z.cost} onBlur={(e) => update(z.id, { cost: Number(e.target.value) })} className="w-20 px-2 py-1 border rounded" /> ₽</td>
               <td><input type="number" defaultValue={z.min_order} onBlur={(e) => update(z.id, { min_order: Number(e.target.value) })} className="w-24 px-2 py-1 border rounded" /> ₽</td>
               <td><input type="number" defaultValue={z.free_from ?? ""} onBlur={(e) => update(z.id, { free_from: e.target.value ? Number(e.target.value) : null })} className="w-24 px-2 py-1 border rounded" /> ₽</td>
+              <td><input defaultValue={z.center_lat ?? ""} onBlur={(e) => update(z.id, { center_lat: e.target.value ? Number(e.target.value) : null })} className="w-24 px-2 py-1 border rounded" /></td>
+              <td><input defaultValue={z.center_lng ?? ""} onBlur={(e) => update(z.id, { center_lng: e.target.value ? Number(e.target.value) : null })} className="w-24 px-2 py-1 border rounded" /></td>
+              <td><input defaultValue={z.radius_km ?? ""} onBlur={(e) => update(z.id, { radius_km: e.target.value ? Number(e.target.value) : null })} className="w-20 px-2 py-1 border rounded" /></td>
               <td><input type="checkbox" checked={z.is_active} onChange={(e) => update(z.id, { is_active: e.target.checked })} /></td>
               <td><button onClick={() => del(z.id)} className="text-red-500 text-xs">Удалить</button></td>
             </tr>
           ))}
-          {!list.length && <tr><td colSpan={6} className="py-8 text-center text-neutral-400">Зоны не заданы</td></tr>}
+          {!list.length && <tr><td colSpan={9} className="py-8 text-center text-neutral-400">Зоны не заданы</td></tr>}
         </tbody>
       </table>
     </div>
   );
 }
+
 
 const inp = "w-full px-3 py-2 rounded-xl border border-neutral-200 outline-none focus:border-primary";

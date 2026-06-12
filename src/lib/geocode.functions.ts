@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { supabaseAdmin } from "@/integrations/supabase/client.server";
 
 // Координаты филиалов Кемерово
 const BRANCH_COORDS: Record<"shahterov" | "stroiteley", { lat: number; lng: number; label: string }> = {
@@ -18,6 +19,38 @@ function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: num
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 
+async function geocode(address: string) {
+  const LOVABLE_API_KEY = process.env.LOVABLE_API_KEY;
+  const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
+  if (!LOVABLE_API_KEY || !GOOGLE_MAPS_API_KEY) {
+    return { ok: false as const, reason: "no_credentials" as const };
+  }
+  const q = /кемеров/i.test(address) ? address : `${address}, Кемерово, Россия`;
+  const url = `https://connector-gateway.lovable.dev/google_maps/maps/api/geocode/json?address=${encodeURIComponent(q)}&region=ru&language=ru`;
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      headers: {
+        Authorization: `Bearer ${LOVABLE_API_KEY}`,
+        "X-Connection-Api-Key": GOOGLE_MAPS_API_KEY,
+      },
+    });
+  } catch {
+    return { ok: false as const, reason: "network" as const };
+  }
+  if (!res.ok) return { ok: false as const, reason: `http_${res.status}` as const };
+  const json: any = await res.json();
+  const loc = json?.results?.[0]?.geometry?.location;
+  if (!loc || typeof loc.lat !== "number" || typeof loc.lng !== "number") {
+    return { ok: false as const, reason: "no_match" as const };
+  }
+  const formatted: string = json.results[0].formatted_address ?? "";
+  if (!/Кемерово/i.test(formatted)) {
+    return { ok: false as const, reason: "out_of_city" as const, formatted };
+  }
+  return { ok: true as const, lat: loc.lat as number, lng: loc.lng as number, formatted };
+}
+
 const inputSchema = z.object({
   address: z.string().trim().min(3).max(300),
 });
@@ -25,50 +58,63 @@ const inputSchema = z.object({
 export const detectBranchByAddress = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => inputSchema.parse(data))
   .handler(async ({ data }) => {
-    const LOVABLE_API_KEY = process.env.LOVABLE_API_KEY;
-    const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
-    if (!LOVABLE_API_KEY || !GOOGLE_MAPS_API_KEY) {
-      return { ok: false as const, reason: "no_credentials" };
-    }
-
-    // Добавим "Кемерово", если не указано — улучшает точность геокодинга
-    const q = /кемеров/i.test(data.address) ? data.address : `${data.address}, Кемерово, Россия`;
-
-    const url = `https://connector-gateway.lovable.dev/google_maps/maps/api/geocode/json?address=${encodeURIComponent(q)}&region=ru&language=ru`;
-    let res: Response;
-    try {
-      res = await fetch(url, {
-        headers: {
-          Authorization: `Bearer ${LOVABLE_API_KEY}`,
-          "X-Connection-Api-Key": GOOGLE_MAPS_API_KEY,
-        },
-      });
-    } catch {
-      return { ok: false as const, reason: "network" };
-    }
-    if (!res.ok) return { ok: false as const, reason: `http_${res.status}` };
-    const json: any = await res.json();
-    const loc = json?.results?.[0]?.geometry?.location;
-    if (!loc || typeof loc.lat !== "number" || typeof loc.lng !== "number") {
-      return { ok: false as const, reason: "no_match" };
-    }
-
-    // Проверим, что результат в Кемерово (бывает Кемеровская область далеко)
-    const formatted: string = json.results[0].formatted_address ?? "";
-    if (!/Кемерово/i.test(formatted)) {
-      return { ok: false as const, reason: "out_of_city", formatted };
-    }
-
-    const point = { lat: loc.lat, lng: loc.lng };
+    const g = await geocode(data.address);
+    if (!g.ok) return g;
+    const point = { lat: g.lat, lng: g.lng };
     const dSh = haversineKm(point, BRANCH_COORDS.shahterov);
     const dSt = haversineKm(point, BRANCH_COORDS.stroiteley);
     const key: "shahterov" | "stroiteley" = dSh <= dSt ? "shahterov" : "stroiteley";
-
     return {
       ok: true as const,
       branchKey: key,
       label: BRANCH_COORDS[key].label,
       distanceKm: Math.round((key === "shahterov" ? dSh : dSt) * 10) / 10,
-      formatted,
+      formatted: g.formatted,
     };
   });
+
+export const resolveDeliveryZoneByAddress = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => inputSchema.parse(data))
+  .handler(async ({ data }) => {
+    const g = await geocode(data.address);
+    if (!g.ok) return g;
+
+    const { data: rows } = await supabaseAdmin
+      .from("delivery_zones")
+      .select("id,name,cost,free_from,min_order,center_lat,center_lng,radius_km")
+      .eq("is_active", true)
+      .order("sort_order");
+
+    const zones = (rows ?? []) as Array<{
+      id: string; name: string; cost: number; free_from: number | null; min_order: number;
+      center_lat: number | null; center_lng: number | null; radius_km: number | null;
+    }>;
+
+    const point = { lat: g.lat, lng: g.lng };
+    type Match = { zone: typeof zones[number]; distanceKm: number };
+    const matches: Match[] = [];
+    for (const z of zones) {
+      if (z.center_lat == null || z.center_lng == null || !z.radius_km) continue;
+      const d = haversineKm(point, { lat: z.center_lat, lng: z.center_lng });
+      if (d <= Number(z.radius_km)) matches.push({ zone: z, distanceKm: d });
+    }
+    if (!matches.length) {
+      return { ok: false as const, reason: "no_zone" as const, formatted: g.formatted };
+    }
+    // Берём зону с наименьшим радиусом (наиболее «точную»), при равенстве — ближайший центр
+    matches.sort((a, b) =>
+      (Number(a.zone.radius_km) - Number(b.zone.radius_km)) || (a.distanceKm - b.distanceKm),
+    );
+    const m = matches[0];
+    return {
+      ok: true as const,
+      zoneId: m.zone.id,
+      zoneName: m.zone.name,
+      cost: Number(m.zone.cost),
+      freeFrom: m.zone.free_from == null ? null : Number(m.zone.free_from),
+      minOrder: Number(m.zone.min_order),
+      formatted: g.formatted,
+      distanceKm: Math.round(m.distanceKm * 10) / 10,
+    };
+  });
+

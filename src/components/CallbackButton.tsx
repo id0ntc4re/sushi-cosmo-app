@@ -4,6 +4,7 @@ import { Phone, X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { ruError } from "@/lib/errors";
+import { formatRuPhone, isValidRuPhone, isValidName } from "@/lib/phone-format";
 
 type Branch = { id: string; name: string };
 

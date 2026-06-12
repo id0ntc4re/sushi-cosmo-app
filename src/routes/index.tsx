@@ -355,14 +355,6 @@ function Index() {
                         {p.weight && (
                           <div className="text-[11px] sm:text-xs text-neutral-500 mt-1">{p.weight}</div>
                         )}
-                        {(p.calories != null || p.protein != null || p.fat != null || p.carbs != null) && (
-                          <div className="text-[10px] sm:text-[11px] text-neutral-500 mt-0.5 flex flex-wrap gap-x-2">
-                            {p.calories != null && <span>{Number(p.calories)} ккал</span>}
-                            {p.protein != null && <span>Б {Number(p.protein)}</span>}
-                            {p.fat != null && <span>Ж {Number(p.fat)}</span>}
-                            {p.carbs != null && <span>У {Number(p.carbs)}</span>}
-                          </div>
-                        )}
                       </button>
 
                       <div className="mt-auto pt-3 sm:pt-4 flex items-center justify-between gap-1.5">

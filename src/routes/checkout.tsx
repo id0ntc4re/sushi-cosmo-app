@@ -11,6 +11,7 @@ import { getDeliverySlots } from "@/lib/timeSlots";
 import logo from "@/assets/logo.svg";
 import { detectBranchKey, branchKeyFromName } from "@/lib/branch-detect";
 import { detectBranchByAddress } from "@/lib/geocode.functions";
+import { formatRuPhone, isValidRuPhone, isValidName } from "@/lib/phone-format";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({ meta: [{ title: "Оформление заказа — КосмоСуши" }] }),
@@ -212,6 +213,8 @@ function Checkout() {
 
     const parsed = schema.safeParse(form);
     if (!parsed.success) return setError(parsed.error.issues[0].message);
+    if (!isValidName(parsed.data.customer_name)) return setError("Имя: только буквы, 2–50 символов");
+    if (!isValidRuPhone(parsed.data.phone)) return setError("Введите корректный номер телефона");
     if (parsed.data.delivery_type === "delivery" && !parsed.data.address)
       return setError("Укажите адрес доставки");
     if (parsed.data.delivery_type === "delivery" && !zone)
@@ -343,12 +346,14 @@ function Checkout() {
               <form onSubmit={submit} className="space-y-6">
                 <Section title="Контактные данные">
                   <Field label="Имя*">
-                    <input className={inputCls} value={form.customer_name}
-                      onChange={(e) => set("customer_name", e.target.value)} required />
+                    <input className={inputCls} value={form.customer_name} maxLength={50}
+                      onChange={(e) => set("customer_name", e.target.value.replace(/[^A-Za-zА-Яа-яЁё\s-]/g, ""))} required />
                   </Field>
                   <Field label="Телефон*">
-                    <input type="tel" className={inputCls} value={form.phone}
-                      onChange={(e) => set("phone", e.target.value)} placeholder="+7 ___ ___ __ __" required />
+                    <input type="tel" inputMode="tel" maxLength={18} className={inputCls} value={form.phone}
+                      onChange={(e) => set("phone", formatRuPhone(e.target.value))}
+                      onFocus={(e) => { if (!e.target.value) set("phone", "+7 ("); }}
+                      placeholder="+7 (___) ___-__-__" required />
                   </Field>
                 </Section>
 

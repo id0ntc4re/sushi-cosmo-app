@@ -80,17 +80,13 @@ function Checkout() {
   const [branchId, setBranchId] = useState<string>("");
   const [branchAutoSet, setBranchAutoSet] = useState(false);
   const [branchManual, setBranchManual] = useState(false);
-  const [zones, setZones] = useState<{ id: string; name: string; cost: number; free_from: number | null; min_order: number }[]>([]);
+  const [zones, setZones] = useState<{ id: string; name: string; cost: number; free_from: number | null; min_order: number; streets: string | null }[]>([]);
   const [zoneId, setZoneId] = useState<string>("");
   const [zoneManual, setZoneManual] = useState(false);
   type ZoneStatus =
     | { kind: "idle" }
-    | { kind: "checking" }
-    | { kind: "detected"; name: string; cost: number; formatted: string }
-    | { kind: "out_of_area"; formatted?: string }
-    | { kind: "out_of_city"; formatted?: string }
-    | { kind: "no_match" }
-    | { kind: "unavailable" };
+    | { kind: "detected"; name: string; cost: number; matchedStreet: string }
+    | { kind: "no_match" };
   const [zoneStatus, setZoneStatus] = useState<ZoneStatus>({ kind: "idle" });
 
   const [form, setForm] = useState({

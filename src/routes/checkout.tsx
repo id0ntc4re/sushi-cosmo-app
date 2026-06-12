@@ -87,7 +87,7 @@ function Checkout() {
     phone: "",
     delivery_type: "delivery" as "delivery" | "pickup",
     address: "",
-    pickup_point: PICKUP_POINTS[0],
+    pickup_point: "",
     payment_method: "cash" as "cash" | "card_courier" | "card_online",
     change_from: "",
     persons: 1,

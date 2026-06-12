@@ -68,6 +68,8 @@ function Checkout() {
   const [bonusUse, setBonusUse] = useState(0);
   const [branches, setBranches] = useState<{ id: string; name: string; address: string | null }[]>([]);
   const [branchId, setBranchId] = useState<string>("");
+  const [branchAutoSet, setBranchAutoSet] = useState(false);
+  const [branchManual, setBranchManual] = useState(false);
   const [zones, setZones] = useState<{ id: string; name: string; cost: number; free_from: number | null; min_order: number }[]>([]);
   const [zoneId, setZoneId] = useState<string>("");
 

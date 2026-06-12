@@ -1519,6 +1519,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      issue_vk_welcome_promo: { Args: never; Returns: string }
       loyalty_tier: { Args: { _total: number }; Returns: string }
       post_purchase_invoice: {
         Args: { _invoice_id: string }

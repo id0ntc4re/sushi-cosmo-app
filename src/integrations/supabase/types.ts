@@ -400,6 +400,8 @@ export type Database = {
       }
       delivery_zones: {
         Row: {
+          center_lat: number | null
+          center_lng: number | null
           cost: number
           created_at: string
           free_from: number | null
@@ -407,9 +409,12 @@ export type Database = {
           is_active: boolean
           min_order: number
           name: string
+          radius_km: number | null
           sort_order: number
         }
         Insert: {
+          center_lat?: number | null
+          center_lng?: number | null
           cost?: number
           created_at?: string
           free_from?: number | null
@@ -417,9 +422,12 @@ export type Database = {
           is_active?: boolean
           min_order?: number
           name: string
+          radius_km?: number | null
           sort_order?: number
         }
         Update: {
+          center_lat?: number | null
+          center_lng?: number | null
           cost?: number
           created_at?: string
           free_from?: number | null
@@ -427,6 +435,7 @@ export type Database = {
           is_active?: boolean
           min_order?: number
           name?: string
+          radius_km?: number | null
           sort_order?: number
         }
         Relationships: []

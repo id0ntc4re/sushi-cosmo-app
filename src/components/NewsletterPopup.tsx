@@ -3,8 +3,7 @@ import { toast } from "sonner";
 
 const KEY = "kosmosushi_newsletter_v1";
 const PROMO_CODE = "WELCOME10";
-// TODO: замените на реальную ссылку группы ВКонтакте
-const VK_URL = "https://vk.com/kosmosushi";
+const VK_URL = "https://vk.com/cosmosushi";
 
 export function NewsletterPopup() {
   const [open, setOpen] = useState(false);

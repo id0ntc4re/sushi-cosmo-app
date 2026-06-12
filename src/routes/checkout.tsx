@@ -9,6 +9,7 @@ import { createCheckoutOrder } from "@/lib/orders.functions";
 import { validatePromo, type PromoCode } from "@/lib/promo";
 import { getDeliverySlots } from "@/lib/timeSlots";
 import logo from "@/assets/logo.svg";
+import { detectBranchKey, branchKeyFromName } from "@/lib/branch-detect";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({ meta: [{ title: "Оформление заказа — КосмоСуши" }] }),

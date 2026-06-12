@@ -127,7 +127,7 @@ function Checkout() {
       }
       const zl = (zn ?? []) as typeof zones;
       setZones(zl);
-      if (zl.length && !zoneId) setZoneId(zl[0].id);
+      // Не выбираем зону автоматически — она определится по адресу.
 
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {

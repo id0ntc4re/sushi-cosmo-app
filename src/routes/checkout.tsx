@@ -103,7 +103,11 @@ function Checkout() {
       setAddons((ad as Addon[]) ?? []);
       const bl = (br ?? []) as { id: string; name: string; address: string | null }[];
       setBranches(bl);
-      if (bl.length && !branchId) setBranchId(bl[0].id);
+      if (bl.length && !branchId) {
+        setBranchId(bl[0].id);
+        const b0 = bl[0];
+        setForm((f) => ({ ...f, pickup_point: b0.address ? `${b0.name} · ${b0.address}` : b0.name }));
+      }
       const zl = (zn ?? []) as typeof zones;
       setZones(zl);
       if (zl.length && !zoneId) setZoneId(zl[0].id);

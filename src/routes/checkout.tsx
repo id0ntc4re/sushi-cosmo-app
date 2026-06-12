@@ -103,7 +103,11 @@ function Checkout() {
       setAddons((ad as Addon[]) ?? []);
       const bl = (br ?? []) as { id: string; name: string; address: string | null }[];
       setBranches(bl);
-      if (bl.length && !branchId) setBranchId(bl[0].id);
+      if (bl.length && !branchId) {
+        setBranchId(bl[0].id);
+        const b0 = bl[0];
+        setForm((f) => ({ ...f, pickup_point: b0.address ? `${b0.name} · ${b0.address}` : b0.name }));
+      }
       const zl = (zn ?? []) as typeof zones;
       setZones(zl);
       if (zl.length && !zoneId) setZoneId(zl[0].id);
@@ -408,21 +412,20 @@ function Checkout() {
                       )}
                     </>
                   ) : (
-                    <Field label="Точка самовывоза">
-                      <select className={inputCls} value={form.pickup_point}
-                        onChange={(e) => set("pickup_point", e.target.value)}>
-                        {PICKUP_POINTS.map((p) => <option key={p} value={p}>{p}</option>)}
-                      </select>
-                    </Field>
-                  )}
-
-                  {branches.length > 1 && form.delivery_type === "pickup" && (
                     <Field label="Филиал самовывоза">
                       <select
                         className={inputCls}
                         value={branchId}
-                        onChange={(e) => { setBranchId(e.target.value); setBranchManual(true); setBranchAutoSet(false); }}
+                        onChange={(e) => {
+                          const id = e.target.value;
+                          setBranchId(id);
+                          setBranchManual(true);
+                          setBranchAutoSet(false);
+                          const b = branches.find((x) => x.id === id);
+                          if (b) set("pickup_point", b.address ? `${b.name} · ${b.address}` : b.name);
+                        }}
                       >
+                        {branches.length === 0 && <option value="">Загрузка…</option>}
                         {branches.map((b) => (
                           <option key={b.id} value={b.id}>
                             {b.name}{b.address ? ` · ${b.address}` : ""}

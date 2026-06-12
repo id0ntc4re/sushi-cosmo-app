@@ -31,7 +31,14 @@ const schema = z.object({
   comment: z.string().max(500).optional().or(z.literal("")),
 });
 
-const PICKUP_POINTS = ["пр-т Шахтёров, 68", "бульвар Строителей, 21"];
+function branchLabel(b: { name: string; address: string | null }) {
+  const n = (b.name || "").trim();
+  const a = (b.address || "").trim();
+  if (!a) return n;
+  if (!n) return a;
+  if (n.toLowerCase() === a.toLowerCase()) return n;
+  return `${n} · ${a}`;
+}
 
 type Settings = {
   delivery_cost: number;
@@ -80,7 +87,7 @@ function Checkout() {
     phone: "",
     delivery_type: "delivery" as "delivery" | "pickup",
     address: "",
-    pickup_point: PICKUP_POINTS[0],
+    pickup_point: "",
     payment_method: "cash" as "cash" | "card_courier" | "card_online",
     change_from: "",
     persons: 1,
@@ -106,7 +113,7 @@ function Checkout() {
       if (bl.length && !branchId) {
         setBranchId(bl[0].id);
         const b0 = bl[0];
-        setForm((f) => ({ ...f, pickup_point: b0.address ? `${b0.name} · ${b0.address}` : b0.name }));
+        setForm((f) => ({ ...f, pickup_point: branchLabel(b0) }));
       }
       const zl = (zn ?? []) as typeof zones;
       setZones(zl);
@@ -422,13 +429,13 @@ function Checkout() {
                           setBranchManual(true);
                           setBranchAutoSet(false);
                           const b = branches.find((x) => x.id === id);
-                          if (b) set("pickup_point", b.address ? `${b.name} · ${b.address}` : b.name);
+                          if (b) set("pickup_point", branchLabel(b));
                         }}
                       >
                         {branches.length === 0 && <option value="">Загрузка…</option>}
                         {branches.map((b) => (
                           <option key={b.id} value={b.id}>
-                            {b.name}{b.address ? ` · ${b.address}` : ""}
+                            {branchLabel(b)}
                           </option>
                         ))}
                       </select>

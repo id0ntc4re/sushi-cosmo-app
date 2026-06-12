@@ -783,6 +783,7 @@ export type Database = {
         Row: {
           address: string | null
           admin_note: string | null
+          bonus_credited_at: string | null
           bonus_earned: number
           bonus_used: number
           branch_id: string | null
@@ -823,6 +824,7 @@ export type Database = {
         Insert: {
           address?: string | null
           admin_note?: string | null
+          bonus_credited_at?: string | null
           bonus_earned?: number
           bonus_used?: number
           branch_id?: string | null
@@ -863,6 +865,7 @@ export type Database = {
         Update: {
           address?: string | null
           admin_note?: string | null
+          bonus_credited_at?: string | null
           bonus_earned?: number
           bonus_used?: number
           branch_id?: string | null

@@ -458,7 +458,7 @@ function Checkout() {
                               Не удалось определить зону по названию улицы. Проверьте адрес или выберите зону вручную.
                             </div>
                           )}
-                          {(zoneManual || zoneStatus.kind === "out_of_area" || zoneStatus.kind === "no_match" || zoneStatus.kind === "unavailable") && (
+                          {(zoneManual || zoneStatus.kind === "no_match") && (
                             <Field label="Зона доставки*">
                               <select className={inputCls} value={zoneId}
                                 onChange={(e) => { setZoneId(e.target.value); setZoneManual(true); }} required>

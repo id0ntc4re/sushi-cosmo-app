@@ -428,7 +428,7 @@ function Checkout() {
                         {branches.length === 0 && <option value="">Загрузка…</option>}
                         {branches.map((b) => (
                           <option key={b.id} value={b.id}>
-                            {b.name}{b.address ? ` · ${b.address}` : ""}
+                            {branchLabel(b)}
                           </option>
                         ))}
                       </select>

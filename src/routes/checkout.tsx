@@ -271,10 +271,7 @@ function Checkout() {
     if (parsed.data.delivery_type === "delivery" && !parsed.data.address)
       return setError("Укажите адрес доставки");
     if (parsed.data.delivery_type === "delivery" && zones.length > 0 && !zone) {
-      if (zoneStatus.kind === "out_of_area") return setError("Этот адрес вне зоны доставки. Уточните у оператора по телефону.");
-      if (zoneStatus.kind === "out_of_city") return setError("Адрес не в Кемерово. Проверьте написание или позвоните оператору.");
-      if (zoneStatus.kind === "checking") return setError("Определяем зону доставки, подождите секунду…");
-      return setError("Не удалось определить зону доставки по адресу — проверьте адрес или выберите зону вручную.");
+      return setError("Не удалось определить зону доставки по адресу. Проверьте название улицы или выберите зону вручную.");
     }
 
     setSubmitting(true);

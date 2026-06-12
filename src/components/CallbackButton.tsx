@@ -31,8 +31,8 @@ export function CallbackButton() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (name.trim().length < 2) return toast.error("Введите имя");
-    if (phone.replace(/\D/g, "").length < 10) return toast.error("Введите корректный телефон");
+    if (!isValidName(name)) return toast.error("Введите имя (только буквы, 2–50 символов)");
+    if (!isValidRuPhone(phone)) return toast.error("Введите корректный номер телефона");
     setBusy(true);
     const { error } = await supabase.from("callback_requests").insert({
       name: name.trim(), phone: phone.trim(), branch_id: branchId || null,

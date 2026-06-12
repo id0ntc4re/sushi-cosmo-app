@@ -31,7 +31,14 @@ const schema = z.object({
   comment: z.string().max(500).optional().or(z.literal("")),
 });
 
-const PICKUP_POINTS = ["пр-т Шахтёров, 68", "бульвар Строителей, 21"];
+function branchLabel(b: { name: string; address: string | null }) {
+  const n = (b.name || "").trim();
+  const a = (b.address || "").trim();
+  if (!a) return n;
+  if (!n) return a;
+  if (n.toLowerCase() === a.toLowerCase()) return n;
+  return `${n} · ${a}`;
+}
 
 type Settings = {
   delivery_cost: number;

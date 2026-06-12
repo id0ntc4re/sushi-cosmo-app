@@ -124,6 +124,20 @@ function Checkout() {
     })();
   }, []);
 
+  // Автоопределение филиала по адресу доставки
+  useEffect(() => {
+    if (form.delivery_type !== "delivery") return;
+    if (branchManual) return;
+    if (!branches.length) return;
+    const key = detectBranchKey(form.address);
+    if (!key) return;
+    const match = branches.find((b) => branchKeyFromName(b.name) === key);
+    if (match && match.id !== branchId) {
+      setBranchId(match.id);
+      setBranchAutoSet(true);
+    }
+  }, [form.address, form.delivery_type, branches, branchManual]);
+
   // re-validate promo when subtotal changes
   useEffect(() => {
     if (!promo) return;

@@ -411,8 +411,8 @@ function Checkout() {
                     </Field>
                   )}
 
-                  {branches.length > 1 && (
-                    <Field label={form.delivery_type === "pickup" ? "Филиал самовывоза" : "Готовит филиал"}>
+                  {branches.length > 1 && form.delivery_type === "pickup" && (
+                    <Field label="Филиал самовывоза">
                       <select
                         className={inputCls}
                         value={branchId}
@@ -424,16 +424,6 @@ function Checkout() {
                           </option>
                         ))}
                       </select>
-                      {form.delivery_type === "delivery" && branchAutoSet && !branchManual && (
-                        <p className="text-xs text-emerald-600 mt-1.5">
-                          Филиал выбран автоматически по адресу. Можно изменить вручную.
-                        </p>
-                      )}
-                      {form.delivery_type === "delivery" && !branchAutoSet && !branchManual && form.address.trim().length >= 3 && (
-                        <p className="text-xs text-neutral-500 mt-1.5">
-                          Не удалось определить филиал по адресу — выберите вручную.
-                        </p>
-                      )}
                     </Field>
                   )}
 

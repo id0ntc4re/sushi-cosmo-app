@@ -177,6 +177,61 @@ function Checkout() {
     return () => { cancelled = true; clearTimeout(t); };
   }, [form.address, form.delivery_type, branches, branchManual]);
 
+  // Автоопределение зоны доставки по адресу через геокодинг
+  const resolveZone = useServerFn(resolveDeliveryZoneByAddress);
+  useEffect(() => {
+    if (form.delivery_type !== "delivery") {
+      setZoneStatus({ kind: "idle" });
+      return;
+    }
+    if (!zones.length) {
+      setZoneStatus({ kind: "idle" });
+      return;
+    }
+    if (zoneManual) return;
+    const addr = form.address.trim();
+    if (addr.length < 5) {
+      setZoneStatus({ kind: "idle" });
+      setZoneId("");
+      return;
+    }
+    // Если хотя бы у одной зоны не заданы координаты — авто-режим невозможен
+    const hasGeo = zones.some((z: any) => z.center_lat != null && z.center_lng != null && z.radius_km);
+    if (!hasGeo) {
+      setZoneStatus({ kind: "unavailable" });
+      return;
+    }
+
+    let cancelled = false;
+    setZoneStatus({ kind: "checking" });
+    const t = setTimeout(async () => {
+      try {
+        const res: any = await resolveZone({ data: { address: addr } });
+        if (cancelled) return;
+        if (res.ok) {
+          setZoneId(res.zoneId);
+          setZoneStatus({ kind: "detected", name: res.zoneName, cost: res.cost, formatted: res.formatted });
+        } else if (res.reason === "no_zone") {
+          setZoneId("");
+          setZoneStatus({ kind: "out_of_area", formatted: res.formatted });
+        } else if (res.reason === "out_of_city") {
+          setZoneId("");
+          setZoneStatus({ kind: "out_of_city", formatted: res.formatted });
+        } else if (res.reason === "no_credentials") {
+          setZoneStatus({ kind: "unavailable" });
+        } else {
+          setZoneId("");
+          setZoneStatus({ kind: "no_match" });
+        }
+      } catch {
+        if (!cancelled) setZoneStatus({ kind: "no_match" });
+      }
+    }, 700);
+    return () => { cancelled = true; clearTimeout(t); };
+  }, [form.address, form.delivery_type, zones, zoneManual]);
+
+
+
 
   // re-validate promo when subtotal changes
   useEffect(() => {

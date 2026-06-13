@@ -9,7 +9,7 @@ export const Route = createFileRoute("/delivery")({
       { title: "Доставка и оплата — КосмоСуши Кемерово" },
       { name: "description", content: "Стоимость и зоны доставки по Кемерово, время работы и способы оплаты." },
       { property: "og:title", content: "Доставка и оплата — КосмоСуши" },
-      { property: "og:description", content: "Доставка ежедневно с 10:00 до 22:00, оплата наличными или картой курьеру." },
+      { property: "og:description", content: "Доставка ежедневно с 10:00 до 22:00, оплата наличными или картой." },
     ],
   }),
   component: DeliveryPage,
@@ -78,7 +78,7 @@ function DeliveryPage() {
         <Section title="Способы оплаты">
           <div className="grid sm:grid-cols-3 gap-3">
             <Highlight Icon={Banknote} title="Наличными" text="При получении заказа" />
-            <Highlight Icon={CreditCard} title="Картой курьеру" text="Безналичная оплата" />
+            <Highlight Icon={CreditCard} title="Картой" text="Безналичная оплата" />
             <Highlight Icon={CreditCard} title="Онлайн" text="Картой на сайте" />
           </div>
           <p className="text-sm text-muted-foreground mt-4">

@@ -259,7 +259,7 @@ function OrdersAdmin() {
                   }}
                   className="font-semibold bg-transparent border-0 p-0 -ml-0.5 cursor-pointer focus:outline-none focus:ring-0 hover:text-primary">
                   <option value="cash">Наличные</option>
-                  <option value="card_courier">Картой курьеру</option>
+                  <option value="card_courier">Картой</option>
                   <option value="card_online">Онлайн</option>
                 </select>
               } />
@@ -294,7 +294,7 @@ function OrdersAdmin() {
                 </L>
                 <L lab="Оплата">
                   <select value={meta.payment_method} onChange={(e) => setMeta({ ...meta, payment_method: e.target.value })} className={inp}>
-                    <option value="cash">Наличные</option><option value="card_courier">Картой курьеру</option><option value="card_online">Онлайн</option>
+                    <option value="cash">Наличные</option><option value="card_courier">Картой</option><option value="card_online">Онлайн</option>
                   </select>
                 </L>
                 {meta.delivery_type === "delivery" ? (
@@ -316,7 +316,7 @@ function OrdersAdmin() {
           <div className="flex gap-2 flex-wrap mb-4">
             {open.payment_status === "paid" ? (
               <span
-                title={open.payment_method === "cash" ? "Оплачено наличными" : open.payment_method === "card_courier" ? "Оплачено картой курьеру" : open.payment_method === "card_online" ? "Оплачено онлайн" : ""}
+                title={open.payment_method === "cash" ? "Оплачено наличными" : open.payment_method === "card_courier" ? "Оплачено картой" : open.payment_method === "card_online" ? "Оплачено онлайн" : ""}
                 className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold ${
                   open.payment_method === "cash"
                     ? "bg-emerald-100 text-emerald-700"

@@ -33,7 +33,7 @@ function escapeHtml(s: string): string {
 function renderOrderHtml(o: OrderEmailData): string {
   const payment =
     o.payment_method === "cash" ? "Наличные" :
-    o.payment_method === "card_courier" ? "Картой курьеру" :
+    o.payment_method === "card_courier" ? "Картой" :
     "Картой онлайн";
   const itemsRows = o.items
     .map(

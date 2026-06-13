@@ -578,7 +578,7 @@ function Checkout() {
                   <div className="grid grid-cols-3 gap-2">
                     {([
                       ["cash", "Наличные"],
-                      ["card_courier", "Картой курьеру"],
+                      ["card_courier", "Картой"],
                       ["card_online", "Онлайн"],
                     ] as const).map(([v, l]) => (
                       <button key={v} type="button" onClick={() => set("payment_method", v)}

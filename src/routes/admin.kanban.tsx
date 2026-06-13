@@ -184,7 +184,7 @@ function Kanban() {
                         {Number(o.total)} ₽
                         {o.payment_status === "paid" ? (
                           <span
-                            title={o.payment_method === "cash" ? "Оплачено наличными" : o.payment_method === "card_courier" ? "Оплачено картой курьеру" : o.payment_method === "card_online" ? "Оплачено онлайн" : ""}
+                            title={o.payment_method === "cash" ? "Оплачено наличными" : o.payment_method === "card_courier" ? "Оплачено картой" : o.payment_method === "card_online" ? "Оплачено онлайн" : ""}
                             className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] ${
                               o.payment_method === "cash"
                                 ? "bg-emerald-100 text-emerald-700"

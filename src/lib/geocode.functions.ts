@@ -136,3 +136,75 @@ export const resolveDeliveryZoneByAddress = createServerFn({ method: "POST" })
     };
   });
 
+// Умное определение зоны: сначала по тексту, при неоднозначности —
+// геокодируем и уточняем по району Кемерово.
+export const resolveZoneSmart = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => inputSchema.parse(data))
+  .handler(async ({ data }) => {
+    const { data: rows } = await supabaseAdmin
+      .from("delivery_zones")
+      .select("id,name,cost,free_from,min_order,streets,districts")
+      .eq("is_active", true)
+      .order("sort_order");
+
+    const zones = ((rows ?? []) as any[]).map((z) => ({
+      id: z.id as string,
+      name: z.name as string,
+      cost: Number(z.cost),
+      free_from: z.free_from == null ? null : Number(z.free_from),
+      min_order: Number(z.min_order),
+      streets: (z.streets ?? null) as string | null,
+      districts: (z.districts ?? null) as string[] | null,
+    }));
+
+    const text = matchZoneByAddress(data.address, zones);
+    if (text && !text.ambiguous) {
+      return {
+        ok: true as const,
+        zoneId: text.zone.id,
+        zoneName: text.zone.name,
+        cost: text.zone.cost,
+        freeFrom: text.zone.free_from,
+        minOrder: text.zone.min_order,
+        matchedStreet: text.matchedStreet,
+        district: null as string | null,
+        source: "text" as const,
+      };
+    }
+
+    const g = await geocode(data.address);
+    if (!g.ok) {
+      if (text) {
+        return {
+          ok: true as const,
+          zoneId: text.zone.id,
+          zoneName: text.zone.name,
+          cost: text.zone.cost,
+          freeFrom: text.zone.free_from,
+          minOrder: text.zone.min_order,
+          matchedStreet: text.matchedStreet,
+          district: null,
+          source: "text_ambiguous" as const,
+        };
+      }
+      return { ok: false as const, reason: g.reason };
+    }
+
+    const refined = matchZoneByAddress(data.address, zones, g.district);
+    if (refined) {
+      return {
+        ok: true as const,
+        zoneId: refined.zone.id,
+        zoneName: refined.zone.name,
+        cost: refined.zone.cost,
+        freeFrom: refined.zone.free_from,
+        minOrder: refined.zone.min_order,
+        matchedStreet: refined.matchedStreet,
+        district: g.district,
+        source: refined.ambiguous ? ("geocode_ambiguous" as const) : ("geocode_district" as const),
+      };
+    }
+    return { ok: false as const, reason: "no_zone" as const, district: g.district };
+  });
+
+

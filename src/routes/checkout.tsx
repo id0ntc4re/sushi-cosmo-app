@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/lib/cart";
 import { createCheckoutOrder } from "@/lib/orders.functions";
-import { validatePromo, type PromoCode } from "@/lib/promo";
+import { validatePromo, type PromoCode, type GiftItem } from "@/lib/promo";
 import { getDeliverySlots } from "@/lib/timeSlots";
 import logo from "@/assets/logo.svg";
 import { detectBranchKey, branchKeyFromName } from "@/lib/branch-detect";
@@ -72,7 +72,7 @@ function Checkout() {
   const [settings, setSettings] = useState<Settings>(DEFAULT_SETTINGS);
   const [addons, setAddons] = useState<Addon[]>([]);
   const [promoInput, setPromoInput] = useState("");
-  const [promo, setPromo] = useState<{ code: string; discount: number; promo: PromoCode } | null>(null);
+  const [promo, setPromo] = useState<{ code: string; discount: number; gift: GiftItem | null; promo: PromoCode } | null>(null);
   const [promoErr, setPromoErr] = useState<string | null>(null);
   const [profile, setProfile] = useState<any | null>(null);
   const [savedAddresses, setSavedAddresses] = useState<any[]>([]);
@@ -284,8 +284,9 @@ function Checkout() {
       setPromo(null);
       return;
     }
-    setPromo({ code: res.promo.code, discount: res.discount, promo: res.promo });
-    toast.success(`Промокод применён: −${res.discount} ₽`);
+    setPromo({ code: res.promo.code, discount: res.discount, gift: res.gift, promo: res.promo });
+    if (res.gift) toast.success(`🎁 Подарок: ${res.gift.name}`);
+    else toast.success(`Промокод применён: −${res.discount} ₽`);
   }
 
   async function submit(e: React.FormEvent) {
@@ -336,12 +337,17 @@ function Checkout() {
           total,
           branch_id: branchId || null,
           },
-          items: items.map((it) => ({
-            product_id: it.id,
-            name: it.name,
-            price: Number(it.price),
-            quantity: it.quantity,
-          })),
+          items: [
+            ...items.map((it) => ({
+              product_id: it.id,
+              name: it.name,
+              price: Number(it.price),
+              quantity: it.quantity,
+            })),
+            ...(promo?.gift
+              ? [{ product_id: promo.gift.product_id, name: `🎁 ${promo.gift.name} (подарок)`, price: 0, quantity: 1 }]
+              : []),
+          ],
           promo: promo ? { id: promo.promo.id, used_count: promo.promo.used_count } : null,
         },
       });
@@ -648,6 +654,20 @@ function Checkout() {
                       </div>
                     </div>
                   ))}
+                  {promo?.gift && (
+                    <div className="flex justify-between gap-3 text-sm bg-emerald-50 rounded-xl p-2 -mx-1">
+                      <div className="flex items-center gap-2 flex-1">
+                        {promo.gift.image_url
+                          ? <img src={promo.gift.image_url} alt="" className="w-9 h-9 rounded-lg object-cover" />
+                          : <div className="w-9 h-9 grid place-items-center text-lg">🎁</div>}
+                        <div className="flex-1">
+                          <div className="font-medium line-clamp-2">{promo.gift.name}</div>
+                          <div className="text-emerald-700 text-xs font-bold">Подарок по промокоду {promo.code}</div>
+                        </div>
+                      </div>
+                      <div className="font-semibold whitespace-nowrap text-emerald-700">0 ₽</div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Promo */}

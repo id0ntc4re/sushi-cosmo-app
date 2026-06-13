@@ -107,9 +107,11 @@ function Couriers() {
   );
 }
 
+const KEMEROVO_DISTRICTS = ["Центральный", "Ленинский", "Кировский", "Рудничный", "Заводский"];
+
 function Zones() {
   const [list, setList] = useState<any[]>([]);
-  const [draft, setDraft] = useState({ name: "", cost: 0, min_order: 0, free_from: 0, streets: "" });
+  const [draft, setDraft] = useState({ name: "", cost: 0, min_order: 0, free_from: 0, streets: "", districts: [] as string[] });
 
   async function load() {
     const { data } = await supabase.from("delivery_zones").select("*").order("sort_order");
@@ -119,31 +121,44 @@ function Zones() {
 
   async function add() {
     if (!draft.name) return;
-    const { error } = await supabase.from("delivery_zones").insert({
+    const { error } = await (supabase.from("delivery_zones") as any).insert({
       name: draft.name,
       cost: draft.cost,
       min_order: draft.min_order,
       free_from: draft.free_from || null,
       streets: draft.streets || null,
+      districts: draft.districts.length ? draft.districts : null,
     });
     if (error) return toast.error(error.message);
-    setDraft({ name: "", cost: 0, min_order: 0, free_from: 0, streets: "" }); load();
+    setDraft({ name: "", cost: 0, min_order: 0, free_from: 0, streets: "", districts: [] }); load();
   }
   async function update(id: string, patch: any) {
-    await supabase.from("delivery_zones").update(patch).eq("id", id); load();
+    await (supabase.from("delivery_zones") as any).update(patch).eq("id", id); load();
   }
   async function del(id: string) {
     if (!confirm("Удалить зону?")) return;
     await supabase.from("delivery_zones").delete().eq("id", id); load();
   }
 
+  function toggleDraftDistrict(d: string) {
+    setDraft((s) => ({
+      ...s,
+      districts: s.districts.includes(d) ? s.districts.filter((x) => x !== d) : [...s.districts, d],
+    }));
+  }
+
+  function toggleZoneDistrict(z: any, d: string) {
+    const cur: string[] = Array.isArray(z.districts) ? z.districts : [];
+    const next = cur.includes(d) ? cur.filter((x) => x !== d) : [...cur, d];
+    update(z.id, { districts: next.length ? next : null });
+  }
+
   return (
     <div className="bg-white rounded-3xl p-5">
       <p className="text-xs text-neutral-500 mb-3">
-        Зона определяется по <b>названию улицы</b> в адресе клиента.
-        Перечислите улицы зоны через запятую или с новой строки — например:
-        <code className="ml-1 bg-neutral-100 px-1 rounded">Шахтёров, Притомский, 50 лет Октября</code>.
-        Префиксы «ул.», «пр-кт» и номера домов можно не писать.
+        Зона определяется по <b>названию улицы</b> в адресе клиента. Для улиц, проходящих
+        через несколько районов (Ленина, Пролетарская и т.п.) — отметьте <b>районы</b> зоны:
+        тогда при неоднозначности система уточнит зону через геокодер.
       </p>
       <div className="grid grid-cols-12 gap-2 mb-2">
         <input className={inp + " col-span-3"} placeholder="Район / зона" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
@@ -152,10 +167,20 @@ function Zones() {
         <input type="number" className={inp + " col-span-2"} placeholder="Бесплатно от" value={draft.free_from} onChange={(e) => setDraft({ ...draft, free_from: Number(e.target.value) })} />
         <button onClick={add} className="col-span-3 rounded-xl bg-primary text-white font-bold">+ Добавить</button>
       </div>
-      <div className="mb-5">
+      <div className="mb-2">
         <textarea className={inp + " min-h-[60px]"} placeholder="Улицы зоны (через запятую или с новой строки)"
           value={draft.streets} onChange={(e) => setDraft({ ...draft, streets: e.target.value })} />
       </div>
+      <div className="mb-5 flex flex-wrap gap-2">
+        <span className="text-xs text-neutral-500 self-center mr-1">Районы:</span>
+        {KEMEROVO_DISTRICTS.map((d) => (
+          <button key={d} type="button" onClick={() => toggleDraftDistrict(d)}
+            className={`px-3 py-1 rounded-full text-xs font-semibold border ${draft.districts.includes(d) ? "bg-primary text-white border-primary" : "bg-white border-neutral-300 text-neutral-700"}`}>
+            {d}
+          </button>
+        ))}
+      </div>
+
       <div className="space-y-3">
         {list.map((z) => (
           <div key={z.id} className="border rounded-2xl p-3">

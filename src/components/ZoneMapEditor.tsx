@@ -207,7 +207,7 @@ export default function ZoneMapEditor({
           <div className="flex-1 text-xs text-neutral-500">
             Серым — соседние зоны. Красным — текущая.
           </div>
-          <button onClick={() => onSave(null).then(onClose)} disabled={busy} className="px-4 py-2 rounded-xl bg-white border text-sm font-semibold text-red-500">
+          <button onClick={async () => { await onSave(null); onClose(); }} disabled={busy} className="px-4 py-2 rounded-xl bg-white border text-sm font-semibold text-red-500">
             Удалить полигон
           </button>
           <button onClick={save} disabled={busy} className="px-5 py-2 rounded-xl bg-primary text-white font-bold disabled:opacity-50">

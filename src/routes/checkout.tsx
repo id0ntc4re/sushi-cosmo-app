@@ -654,6 +654,20 @@ function Checkout() {
                       </div>
                     </div>
                   ))}
+                  {promo?.gift && (
+                    <div className="flex justify-between gap-3 text-sm bg-emerald-50 rounded-xl p-2 -mx-1">
+                      <div className="flex items-center gap-2 flex-1">
+                        {promo.gift.image_url
+                          ? <img src={promo.gift.image_url} alt="" className="w-9 h-9 rounded-lg object-cover" />
+                          : <div className="w-9 h-9 grid place-items-center text-lg">🎁</div>}
+                        <div className="flex-1">
+                          <div className="font-medium line-clamp-2">{promo.gift.name}</div>
+                          <div className="text-emerald-700 text-xs font-bold">Подарок по промокоду {promo.code}</div>
+                        </div>
+                      </div>
+                      <div className="font-semibold whitespace-nowrap text-emerald-700">0 ₽</div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Promo */}

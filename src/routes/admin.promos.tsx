@@ -215,10 +215,32 @@ function PromosAdmin() {
                     onChange={(e) => setEditing({ ...editing, gift_product_name: e.target.value, gift_product_id: "" })}
                     placeholder="Напр. «Фирменный десерт»" />
                 </Field>
-                <Field label="URL картинки подарка (необязательно)">
-                  <input className={inp} value={editing.gift_product_image_url}
-                    onChange={(e) => setEditing({ ...editing, gift_product_image_url: e.target.value })}
-                    placeholder="https://…" />
+                <Field label="Картинка подарка (необязательно)">
+                  <div className="flex items-center gap-3">
+                    {editing.gift_product_image_url && (
+                      <img src={editing.gift_product_image_url} alt="" className="w-16 h-16 rounded-lg object-cover border" />
+                    )}
+                    <label className="px-3 py-2 rounded-xl bg-neutral-900 text-white text-xs font-semibold cursor-pointer hover:opacity-90">
+                      {editing.gift_product_image_url ? "Заменить" : "📤 Загрузить файл"}
+                      <input type="file" accept="image/*" className="hidden"
+                        onChange={async (e) => {
+                          const f = e.target.files?.[0];
+                          if (!f) return;
+                          if (f.size > 5 * 1024 * 1024) return toast.error("Файл больше 5 МБ");
+                          const ext = (f.name.split(".").pop() || "jpg").toLowerCase();
+                          const path = `promo-gifts/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+                          const { error: upErr } = await supabase.storage.from("product-images").upload(path, f, { upsert: false, contentType: f.type });
+                          if (upErr) return toast.error(upErr.message);
+                          const { data: pub } = supabase.storage.from("product-images").getPublicUrl(path);
+                          setEditing({ ...editing, gift_product_image_url: pub.publicUrl });
+                          toast.success("Картинка загружена");
+                        }} />
+                    </label>
+                    {editing.gift_product_image_url && (
+                      <button type="button" onClick={() => setEditing({ ...editing, gift_product_image_url: "" })}
+                        className="text-xs text-red-500">Удалить</button>
+                    )}
+                  </div>
                 </Field>
               </div>
             )}

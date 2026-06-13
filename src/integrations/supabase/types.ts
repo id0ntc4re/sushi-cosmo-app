@@ -1126,6 +1126,9 @@ export type Database = {
           discount_type: string
           discount_value: number
           expires_at: string | null
+          gift_product_id: string | null
+          gift_product_image_url: string | null
+          gift_product_name: string | null
           id: string
           is_active: boolean
           max_uses: number | null
@@ -1140,6 +1143,9 @@ export type Database = {
           discount_type?: string
           discount_value?: number
           expires_at?: string | null
+          gift_product_id?: string | null
+          gift_product_image_url?: string | null
+          gift_product_name?: string | null
           id?: string
           is_active?: boolean
           max_uses?: number | null
@@ -1154,6 +1160,9 @@ export type Database = {
           discount_type?: string
           discount_value?: number
           expires_at?: string | null
+          gift_product_id?: string | null
+          gift_product_image_url?: string | null
+          gift_product_name?: string | null
           id?: string
           is_active?: boolean
           max_uses?: number | null
@@ -1162,7 +1171,15 @@ export type Database = {
           used_count?: number
           user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "promo_codes_gift_product_id_fkey"
+            columns: ["gift_product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       purchase_invoice_items: {
         Row: {

@@ -30,6 +30,7 @@ const NAV: { to: string; label: string; icon: string; exact?: boolean; superOnly
   { to: "/admin/banners", label: "Баннеры", icon: "🖼️", superOnly: true },
   { to: "/admin/news", label: "Акции и новости", icon: "📰", superOnly: true },
   { to: "/admin/promos", label: "Промокоды", icon: "🏷️", superOnly: true },
+  { to: "/admin/receipt", label: "Настройки чека", icon: "🧾" },
   { to: "/admin/settings", label: "Настройки", icon: "⚙️", superOnly: true },
 ];
 

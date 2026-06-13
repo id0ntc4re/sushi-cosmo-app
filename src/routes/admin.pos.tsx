@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useAdminRole } from "@/lib/admin-role";
 import { createOrderAsAdmin } from "@/lib/orders.functions";
 import { formatRuPhone } from "@/lib/phone-format";
+import { AddressFields } from "@/components/AddressFields";
 
 export const Route = createFileRoute("/admin/pos")({ component: PosPage });
 
@@ -310,8 +311,7 @@ function PosPage() {
               ))}
             </div>
             {deliveryType === "delivery" && (
-              <input className={inp} placeholder="Адрес: улица, дом, кв., подъезд, этаж*"
-                value={address} onChange={(e) => setAddress(e.target.value)} />
+              <AddressFields value={address} onChange={setAddress} required />
             )}
             <input className={inp} placeholder="Комментарий клиента"
               value={comment} onChange={(e) => setComment(e.target.value)} />

@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Modal } from "./admin.products";
 import { printKitchenReceipt } from "@/lib/kitchen-print";
+import { AddressFields } from "@/components/AddressFields";
 
 export const Route = createFileRoute("/admin/orders")({
   component: OrdersAdmin,
@@ -254,7 +255,7 @@ function OrdersAdmin() {
                   </select>
                 </L>
                 {meta.delivery_type === "delivery" ? (
-                  <L lab="Адрес" full><input value={meta.address} onChange={(e) => setMeta({ ...meta, address: e.target.value })} className={inp} /></L>
+                  <L lab="Адрес" full><AddressFields value={meta.address} onChange={(v) => setMeta({ ...meta, address: v })} /></L>
                 ) : (
                   <L lab="Точка самовывоза" full><input value={meta.pickup_point} onChange={(e) => setMeta({ ...meta, pickup_point: e.target.value })} className={inp} /></L>
                 )}

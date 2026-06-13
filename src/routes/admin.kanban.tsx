@@ -207,6 +207,68 @@ function Kanban() {
           );
         })}
       </div>
+
+      {payOrder && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setPayOrder(null)}>
+          <div className="bg-white rounded-2xl p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+            <div className="text-lg font-extrabold mb-1">Принять оплату · заказ #{payOrder.number}</div>
+            <div className="text-sm text-neutral-500 mb-4">К оплате: <b className="text-primary">{Number(payOrder.total)} ₽</b></div>
+
+            <div className="text-xs font-bold uppercase text-neutral-500 mb-2">Способ оплаты</div>
+            <div className="grid grid-cols-3 gap-2 mb-4">
+              {([
+                { k: "cash", label: "💵 Наличные" },
+                { k: "card_courier", label: "💳 Картой" },
+                { k: "card_online", label: "🌐 Онлайн" },
+              ] as const).map((m) => (
+                <button key={m.k} onClick={() => setPayMethod(m.k)}
+                  className={`px-2 py-2.5 rounded-lg text-xs font-bold border-2 ${payMethod === m.k ? "border-primary bg-primary/10 text-primary" : "border-neutral-200 bg-white"}`}>
+                  {m.label}
+                </button>
+              ))}
+            </div>
+
+            {payMethod === "cash" && (
+              <div className="mb-4 p-3 rounded-lg bg-amber-50 border border-amber-200">
+                <label className="text-xs font-bold text-neutral-600 block mb-1">Получено наличными (для расчёта сдачи)</label>
+                <input
+                  type="number" inputMode="decimal" autoFocus
+                  value={payCashGiven}
+                  onChange={(e) => setPayCashGiven(e.target.value)}
+                  placeholder={String(payOrder.total)}
+                  className="w-full px-3 py-2 rounded-md border border-neutral-300 text-base font-semibold"
+                />
+                {payCashGiven && Number(payCashGiven) >= Number(payOrder.total) && (
+                  <div className="mt-2 text-sm font-bold text-green-700">
+                    Сдача: {(Number(payCashGiven) - Number(payOrder.total)).toFixed(2)} ₽
+                  </div>
+                )}
+                {payCashGiven && Number(payCashGiven) < Number(payOrder.total) && (
+                  <div className="mt-2 text-sm font-bold text-red-600">Недостаточно</div>
+                )}
+              </div>
+            )}
+
+            <label className="text-xs font-bold text-neutral-600 block mb-1">Номер фискального чека (необязательно)</label>
+            <input
+              value={payFiscal}
+              onChange={(e) => setPayFiscal(e.target.value)}
+              placeholder="—"
+              className="w-full px-3 py-2 rounded-md border border-neutral-300 mb-4 text-sm"
+            />
+
+            <div className="flex gap-2">
+              <button onClick={() => setPayOrder(null)}
+                className="flex-1 px-4 py-2.5 rounded-lg bg-neutral-100 font-bold">Отмена</button>
+              <button onClick={confirmPay}
+                disabled={payMethod === "cash" && !!payCashGiven && Number(payCashGiven) < Number(payOrder.total)}
+                className="flex-1 px-4 py-2.5 rounded-lg bg-primary text-white font-bold disabled:opacity-50">
+                Принять
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

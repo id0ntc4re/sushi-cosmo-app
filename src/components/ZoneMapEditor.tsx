@@ -191,12 +191,13 @@ export default function ZoneMapEditor({
     setBusy(true);
     try {
       let poly: LatLng[] | null = null;
-      if (polyRef.current) {
-        const path = polyRef.current.getPath();
+      const p = polyRef.current;
+      if (p && typeof p.getPath === "function") {
+        const path = p.getPath();
         const pts: LatLng[] = [];
         for (let i = 0; i < path.getLength(); i++) {
-          const p = path.getAt(i);
-          pts.push({ lat: p.lat(), lng: p.lng() });
+          const pt = path.getAt(i);
+          pts.push({ lat: pt.lat(), lng: pt.lng() });
         }
         if (pts.length >= 3) poly = pts;
       } else if (draftPathRef.current.length >= 3) {

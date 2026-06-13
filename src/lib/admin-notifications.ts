@@ -2,22 +2,48 @@ import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
-// Plays a short notification "beep" using WebAudio (no asset needed).
+// Максимально громкий сигнал нового заказа: серия "бип-бип-бип"
+// через WebAudio с двумя осцилляторами и компрессором (нормализация = громче).
 function beep() {
   try {
     const Ctx = (window.AudioContext || (window as any).webkitAudioContext);
     if (!Ctx) return;
     const ctx = new Ctx();
-    const o = ctx.createOscillator();
-    const g = ctx.createGain();
-    o.type = "sine"; o.frequency.value = 880;
-    g.gain.value = 0.001;
-    o.connect(g); g.connect(ctx.destination);
-    o.start();
-    g.gain.exponentialRampToValueAtTime(0.25, ctx.currentTime + 0.02);
-    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.45);
-    o.stop(ctx.currentTime + 0.5);
-    setTimeout(() => ctx.close(), 800);
+    if (ctx.state === "suspended") ctx.resume().catch(() => {});
+
+    const comp = ctx.createDynamicsCompressor();
+    comp.threshold.value = -10;
+    comp.knee.value = 0;
+    comp.ratio.value = 20;
+    comp.attack.value = 0;
+    comp.release.value = 0.1;
+    const master = ctx.createGain();
+    master.gain.value = 1.0; // максимум до клиппинга
+    comp.connect(master);
+    master.connect(ctx.destination);
+
+    const beats = 4;
+    const beatLen = 0.18;
+    const gap = 0.09;
+    for (let i = 0; i < beats; i++) {
+      const t0 = ctx.currentTime + i * (beatLen + gap);
+      // основной тон
+      const o1 = ctx.createOscillator();
+      o1.type = "square"; o1.frequency.value = 1175; // D6
+      // второй тон для богатства/громкости
+      const o2 = ctx.createOscillator();
+      o2.type = "square"; o2.frequency.value = 1568; // G6
+      const g = ctx.createGain();
+      g.gain.value = 0.0001;
+      o1.connect(g); o2.connect(g); g.connect(comp);
+      g.gain.exponentialRampToValueAtTime(1.0, t0 + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + beatLen);
+      o1.start(t0); o2.start(t0);
+      o1.stop(t0 + beatLen + 0.02);
+      o2.stop(t0 + beatLen + 0.02);
+    }
+    const total = beats * (beatLen + gap) + 0.2;
+    setTimeout(() => ctx.close().catch(() => {}), total * 1000 + 200);
   } catch {/* ignore */}
 }
 

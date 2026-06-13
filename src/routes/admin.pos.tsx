@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { useAdminRole } from "@/lib/admin-role";
 import { createOrderAsAdmin } from "@/lib/orders.functions";
 import { formatRuPhone } from "@/lib/phone-format";
+import { AddressFields } from "@/components/AddressFields";
 
 export const Route = createFileRoute("/admin/pos")({ component: PosPage });
 

@@ -73,42 +73,58 @@ export function AddressFields({
   }
 
   const cls = inputClassName ?? "w-full px-3 py-2 rounded-xl border border-neutral-200 text-sm focus:outline-none focus:border-primary";
+  const lab = "block text-[11px] font-semibold text-neutral-500 mb-1 uppercase tracking-wide";
 
   return (
     <div className="space-y-2">
-      <input
-        className={cls}
-        placeholder={`Улица${required ? "*" : ""}`}
-        value={parts.street}
-        onChange={(e) => update({ street: e.target.value })}
-        required={required}
-      />
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+      <label className="block">
+        <span className={lab}>Улица{required ? " *" : ""}</span>
         <input
           className={cls}
-          placeholder={`Дом${required ? "*" : ""}`}
-          value={parts.house}
-          onChange={(e) => update({ house: e.target.value })}
+          placeholder="напр. ул. Ленина"
+          value={parts.street}
+          onChange={(e) => update({ street: e.target.value })}
           required={required}
         />
-        <input
-          className={cls}
-          placeholder="Подъезд"
-          value={parts.entrance}
-          onChange={(e) => update({ entrance: e.target.value })}
-        />
-        <input
-          className={cls}
-          placeholder="Этаж"
-          value={parts.floor}
-          onChange={(e) => update({ floor: e.target.value })}
-        />
-        <input
-          className={cls}
-          placeholder="Кв./офис"
-          value={parts.apartment}
-          onChange={(e) => update({ apartment: e.target.value })}
-        />
+      </label>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <label className="block">
+          <span className={lab}>Дом{required ? " *" : ""}</span>
+          <input
+            className={cls}
+            placeholder="12А"
+            value={parts.house}
+            onChange={(e) => update({ house: e.target.value })}
+            required={required}
+          />
+        </label>
+        <label className="block">
+          <span className={lab}>Подъезд</span>
+          <input
+            className={cls}
+            placeholder="2"
+            value={parts.entrance}
+            onChange={(e) => update({ entrance: e.target.value })}
+          />
+        </label>
+        <label className="block">
+          <span className={lab}>Этаж</span>
+          <input
+            className={cls}
+            placeholder="5"
+            value={parts.floor}
+            onChange={(e) => update({ floor: e.target.value })}
+          />
+        </label>
+        <label className="block">
+          <span className={lab}>Кв./офис</span>
+          <input
+            className={cls}
+            placeholder="34"
+            value={parts.apartment}
+            onChange={(e) => update({ apartment: e.target.value })}
+          />
+        </label>
       </div>
     </div>
   );

@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/lib/cart";
 import { createCheckoutOrder } from "@/lib/orders.functions";
-import { validatePromo, type PromoCode } from "@/lib/promo";
+import { validatePromo, type PromoCode, type GiftItem } from "@/lib/promo";
 import { getDeliverySlots } from "@/lib/timeSlots";
 import logo from "@/assets/logo.svg";
 import { detectBranchKey, branchKeyFromName } from "@/lib/branch-detect";

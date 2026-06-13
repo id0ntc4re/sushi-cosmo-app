@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { resolveZoneSmart, detectBranchByAddress, createTestOrder } from "@/lib/geocode.functions";
+import ZoneMapEditor from "@/components/ZoneMapEditor";
 
 export const Route = createFileRoute("/admin/couriers")({ component: Page });
 

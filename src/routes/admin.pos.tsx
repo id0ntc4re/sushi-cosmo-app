@@ -213,10 +213,11 @@ function PosPage() {
           <div className="bg-white rounded-2xl p-4">
             <div className="text-sm font-bold mb-2">Клиент</div>
             <div className="grid sm:grid-cols-[1fr_1fr_auto] gap-2">
-              <input className={inp} placeholder="Телефон*" value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+              <input className={inp} placeholder="Телефон*" value={phone} type="tel" inputMode="tel" maxLength={18}
+                onChange={(e) => setPhone(formatRuPhone(e.target.value))}
+                onFocus={(e) => { if (!e.target.value) setPhone("+7 ("); }}
                 onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); lookupClient(); } }} />
-              <input className={inp} placeholder="Имя*" value={name} onChange={(e) => setName(e.target.value)} />
+              <input className={inp} placeholder="Имя*" value={name} onChange={(e) => setName(e.target.value.replace(/[^A-Za-zА-Яа-яЁё\s-]/g, ""))} maxLength={50} />
               <button onClick={lookupClient} disabled={searching}
                 className="px-4 py-2 rounded-xl bg-neutral-900 text-white text-sm font-semibold disabled:opacity-50">
                 {searching ? "…" : "🔍 Найти"}

@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { matchZoneByAddress } from "@/lib/zone-match";
 
 // Координаты филиалов Кемерово
 const BRANCH_COORDS: Record<"shahterov" | "stroiteley", { lat: number; lng: number; label: string }> = {
@@ -17,6 +18,21 @@ function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: num
   const lat2 = toRad(b.lat);
   const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
   return 2 * R * Math.asin(Math.sqrt(h));
+}
+
+function extractDistrict(components: any[]): string | null {
+  if (!Array.isArray(components)) return null;
+  for (const c of components) {
+    const name: string = c?.long_name ?? "";
+    if (/район/i.test(name)) return name;
+  }
+  for (const c of components) {
+    const types: string[] = c?.types ?? [];
+    if (types.includes("administrative_area_level_3") || types.includes("sublocality_level_1")) {
+      return c?.long_name ?? null;
+    }
+  }
+  return null;
 }
 
 async function geocode(address: string) {
@@ -40,15 +56,17 @@ async function geocode(address: string) {
   }
   if (!res.ok) return { ok: false as const, reason: `http_${res.status}` as const };
   const json: any = await res.json();
-  const loc = json?.results?.[0]?.geometry?.location;
+  const first = json?.results?.[0];
+  const loc = first?.geometry?.location;
   if (!loc || typeof loc.lat !== "number" || typeof loc.lng !== "number") {
     return { ok: false as const, reason: "no_match" as const };
   }
-  const formatted: string = json.results[0].formatted_address ?? "";
+  const formatted: string = first.formatted_address ?? "";
   if (!/Кемерово/i.test(formatted)) {
     return { ok: false as const, reason: "out_of_city" as const, formatted };
   }
-  return { ok: true as const, lat: loc.lat as number, lng: loc.lng as number, formatted };
+  const district = extractDistrict(first.address_components ?? []);
+  return { ok: true as const, lat: loc.lat as number, lng: loc.lng as number, formatted, district };
 }
 
 const inputSchema = z.object({

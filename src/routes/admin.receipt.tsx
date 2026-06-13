@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { DEFAULT_RECEIPT, ReceiptSettings, loadReceiptSettings, receiptKey } from "@/lib/receipt-settings";
+import { DEFAULT_RECEIPT, ReceiptSettings, loadReceiptSettings, receiptKey, t } from "@/lib/receipt-settings";
 
 export const Route = createFileRoute("/admin/receipt")({ component: ReceiptAdmin });
 

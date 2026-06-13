@@ -271,7 +271,9 @@ function OrdersAdmin() {
 
           <div className="flex gap-2 flex-wrap mb-4">
             <span className={`px-2.5 py-1 rounded-full text-xs font-bold ${open.payment_status === "paid" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
-              {open.payment_status === "paid" ? `💰 Оплачен${open.fiscal_receipt_number ? ` · чек ${open.fiscal_receipt_number}` : ""}` : "💵 Не оплачен"}
+              {open.payment_status === "paid"
+                ? `💰 Оплачен · ${({ cash: "💵 наличные", card_courier: "💳 картой курьеру", card_online: "🌐 онлайн" } as any)[open.payment_method] ?? "—"}${open.fiscal_receipt_number ? ` · чек ${open.fiscal_receipt_number}` : ""}`
+                : "💵 Не оплачен"}
             </span>
             {open.kitchen_printed_at && (
               <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-700">

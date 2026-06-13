@@ -284,8 +284,9 @@ function Checkout() {
       setPromo(null);
       return;
     }
-    setPromo({ code: res.promo.code, discount: res.discount, promo: res.promo });
-    toast.success(`Промокод применён: −${res.discount} ₽`);
+    setPromo({ code: res.promo.code, discount: res.discount, gift: res.gift, promo: res.promo });
+    if (res.gift) toast.success(`🎁 Подарок: ${res.gift.name}`);
+    else toast.success(`Промокод применён: −${res.discount} ₽`);
   }
 
   async function submit(e: React.FormEvent) {

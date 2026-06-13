@@ -337,12 +337,17 @@ function Checkout() {
           total,
           branch_id: branchId || null,
           },
-          items: items.map((it) => ({
-            product_id: it.id,
-            name: it.name,
-            price: Number(it.price),
-            quantity: it.quantity,
-          })),
+          items: [
+            ...items.map((it) => ({
+              product_id: it.id,
+              name: it.name,
+              price: Number(it.price),
+              quantity: it.quantity,
+            })),
+            ...(promo?.gift
+              ? [{ product_id: promo.gift.product_id, name: `🎁 ${promo.gift.name} (подарок)`, price: 0, quantity: 1 }]
+              : []),
+          ],
           promo: promo ? { id: promo.promo.id, used_count: promo.promo.used_count } : null,
         },
       });

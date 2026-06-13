@@ -68,10 +68,16 @@ function OrdersAdmin() {
   }
 
   async function openOrder(o: Order) {
-    setOpen(o); setEditing(false); setMeta(null); setShowHistory(false);
+    setOpen(o); setEditing(false); setMeta(null); setShowHistory(false); setCustomer(null);
     const { data } = await supabase.from("order_items").select("*").eq("order_id", o.id);
     setItems(data ?? []);
     loadHistory(o.id);
+    if (o.user_id) {
+      const { data: p } = await supabase.from("profiles").select("bonus_balance,total_spent").eq("id", o.user_id).maybeSingle();
+      const { count } = await supabase.from("orders").select("id", { count: "exact", head: true })
+        .eq("user_id", o.user_id).is("deleted_at", null).neq("status", "cancelled");
+      if (p) setCustomer({ bonus_balance: Number(p.bonus_balance) || 0, total_spent: Number(p.total_spent) || 0, orders_count: count ?? 0 });
+    }
   }
 
   function startEdit() {

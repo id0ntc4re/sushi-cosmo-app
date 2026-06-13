@@ -115,6 +115,7 @@ const KEMEROVO_DISTRICTS = ["Центральный", "Ленинский", "К�
 function Zones() {
   const [list, setList] = useState<any[]>([]);
   const [draft, setDraft] = useState({ name: "", cost: 0, min_order: 0, free_from: 0, streets: "", districts: [] as string[] });
+  const [mapZone, setMapZone] = useState<any | null>(null);
 
   async function load() {
     const { data } = await supabase.from("delivery_zones").select("*").order("sort_order");

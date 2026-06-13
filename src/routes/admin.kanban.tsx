@@ -192,7 +192,7 @@ function Kanban() {
                         <button onClick={() => printKitchen(o)} title="Печать кухонного чека"
                           className={`px-1.5 py-1 rounded-md text-[10px] font-bold ${o.kitchen_printed_at ? "bg-neutral-100 text-neutral-500" : "bg-amber-500 text-white"}`}>🖨</button>
                         {o.payment_status !== "paid" && (
-                          <button onClick={() => markPaid(o)} title="Принять оплату"
+                          <button onClick={() => openPay(o)} title="Принять оплату"
                             className="px-1.5 py-1 rounded-md bg-green-600 text-white text-[10px] font-bold">💰</button>
                         )}
                         <button onClick={() => cancel(o.id)}

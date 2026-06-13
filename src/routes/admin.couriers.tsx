@@ -381,3 +381,13 @@ function AddressChecker() {
     </div>
   );
 }
+
+function Field({ label, hint, children, className = "" }: { label: string; hint?: string; children: React.ReactNode; className?: string }) {
+  return (
+    <label className={`block ${className}`}>
+      <div className="text-xs font-semibold text-neutral-600 mb-1">{label}</div>
+      {children}
+      {hint && <div className="text-[11px] text-neutral-400 mt-1 leading-tight">{hint}</div>}
+    </label>
+  );
+}

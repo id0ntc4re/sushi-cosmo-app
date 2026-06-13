@@ -217,7 +217,7 @@ function PosPage() {
                 onChange={(e) => setPhone(formatRuPhone(e.target.value))}
                 onFocus={(e) => { if (!e.target.value) setPhone("+7 ("); }}
                 onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); lookupClient(); } }} />
-              <input className={inp} placeholder="Имя*" value={name} onChange={(e) => setName(e.target.value.replace(/[^A-Za-zА-Яа-яЁё\s-]/g, ""))} maxLength={50} />
+              <input className={inp} placeholder="Имя" value={name} onChange={(e) => setName(e.target.value.replace(/[^A-Za-zА-Яа-яЁё\s-]/g, ""))} maxLength={50} />
               <button onClick={lookupClient} disabled={searching}
                 className="px-4 py-2 rounded-xl bg-neutral-900 text-white text-sm font-semibold disabled:opacity-50">
                 {searching ? "…" : "🔍 Найти"}

@@ -250,7 +250,7 @@ function OrdersAdmin() {
                     load();
                     toast.success("Способ оплаты изменён");
                   }}
-                  className="font-semibold bg-transparent border-0 p-0 -ml-0.5 cursor-pointer focus:outline-none focus:ring-0 hover:text-primary">
+                  className="font-semibold bg-transparent border-0 p-0 m-0 appearance-none cursor-pointer focus:outline-none focus:ring-0 text-neutral-900">
                   <option value="cash">Наличные</option>
                   <option value="card_courier">Картой курьеру</option>
                   <option value="card_online">Онлайн</option>

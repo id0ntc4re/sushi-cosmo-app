@@ -13,6 +13,7 @@ function ReceiptAdmin() {
   const [scope, setScope] = useState<"global" | "branch">("global");
   const [s, setS] = useState<ReceiptSettings>(DEFAULT_RECEIPT);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     (async () => {

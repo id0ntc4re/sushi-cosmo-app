@@ -1,20 +1,23 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { resolveZoneSmart, detectBranchByAddress, createTestOrder } from "@/lib/geocode.functions";
 
 export const Route = createFileRoute("/admin/couriers")({ component: Page });
 
 function Page() {
-  const [tab, setTab] = useState<"couriers" | "zones">("couriers");
+  const [tab, setTab] = useState<"couriers" | "zones" | "check">("couriers");
   return (
     <div>
       <h1 className="text-3xl font-extrabold mb-6">Курьеры и зоны доставки</h1>
       <div className="flex gap-2 mb-5">
         <Tab on={tab === "couriers"} onClick={() => setTab("couriers")}>🛵 Курьеры</Tab>
         <Tab on={tab === "zones"} onClick={() => setTab("zones")}>📍 Зоны</Tab>
+        <Tab on={tab === "check"} onClick={() => setTab("check")}>🧪 Проверка адреса</Tab>
       </div>
-      {tab === "couriers" ? <Couriers /> : <Zones />}
+      {tab === "couriers" ? <Couriers /> : tab === "zones" ? <Zones /> : <AddressChecker />}
     </div>
   );
 }
@@ -234,3 +237,135 @@ function Zones() {
 
 
 const inp = "w-full px-3 py-2 rounded-xl border border-neutral-200 outline-none focus:border-primary";
+
+function AddressChecker() {
+  const resolve = useServerFn(resolveZoneSmart);
+  const detect = useServerFn(detectBranchByAddress);
+  const makeTest = useServerFn(createTestOrder);
+  const [address, setAddress] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [res, setRes] = useState<{ zone: any; branch: any } | null>(null);
+  const [creating, setCreating] = useState(false);
+  const [createdOrder, setCreatedOrder] = useState<{ id: string; number: number } | null>(null);
+
+  async function check() {
+    if (address.trim().length < 3) return;
+    setBusy(true); setCreatedOrder(null); setRes(null);
+    try {
+      const [z, b] = await Promise.all([
+        resolve({ data: { address } }),
+        detect({ data: { address } }),
+      ]);
+      setRes({ zone: z, branch: b });
+    } catch (e: any) {
+      toast.error(e?.message ?? "Ошибка проверки");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function makeOrder() {
+    if (address.trim().length < 3) return;
+    setCreating(true);
+    try {
+      const r = await makeTest({ data: { address } });
+      if (!(r as any).ok) {
+        toast.error("Не удалось создать заказ: " + ((r as any).reason ?? "—"));
+      } else {
+        const ok = r as any;
+        toast.success(`Создан тестовый заказ #${ok.number}`);
+        setCreatedOrder({ id: ok.orderId, number: ok.number });
+      }
+    } catch (e: any) {
+      toast.error(e?.message ?? "Ошибка");
+    } finally {
+      setCreating(false);
+    }
+  }
+
+  const samples = [
+    "Шахтёров 68", "Ленина 5", "Ленина 150", "Бульвар Строителей 21",
+    "Притомский проспект 25", "Кирова 41",
+  ];
+
+  return (
+    <div className="bg-white rounded-3xl p-5 space-y-5">
+      <div>
+        <p className="text-xs text-neutral-500 mb-2">
+          Проверьте адрес — система покажет район, филиал и зону. По кнопке
+          ниже можно создать <b>тестовый заказ</b> (попадёт в Канбан / Заказы).
+        </p>
+        <div className="flex gap-2">
+          <input
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && check()}
+            placeholder="например: Ленина 150"
+            className={inp + " flex-1"}
+          />
+          <button onClick={check} disabled={busy} className="px-5 rounded-xl bg-primary text-white font-bold disabled:opacity-50">
+            {busy ? "..." : "Проверить"}
+          </button>
+          <button onClick={makeOrder} disabled={creating} className="px-5 rounded-xl bg-amber-500 text-white font-bold disabled:opacity-50">
+            {creating ? "..." : "+ Тестовый заказ"}
+          </button>
+        </div>
+        <div className="flex flex-wrap gap-2 mt-3">
+          <span className="text-xs text-neutral-400 self-center">Примеры:</span>
+          {samples.map((s) => (
+            <button key={s} onClick={() => setAddress(s)} className="text-xs px-2.5 py-1 rounded-full bg-neutral-100 hover:bg-neutral-200">
+              {s}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {res && (
+        <div className="grid md:grid-cols-2 gap-4">
+          <div className="border rounded-2xl p-4">
+            <div className="text-xs text-neutral-500 mb-2">📍 Зона доставки</div>
+            {(res.zone as any)?.ok ? (
+              <div className="space-y-1 text-sm">
+                <div><b>Зона:</b> {(res.zone as any).zoneName}</div>
+                <div><b>Стоимость:</b> {(res.zone as any).cost} ₽</div>
+                <div><b>Мин. заказ:</b> {(res.zone as any).minOrder} ₽</div>
+                {(res.zone as any).freeFrom != null && <div><b>Бесплатно от:</b> {(res.zone as any).freeFrom} ₽</div>}
+                {(res.zone as any).matchedStreet && <div className="text-xs text-neutral-500">Найдена улица: «{(res.zone as any).matchedStreet}»</div>}
+                {(res.zone as any).district && <div className="text-xs text-neutral-500">Район: {(res.zone as any).district}</div>}
+                <div className="text-[11px] text-neutral-400 mt-1">источник: {(res.zone as any).source}</div>
+              </div>
+            ) : (
+              <div className="text-sm text-red-500">Зона не определена ({(res.zone as any)?.reason ?? "?"})</div>
+            )}
+          </div>
+          <div className="border rounded-2xl p-4">
+            <div className="text-xs text-neutral-500 mb-2">🏠 Филиал</div>
+            {(res.branch as any)?.ok ? (
+              <div className="space-y-1 text-sm">
+                <div><b>Филиал:</b> {(res.branch as any).label}</div>
+                <div><b>Расстояние:</b> {(res.branch as any).distanceKm} км</div>
+                {(res.branch as any).district && <div><b>Район:</b> {(res.branch as any).district}</div>}
+                <div className="text-xs text-neutral-500">Адрес: {(res.branch as any).formatted}</div>
+              </div>
+            ) : (
+              <div className="text-sm text-red-500">Филиал не определён ({(res.branch as any)?.reason ?? "?"})</div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {createdOrder && (
+        <div className="border-2 border-amber-300 bg-amber-50 rounded-2xl p-4 flex items-center justify-between">
+          <div>
+            <div className="font-bold">Тестовый заказ #{createdOrder.number} создан</div>
+            <div className="text-xs text-neutral-600">Можно посмотреть его в Канбане или Заказах</div>
+          </div>
+          <div className="flex gap-2">
+            <Link to="/admin/kanban" className="px-3 py-2 rounded-xl bg-white border font-semibold text-sm">→ Канбан</Link>
+            <Link to="/admin/orders" className="px-3 py-2 rounded-xl bg-primary text-white font-semibold text-sm">→ Заказы</Link>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

@@ -4,9 +4,9 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { matchZoneByAddress } from "@/lib/zone-match";
 
 // Координаты филиалов Кемерово
-const BRANCH_COORDS: Record<"shahterov" | "stroiteley", { lat: number; lng: number; label: string }> = {
-  shahterov: { lat: 55.3877, lng: 86.1244, label: "Проспект Шахтёров, 68" },
-  stroiteley: { lat: 55.3328, lng: 86.0758, label: "Бульвар Строителей, 21" },
+const BRANCH_COORDS: Record<"shahterov" | "stroiteley", { lat: number; lng: number; label: string; id: string }> = {
+  shahterov: { lat: 55.3877, lng: 86.1244, label: "Проспект Шахтёров, 68", id: "00000000-0000-0000-0000-000000000001" },
+  stroiteley: { lat: 55.3328, lng: 86.0758, label: "Бульвар Строителей, 21", id: "891e497e-33b8-462c-b268-c5c73245c380" },
 };
 
 function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {
@@ -85,9 +85,11 @@ export const detectBranchByAddress = createServerFn({ method: "POST" })
     return {
       ok: true as const,
       branchKey: key,
+      branchId: BRANCH_COORDS[key].id,
       label: BRANCH_COORDS[key].label,
       distanceKm: Math.round((key === "shahterov" ? dSh : dSt) * 10) / 10,
       formatted: g.formatted,
+      district: g.district,
     };
   });
 
@@ -208,3 +210,67 @@ export const resolveZoneSmart = createServerFn({ method: "POST" })
   });
 
 
+
+// Создаёт тестовый заказ с автоопределением филиала и зоны.
+const testOrderSchema = z.object({
+  address: z.string().trim().min(3).max(300),
+  customerName: z.string().trim().min(1).max(100).optional(),
+  phone: z.string().trim().min(3).max(40).optional(),
+});
+
+export const createTestOrder = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => testOrderSchema.parse(data))
+  .handler(async ({ data }) => {
+    const g = await geocode(data.address);
+    if (!g.ok) return { ok: false as const, reason: g.reason };
+
+    const point = { lat: g.lat, lng: g.lng };
+    const dSh = haversineKm(point, BRANCH_COORDS.shahterov);
+    const dSt = haversineKm(point, BRANCH_COORDS.stroiteley);
+    const key: "shahterov" | "stroiteley" = dSh <= dSt ? "shahterov" : "stroiteley";
+    const branchId = BRANCH_COORDS[key].id;
+
+    // Зона по умному резолверу
+    const { data: rows } = await supabaseAdmin
+      .from("delivery_zones")
+      .select("id,name,cost,free_from,min_order,streets,districts")
+      .eq("is_active", true)
+      .order("sort_order");
+    const zones = ((rows ?? []) as any[]).map((z) => ({
+      id: z.id as string, name: z.name as string, cost: Number(z.cost),
+      free_from: z.free_from == null ? null : Number(z.free_from),
+      min_order: Number(z.min_order),
+      streets: (z.streets ?? null) as string | null,
+      districts: (z.districts ?? null) as string[] | null,
+    }));
+    let zone = matchZoneByAddress(data.address, zones, g.district)
+            ?? matchZoneByAddress(data.address, zones);
+
+    const subtotal = 500;
+    const delivery_cost = zone ? zone.zone.cost : 0;
+
+    const { data: ord, error } = await (supabaseAdmin.from("orders") as any).insert({
+      customer_name: data.customerName ?? "ТЕСТ",
+      phone: data.phone ?? "+70000000000",
+      delivery_type: "delivery",
+      address: (zone ? `[${zone.zone.name}] ` : "") + g.formatted,
+      payment_method: "cash",
+      subtotal,
+      delivery_cost,
+      total: subtotal + delivery_cost,
+      status: "new",
+      branch_id: branchId,
+      admin_note: `Тестовый заказ · район: ${g.district ?? "—"}`,
+    }).select("id,number").single();
+
+    if (error) return { ok: false as const, reason: error.message };
+    return {
+      ok: true as const,
+      orderId: ord.id as string,
+      number: ord.number as number,
+      branchLabel: BRANCH_COORDS[key].label,
+      zoneName: zone?.zone.name ?? null,
+      district: g.district,
+      formatted: g.formatted,
+    };
+  });

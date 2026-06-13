@@ -133,7 +133,7 @@ function PromosAdmin() {
                 <td className="px-4 py-3">{rewardText(p)}</td>
                 <td className="px-4 py-3">{p.min_order} ₽</td>
                 <td className="px-4 py-3">{p.used_count}{p.max_uses ? ` / ${p.max_uses}` : ""}</td>
-                <td className="px-4 py-3 text-xs text-neutral-500">{p.expires_at ? new Date(p.expires_at).toLocaleDateString("ru") : "—"}</td>
+                <td className="px-4 py-3 text-xs text-neutral-500">{p.expires_at ? new Date(p.expires_at).toLocaleDateString("ru") : "Бессрочно"}</td>
                 <td className="px-4 py-3">
                   <span className={`text-xs px-2 py-1 rounded-full ${p.is_active ? "bg-green-100 text-green-700" : "bg-neutral-200 text-neutral-600"}`}>
                     {p.is_active ? "Активен" : "Выкл."}
@@ -215,19 +215,42 @@ function PromosAdmin() {
                     onChange={(e) => setEditing({ ...editing, gift_product_name: e.target.value, gift_product_id: "" })}
                     placeholder="Напр. «Фирменный десерт»" />
                 </Field>
-                <Field label="URL картинки подарка (необязательно)">
-                  <input className={inp} value={editing.gift_product_image_url}
-                    onChange={(e) => setEditing({ ...editing, gift_product_image_url: e.target.value })}
-                    placeholder="https://…" />
+                <Field label="Картинка подарка (необязательно)">
+                  <div className="flex items-center gap-3">
+                    {editing.gift_product_image_url && (
+                      <img src={editing.gift_product_image_url} alt="" className="w-16 h-16 rounded-lg object-cover border" />
+                    )}
+                    <label className="px-3 py-2 rounded-xl bg-neutral-900 text-white text-xs font-semibold cursor-pointer hover:opacity-90">
+                      {editing.gift_product_image_url ? "Заменить" : "📤 Загрузить файл"}
+                      <input type="file" accept="image/*" className="hidden"
+                        onChange={async (e) => {
+                          const f = e.target.files?.[0];
+                          if (!f) return;
+                          if (f.size > 5 * 1024 * 1024) return toast.error("Файл больше 5 МБ");
+                          const ext = (f.name.split(".").pop() || "jpg").toLowerCase();
+                          const path = `promo-gifts/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+                          const { error: upErr } = await supabase.storage.from("product-images").upload(path, f, { upsert: false, contentType: f.type });
+                          if (upErr) return toast.error(upErr.message);
+                          const { data: pub } = supabase.storage.from("product-images").getPublicUrl(path);
+                          setEditing({ ...editing, gift_product_image_url: pub.publicUrl });
+                          toast.success("Картинка загружена");
+                        }} />
+                    </label>
+                    {editing.gift_product_image_url && (
+                      <button type="button" onClick={() => setEditing({ ...editing, gift_product_image_url: "" })}
+                        className="text-xs text-red-500">Удалить</button>
+                    )}
+                  </div>
                 </Field>
               </div>
             )}
 
             <Field label="Мин. сумма заказа, ₽"><input type="number" className={inp} value={editing.min_order} onChange={(e) => setEditing({ ...editing, min_order: e.target.value })} /></Field>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Действует с"><input type="date" className={inp} value={editing.starts_at} onChange={(e) => setEditing({ ...editing, starts_at: e.target.value })} /></Field>
-              <Field label="Действует до"><input type="date" className={inp} value={editing.expires_at} onChange={(e) => setEditing({ ...editing, expires_at: e.target.value })} /></Field>
+              <Field label="Действует с (пусто = сразу)"><input type="date" className={inp} value={editing.starts_at} onChange={(e) => setEditing({ ...editing, starts_at: e.target.value })} /></Field>
+              <Field label="Действует до (пусто = бессрочно)"><input type="date" className={inp} value={editing.expires_at} onChange={(e) => setEditing({ ...editing, expires_at: e.target.value })} /></Field>
             </div>
+            <div className="text-[11px] text-neutral-500 -mt-1">Если поля пустые — промокод действует без ограничения по сроку.</div>
             <Field label="Макс. использований (пусто = без лимита)"><input type="number" className={inp} value={editing.max_uses} onChange={(e) => setEditing({ ...editing, max_uses: e.target.value })} /></Field>
             <label className="flex items-center gap-2">
               <input type="checkbox" checked={editing.is_active} onChange={(e) => setEditing({ ...editing, is_active: e.target.checked })} />

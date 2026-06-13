@@ -212,67 +212,92 @@ function Kanban() {
         })}
       </div>
 
-      {payOrder && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setPayOrder(null)}>
-          <div className="bg-white rounded-2xl p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
-            <div className="text-lg font-extrabold mb-1">Принять оплату · заказ #{payOrder.number}</div>
-            <div className="text-sm text-neutral-500 mb-4">К оплате: <b className="text-primary">{Number(payOrder.total)} ₽</b></div>
+      {payOrder && (() => {
+        const total = Number(payOrder.total);
+        const given = Number(payCashGiven || 0);
+        const change = given >= total ? given - total : 0;
+        const insufficient = !!payCashGiven && given < total;
+        const appendDigit = (d: string) => setPayCashGiven((v) => (v === "0" ? d : v + d));
+        const setQuick = (n: number) => setPayCashGiven(String(n));
+        const clearAmount = () => setPayCashGiven("");
+        return (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setPayOrder(null)}>
+            <div className="bg-white rounded-2xl p-6 w-full max-w-lg shadow-2xl" onClick={(e) => e.stopPropagation()}>
+              <div className="text-center text-xl font-extrabold mb-5">Расчёт сдачи · заказ #{payOrder.number}</div>
 
-            <div className="text-xs font-bold uppercase text-neutral-500 mb-2">Способ оплаты</div>
-            <div className="grid grid-cols-3 gap-2 mb-4">
-              {([
-                { k: "cash", label: "💵 Наличные" },
-                { k: "card_courier", label: "💳 Картой" },
-                { k: "card_online", label: "🌐 Онлайн" },
-              ] as const).map((m) => (
-                <button key={m.k} onClick={() => setPayMethod(m.k)}
-                  className={`px-2 py-2.5 rounded-lg text-xs font-bold border-2 ${payMethod === m.k ? "border-primary bg-primary/10 text-primary" : "border-neutral-200 bg-white"}`}>
-                  {m.label}
-                </button>
-              ))}
-            </div>
+              <div className="grid grid-cols-[110px_1fr] gap-y-3 gap-x-4 items-center mb-4">
+                <div className="text-neutral-600">Итого</div>
+                <div className="text-lg font-extrabold text-primary">{total} ₽</div>
 
-            {payMethod === "cash" && (
-              <div className="mb-4 p-3 rounded-lg bg-amber-50 border border-amber-200">
-                <label className="text-xs font-bold text-neutral-600 block mb-1">Получено наличными (для расчёта сдачи)</label>
+                <div className="text-neutral-600">Внесено</div>
                 <input
                   type="number" inputMode="decimal" autoFocus
                   value={payCashGiven}
-                  onChange={(e) => setPayCashGiven(e.target.value)}
-                  placeholder={String(payOrder.total)}
-                  className="w-full px-3 py-2 rounded-md border border-neutral-300 text-base font-semibold"
+                  onChange={(e) => setPayCashGiven(e.target.value.replace(/[^0-9.]/g, ""))}
+                  placeholder="0"
+                  className="px-3 py-2 rounded-md border border-neutral-300 text-lg font-bold w-full"
                 />
-                {payCashGiven && Number(payCashGiven) >= Number(payOrder.total) && (
-                  <div className="mt-2 text-sm font-bold text-green-700">
-                    Сдача: {(Number(payCashGiven) - Number(payOrder.total)).toFixed(2)} ₽
-                  </div>
-                )}
-                {payCashGiven && Number(payCashGiven) < Number(payOrder.total) && (
-                  <div className="mt-2 text-sm font-bold text-red-600">Недостаточно</div>
-                )}
+
+                <div className="text-neutral-600">Сдача</div>
+                <div className={`text-lg font-extrabold ${insufficient ? "text-red-600" : "text-green-700"}`}>
+                  {insufficient ? "недостаточно" : `${change.toFixed(2)} ₽`}
+                </div>
               </div>
-            )}
 
-            <label className="text-xs font-bold text-neutral-600 block mb-1">Номер фискального чека (необязательно)</label>
-            <input
-              value={payFiscal}
-              onChange={(e) => setPayFiscal(e.target.value)}
-              placeholder="—"
-              className="w-full px-3 py-2 rounded-md border border-neutral-300 mb-4 text-sm"
-            />
+              <div className="grid grid-cols-4 gap-2 mb-4">
+                {["7","8","9"].map((d) => (
+                  <button key={d} onClick={() => appendDigit(d)} className="py-3 rounded-lg border-2 border-neutral-200 text-lg font-bold hover:bg-neutral-50">{d}</button>
+                ))}
+                <button onClick={() => setQuick(5000)} className="py-3 rounded-lg border-2 border-primary/30 text-primary font-bold hover:bg-primary/5">5000</button>
 
-            <div className="flex gap-2">
-              <button onClick={() => setPayOrder(null)}
-                className="flex-1 px-4 py-2.5 rounded-lg bg-neutral-100 font-bold">Отмена</button>
-              <button onClick={confirmPay}
-                disabled={payMethod === "cash" && !!payCashGiven && Number(payCashGiven) < Number(payOrder.total)}
-                className="flex-1 px-4 py-2.5 rounded-lg bg-primary text-white font-bold disabled:opacity-50">
-                Принять
-              </button>
+                {["4","5","6"].map((d) => (
+                  <button key={d} onClick={() => appendDigit(d)} className="py-3 rounded-lg border-2 border-neutral-200 text-lg font-bold hover:bg-neutral-50">{d}</button>
+                ))}
+                <button onClick={() => setQuick(2000)} className="py-3 rounded-lg border-2 border-primary/30 text-primary font-bold hover:bg-primary/5">2000</button>
+
+                {["1","2","3"].map((d) => (
+                  <button key={d} onClick={() => appendDigit(d)} className="py-3 rounded-lg border-2 border-neutral-200 text-lg font-bold hover:bg-neutral-50">{d}</button>
+                ))}
+                <button onClick={() => setQuick(1000)} className="py-3 rounded-lg border-2 border-primary/30 text-primary font-bold hover:bg-primary/5">1000</button>
+
+                <button onClick={() => appendDigit("0")} className="py-3 rounded-lg border-2 border-neutral-200 text-lg font-bold hover:bg-neutral-50">0</button>
+                <button onClick={() => setPayCashGiven((v) => v.slice(0, -1))} className="py-3 rounded-lg border-2 border-neutral-200 text-lg font-bold hover:bg-neutral-50">⌫</button>
+                <button onClick={clearAmount} className="py-3 rounded-lg border-2 border-red-200 text-red-600 text-lg font-bold hover:bg-red-50">C</button>
+                <button onClick={() => setQuick(500)} className="py-3 rounded-lg border-2 border-primary/30 text-primary font-bold hover:bg-primary/5">500</button>
+              </div>
+
+              <div className="mb-4">
+                <label className="text-xs font-bold text-neutral-600 block mb-1">Номер фискального чека (необязательно)</label>
+                <input
+                  value={payFiscal}
+                  onChange={(e) => setPayFiscal(e.target.value)}
+                  placeholder="—"
+                  className="w-full px-3 py-2 rounded-md border border-neutral-300 text-sm"
+                />
+              </div>
+
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  onClick={() => confirmPay("cash")}
+                  disabled={insufficient}
+                  className="py-3 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold disabled:opacity-40">
+                  💵 Наличными
+                </button>
+                <button
+                  onClick={() => confirmPay("card_courier")}
+                  className="py-3 rounded-lg bg-blue-500 hover:bg-blue-600 text-white font-extrabold">
+                  💳 Картой
+                </button>
+                <button
+                  onClick={() => setPayOrder(null)}
+                  className="py-3 rounded-lg bg-neutral-100 hover:bg-neutral-200 font-bold">
+                  Отмена
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
     </div>
   );
 }

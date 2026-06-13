@@ -10,7 +10,7 @@ import { validatePromo, type PromoCode } from "@/lib/promo";
 import { getDeliverySlots } from "@/lib/timeSlots";
 import logo from "@/assets/logo.svg";
 import { detectBranchKey, branchKeyFromName } from "@/lib/branch-detect";
-import { detectBranchByAddress } from "@/lib/geocode.functions";
+import { detectBranchByAddress, resolveZoneSmart } from "@/lib/geocode.functions";
 import { matchZoneByAddress } from "@/lib/zone-match";
 import { formatRuPhone, isValidRuPhone, isValidName } from "@/lib/phone-format";
 

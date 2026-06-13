@@ -259,7 +259,7 @@ function Zones() {
         zoneName={mapZone?.name ?? ""}
         initialPolygon={Array.isArray(mapZone?.polygon) ? mapZone.polygon : null}
         allZones={list.filter((z) => z.id !== mapZone?.id).map((z) => ({ id: z.id, name: z.name, polygon: Array.isArray(z.polygon) ? z.polygon : null }))}
-        onSave={async (poly) => {
+        onSave={async (poly: { lat: number; lng: number }[] | null) => {
           if (!mapZone) return;
           await update(mapZone.id, { polygon: poly });
           toast.success(poly ? "Полигон сохранён" : "Полигон удалён");

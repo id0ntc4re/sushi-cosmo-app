@@ -20,7 +20,7 @@ const NAV: { to: string; label: string; icon: string; exact?: boolean; superOnly
   { to: "/admin/shifts", label: "Кассовые смены", icon: "💵" },
   { to: "/admin/warehouse", label: "Склад по филиалам", icon: "🏬" },
   { to: "/admin/expenses", label: "Прочие расходы", icon: "💸" },
-  { to: "/admin/inventory", label: "Ингредиенты / Техкарты", icon: "📦", superOnly: true },
+  { to: "/admin/inventory", label: "Ингредиенты / Техкарты", icon: "📦" },
   { to: "/admin/modifiers", label: "Модификаторы", icon: "🧩", superOnly: true },
   { to: "/admin/trash", label: "Удалённые заказы", icon: "🗑️" },
   { to: "/admin/branches", label: "Филиалы", icon: "🏢", superOnly: true },

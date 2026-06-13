@@ -106,11 +106,47 @@ function ReceiptAdmin() {
       <div className="grid lg:grid-cols-2 gap-6">
         <div className="bg-white rounded-3xl p-6 space-y-4">
           <h2 className="font-extrabold text-lg">Шапка чека</h2>
-          <Field label="Логотип (URL картинки, необязательно)">
-            <input className={inp} value={s.logo_url}
-              onChange={(e) => setS({ ...s, logo_url: e.target.value })}
-              placeholder="https://…/logo.png" />
+          <Field label="Логотип">
+            <div className="flex items-start gap-3 flex-wrap">
+              {s.logo_url && (
+                <img src={s.logo_url} alt="" className="h-16 w-16 object-contain border rounded-lg bg-neutral-50 p-1" />
+              )}
+              <div className="flex-1 min-w-[200px] space-y-2">
+                <input className={inp} value={s.logo_url}
+                  onChange={(e) => setS({ ...s, logo_url: e.target.value })}
+                  placeholder="URL или загрузите файл ниже" />
+                <div className="flex items-center gap-2">
+                  <label className="px-3 py-2 rounded-xl bg-neutral-100 hover:bg-neutral-200 text-sm font-semibold cursor-pointer">
+                    {uploading ? "Загрузка…" : "📁 Загрузить с устройства"}
+                    <input type="file" accept="image/*" className="hidden" disabled={uploading}
+                      onChange={async (e) => {
+                        const f = e.target.files?.[0]; if (!f) return;
+                        try {
+                          setUploading(true);
+                          const ext = (f.name.split(".").pop() || "png").toLowerCase();
+                          const path = `receipt-logos/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+                          const { error: upErr } = await supabase.storage.from("product-images").upload(path, f, { upsert: false, contentType: f.type });
+                          if (upErr) throw upErr;
+                          const { data: pub } = supabase.storage.from("product-images").getPublicUrl(path);
+                          setS((prev) => ({ ...prev, logo_url: pub.publicUrl }));
+                          toast.success("Логотип загружен");
+                        } catch (err: any) {
+                          toast.error(err?.message ?? "Не удалось загрузить");
+                        } finally {
+                          setUploading(false);
+                          e.target.value = "";
+                        }
+                      }} />
+                  </label>
+                  {s.logo_url && (
+                    <button type="button" onClick={() => setS({ ...s, logo_url: "" })}
+                      className="text-xs text-red-600 hover:underline">Убрать</button>
+                  )}
+                </div>
+              </div>
+            </div>
           </Field>
+
           <Field label="Название">
             <input className={inp} value={s.name}
               onChange={(e) => setS({ ...s, name: e.target.value })} />

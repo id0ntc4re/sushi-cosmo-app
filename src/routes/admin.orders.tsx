@@ -232,7 +232,30 @@ function OrdersAdmin() {
               <Info k="Телефон" v={<a href={`tel:${open.phone}`} className="text-primary">{open.phone}</a>} />
               <Info k="Тип" v={open.delivery_type === "delivery" ? "Доставка" : "Самовывоз"} />
               <Info k={open.delivery_type === "delivery" ? "Адрес" : "Точка"} v={open.address || open.pickup_point || "—"} />
-              <Info k="Оплата" v={{ cash: "Наличные", card_courier: "Картой курьеру", card_online: "Онлайн" }[open.payment_method as string]} />
+              <Info k="Оплата" v={
+                <select
+                  value={open.payment_method as string}
+                  onChange={async (e) => {
+                    const method = e.target.value;
+                    const prev = open.payment_method;
+                    const { error } = await (supabase.from("orders") as any).update({ payment_method: method }).eq("id", open.id);
+                    if (error) return toast.error(error.message);
+                    const { data: { user } } = await supabase.auth.getUser();
+                    await (supabase.from("order_changes") as any).insert({
+                      order_id: open.id, user_id: user?.id ?? null, action: "payment_method_changed",
+                      details: { from: prev, to: method },
+                    });
+                    setOpen({ ...open, payment_method: method });
+                    loadHistory(open.id);
+                    load();
+                    toast.success("Способ оплаты изменён");
+                  }}
+                  className="px-2 py-1 rounded-lg border border-neutral-200 bg-white text-sm">
+                  <option value="cash">Наличные</option>
+                  <option value="card_courier">Картой курьеру</option>
+                  <option value="card_online">Онлайн</option>
+                </select>
+              } />
               {open.change_from && <Info k="Сдача с" v={`${open.change_from} ₽`} />}
               <Info k="Персон" v={open.persons} />
               <Info k="Время" v={open.delivery_time || "—"} />

@@ -175,7 +175,8 @@ function Checkout() {
     return () => { cancelled = true; clearTimeout(t); };
   }, [form.address, form.delivery_type, branches, branchManual]);
 
-  // Автоопределение зоны доставки по названию улицы из адреса
+  // Автоопределение зоны: текст → при неоднозначности геокодер уточняет по району
+  const resolveZone = useServerFn(resolveZoneSmart);
   useEffect(() => {
     if (form.delivery_type !== "delivery") {
       setZoneStatus({ kind: "idle" });
@@ -192,19 +193,51 @@ function Checkout() {
       setZoneId("");
       return;
     }
-    const match = matchZoneByAddress(addr, zones);
-    if (match) {
-      setZoneId(match.zone.id);
+
+    // Быстрый локальный матч для мгновенного отклика
+    const local = matchZoneByAddress(addr, zones);
+    if (local && !local.ambiguous) {
+      setZoneId(local.zone.id);
       setZoneStatus({
         kind: "detected",
-        name: match.zone.name,
-        cost: Number(match.zone.cost),
-        matchedStreet: match.matchedStreet,
+        name: local.zone.name,
+        cost: Number(local.zone.cost),
+        matchedStreet: local.matchedStreet,
+        district: null,
+        source: "text",
       });
-    } else {
-      setZoneId("");
-      setZoneStatus({ kind: "no_match" });
+      return;
     }
+
+    // Иначе — спросим сервер (он догеокодирует и уточнит район)
+    setZoneStatus({ kind: "detecting" });
+    let cancelled = false;
+    const t = setTimeout(async () => {
+      try {
+        const res = await resolveZone({ data: { address: addr } });
+        if (cancelled) return;
+        if (res.ok) {
+          setZoneId(res.zoneId);
+          setZoneStatus({
+            kind: "detected",
+            name: res.zoneName,
+            cost: Number(res.cost),
+            matchedStreet: res.matchedStreet,
+            district: res.district,
+            source: res.source,
+          });
+        } else {
+          setZoneId("");
+          setZoneStatus({ kind: "no_match" });
+        }
+      } catch {
+        if (cancelled) return;
+        setZoneId("");
+        setZoneStatus({ kind: "no_match" });
+      }
+    }, 600);
+
+    return () => { cancelled = true; clearTimeout(t); };
   }, [form.address, form.delivery_type, zones, zoneManual]);
 
 

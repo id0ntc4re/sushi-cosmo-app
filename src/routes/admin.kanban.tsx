@@ -62,13 +62,17 @@ function Kanban() {
     setPayFiscal("");
   }
 
-  async function confirmPay() {
+  async function confirmPay(method: "cash" | "card_courier" | "card_online") {
     if (!payOrder) return;
+    const total = Number(payOrder.total);
+    if (method === "cash" && payCashGiven && Number(payCashGiven) < total) {
+      return toast.error("Внесённая сумма меньше итога");
+    }
     const { error } = await (supabase.from("orders") as any)
       .update({
         payment_status: "paid",
         paid_at: new Date().toISOString(),
-        payment_method: payMethod,
+        payment_method: method,
         fiscal_receipt_number: payFiscal || null,
       })
       .eq("id", payOrder.id);
@@ -78,11 +82,11 @@ function Kanban() {
       order_id: payOrder.id, user_id: user?.id ?? null, action: "paid",
       details: {
         fiscal_receipt_number: payFiscal || null,
-        payment_method: payMethod,
-        cash_given: payMethod === "cash" && payCashGiven ? Number(payCashGiven) : null,
+        payment_method: method,
+        cash_given: method === "cash" && payCashGiven ? Number(payCashGiven) : null,
       },
     });
-    const label = payMethod === "cash" ? "Наличными" : payMethod === "card_courier" ? "Картой курьеру" : "Онлайн";
+    const label = method === "cash" ? "Наличными" : method === "card_courier" ? "Картой" : "Онлайн";
     toast.success(`Оплата принята · ${label}`);
     setPayOrder(null);
     load();

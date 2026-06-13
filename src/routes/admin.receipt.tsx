@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { DEFAULT_RECEIPT, ReceiptSettings, loadReceiptSettings, receiptKey } from "@/lib/receipt-settings";
+import { DEFAULT_RECEIPT, ReceiptSettings, loadReceiptSettings, receiptKey, t } from "@/lib/receipt-settings";
 
 export const Route = createFileRoute("/admin/receipt")({ component: ReceiptAdmin });
 
@@ -236,23 +236,28 @@ function ReceiptAdmin() {
 }
 
 function Preview({ s }: { s: ReceiptSettings }) {
+  const fs = s.font_size;
+  const widthPx = s.paper_width * 3.78; // 1mm ≈ 3.78px
   return (
-    <div className="bg-white border rounded-2xl p-4 font-mono text-[12px] leading-snug text-black max-w-[320px] mx-auto">
+    <div
+      className="bg-white border rounded-2xl p-4 font-mono leading-snug text-black mx-auto"
+      style={{ fontSize: `${fs}px`, maxWidth: `${widthPx}px` }}
+    >
       <div className="text-center">
         {s.logo_url && <img src={s.logo_url} alt="" className="mx-auto max-h-14 mb-2 object-contain" />}
-        <div className="text-lg font-extrabold">{s.name || "—"}</div>
+        <div className="font-extrabold" style={{ fontSize: `${fs + 6}px` }}>{s.name || "—"}</div>
         {s.line1 && <div>{s.line1}</div>}
         {s.line2 && <div>{s.line2}</div>}
         {s.line3 && <div>{s.line3}</div>}
       </div>
       <div className="border-t border-dashed border-black my-2" />
       <div>13.06.2026 20:26</div>
-      <div>## 2567</div>
+      <div className="font-extrabold" style={{ fontSize: `${fs + 10}px` }}>## 2567</div>
       {s.show_items_table && (
         <>
           <div className="border-t border-dashed border-black my-2" />
           <div className="flex font-bold">
-            <span className="flex-1">Наименование</span><span className="w-8 text-right">Кол.</span><span className="w-12 text-right">Сумма</span>
+            <span className="flex-1">{t(s, "name")}</span><span className="w-8 text-right">{t(s, "qty")}</span><span className="w-12 text-right">{t(s, "sum")}</span>
           </div>
           <Row name="Филадельфия" qty={1} sum={150} />
           <Row name="Калифорния" qty={2} sum={500} />
@@ -261,26 +266,38 @@ function Preview({ s }: { s: ReceiptSettings }) {
       )}
       {s.show_totals && (
         <>
-          <div className="flex justify-between mt-1"><b>ИТОГО</b><span>650</span></div>
-          <div className="flex justify-between"><span>Скидка</span><span>10%</span></div>
-          <div className="flex justify-between font-extrabold"><span>К ОПЛАТЕ</span><span>585</span></div>
+          <div className="flex justify-between mt-1"><b>{t(s, "total")}</b><span>650</span></div>
+          <div className="flex justify-between"><span>{t(s, "discount")}</span><span>10%</span></div>
+          <div className="flex justify-between font-extrabold"><span>{t(s, "pay")}</span><span>585</span></div>
         </>
       )}
       {s.footer && (
         <div className="text-center mt-2 whitespace-pre-wrap">{s.footer}</div>
       )}
-      {s.show_customer && (
+      {(s.show_customer || s.show_customer_name || s.show_comment || s.show_employee_name || s.show_bonus) && (
         <>
           <div className="border-t border-dashed border-black my-2" />
-          {s.show_bonus && <div><b>Баллы:</b> 75, за заказ: 0</div>}
-          <div><b>Адрес:</b> проспект Мира, 120</div>
-          <div><b>Телефон:</b> +7 (111) 111-11-11</div>
-          <div><b>Примечание:</b> Привезти к 18:00</div>
+          {s.show_customer && <div><b>{t(s, "type")}:</b> {t(s, "delivery_t")}</div>}
+          {s.show_customer_name && <div><b>{t(s, "client")}:</b> Иван Иванов</div>}
+          {s.show_customer && <div><b>{t(s, "phone")}:</b> +7 (111) 111-11-11</div>}
+          {s.show_customer && <div><b>{t(s, "address")}:</b> проспект Мира, 120</div>}
+          {s.show_bonus && <div><b>{t(s, "bonus")}:</b> 75, {t(s, "bonus_earned")}: 0</div>}
+          {s.show_employee_name && <div><b>{t(s, "employee")}:</b> Анна К.</div>}
+          {s.show_comment && <div><b>{t(s, "comment")}:</b> Привезти к 18:00</div>}
+        </>
+      )}
+      {s.show_map && (
+        <>
+          <div className="border-t border-dashed border-black my-2" />
+          <div className="bg-neutral-100 text-neutral-500 text-center py-6 rounded">
+            🗺 Карта доставки (zoom {s.map_zoom})
+          </div>
         </>
       )}
     </div>
   );
 }
+
 function Row({ name, qty, sum }: { name: string; qty: number; sum: number }) {
   return (
     <div className="flex">

@@ -86,7 +86,7 @@ function Checkout() {
   type ZoneStatus =
     | { kind: "idle" }
     | { kind: "detecting" }
-    | { kind: "detected"; name: string; cost: number; matchedStreet: string; district: string | null; source: string }
+    | { kind: "detected"; name: string; cost: number; matchedStreet: string | null; district: string | null; source: string }
     | { kind: "no_match" };
   const [zoneStatus, setZoneStatus] = useState<ZoneStatus>({ kind: "idle" });
 

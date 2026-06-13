@@ -251,6 +251,19 @@ function Zones() {
         ))}
         {!list.length && <div className="py-8 text-center text-neutral-400">Зоны не заданы</div>}
       </div>
+
+      <ZoneMapEditor
+        open={!!mapZone}
+        onClose={() => setMapZone(null)}
+        zoneName={mapZone?.name ?? ""}
+        initialPolygon={Array.isArray(mapZone?.polygon) ? mapZone.polygon : null}
+        allZones={list.filter((z) => z.id !== mapZone?.id).map((z) => ({ id: z.id, name: z.name, polygon: Array.isArray(z.polygon) ? z.polygon : null }))}
+        onSave={async (poly) => {
+          if (!mapZone) return;
+          await update(mapZone.id, { polygon: poly });
+          toast.success(poly ? "Полигон сохранён" : "Полигон удалён");
+        }}
+      />
     </div>
   );
 }

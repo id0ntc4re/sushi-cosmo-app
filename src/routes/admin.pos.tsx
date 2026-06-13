@@ -311,8 +311,7 @@ function PosPage() {
               ))}
             </div>
             {deliveryType === "delivery" && (
-              <input className={inp} placeholder="Адрес: улица, дом, кв., подъезд, этаж*"
-                value={address} onChange={(e) => setAddress(e.target.value)} />
+              <AddressFields value={address} onChange={setAddress} required />
             )}
             <input className={inp} placeholder="Комментарий клиента"
               value={comment} onChange={(e) => setComment(e.target.value)} />

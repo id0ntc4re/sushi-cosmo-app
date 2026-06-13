@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { matchZoneByAddress } from "@/lib/zone-match";
 
 // Координаты филиалов Кемерово
 const BRANCH_COORDS: Record<"shahterov" | "stroiteley", { lat: number; lng: number; label: string }> = {
@@ -17,6 +18,21 @@ function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: num
   const lat2 = toRad(b.lat);
   const h = Math.sin(dLat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) ** 2;
   return 2 * R * Math.asin(Math.sqrt(h));
+}
+
+function extractDistrict(components: any[]): string | null {
+  if (!Array.isArray(components)) return null;
+  for (const c of components) {
+    const name: string = c?.long_name ?? "";
+    if (/район/i.test(name)) return name;
+  }
+  for (const c of components) {
+    const types: string[] = c?.types ?? [];
+    if (types.includes("administrative_area_level_3") || types.includes("sublocality_level_1")) {
+      return c?.long_name ?? null;
+    }
+  }
+  return null;
 }
 
 async function geocode(address: string) {
@@ -40,15 +56,17 @@ async function geocode(address: string) {
   }
   if (!res.ok) return { ok: false as const, reason: `http_${res.status}` as const };
   const json: any = await res.json();
-  const loc = json?.results?.[0]?.geometry?.location;
+  const first = json?.results?.[0];
+  const loc = first?.geometry?.location;
   if (!loc || typeof loc.lat !== "number" || typeof loc.lng !== "number") {
     return { ok: false as const, reason: "no_match" as const };
   }
-  const formatted: string = json.results[0].formatted_address ?? "";
+  const formatted: string = first.formatted_address ?? "";
   if (!/Кемерово/i.test(formatted)) {
     return { ok: false as const, reason: "out_of_city" as const, formatted };
   }
-  return { ok: true as const, lat: loc.lat as number, lng: loc.lng as number, formatted };
+  const district = extractDistrict(first.address_components ?? []);
+  return { ok: true as const, lat: loc.lat as number, lng: loc.lng as number, formatted, district };
 }
 
 const inputSchema = z.object({
@@ -117,4 +135,76 @@ export const resolveDeliveryZoneByAddress = createServerFn({ method: "POST" })
       distanceKm: Math.round(m.distanceKm * 10) / 10,
     };
   });
+
+// Умное определение зоны: сначала по тексту, при неоднозначности —
+// геокодируем и уточняем по району Кемерово.
+export const resolveZoneSmart = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => inputSchema.parse(data))
+  .handler(async ({ data }) => {
+    const { data: rows } = await supabaseAdmin
+      .from("delivery_zones")
+      .select("id,name,cost,free_from,min_order,streets,districts")
+      .eq("is_active", true)
+      .order("sort_order");
+
+    const zones = ((rows ?? []) as any[]).map((z) => ({
+      id: z.id as string,
+      name: z.name as string,
+      cost: Number(z.cost),
+      free_from: z.free_from == null ? null : Number(z.free_from),
+      min_order: Number(z.min_order),
+      streets: (z.streets ?? null) as string | null,
+      districts: (z.districts ?? null) as string[] | null,
+    }));
+
+    const text = matchZoneByAddress(data.address, zones);
+    if (text && !text.ambiguous) {
+      return {
+        ok: true as const,
+        zoneId: text.zone.id,
+        zoneName: text.zone.name,
+        cost: text.zone.cost,
+        freeFrom: text.zone.free_from,
+        minOrder: text.zone.min_order,
+        matchedStreet: text.matchedStreet,
+        district: null as string | null,
+        source: "text" as const,
+      };
+    }
+
+    const g = await geocode(data.address);
+    if (!g.ok) {
+      if (text) {
+        return {
+          ok: true as const,
+          zoneId: text.zone.id,
+          zoneName: text.zone.name,
+          cost: text.zone.cost,
+          freeFrom: text.zone.free_from,
+          minOrder: text.zone.min_order,
+          matchedStreet: text.matchedStreet,
+          district: null,
+          source: "text_ambiguous" as const,
+        };
+      }
+      return { ok: false as const, reason: g.reason };
+    }
+
+    const refined = matchZoneByAddress(data.address, zones, g.district);
+    if (refined) {
+      return {
+        ok: true as const,
+        zoneId: refined.zone.id,
+        zoneName: refined.zone.name,
+        cost: refined.zone.cost,
+        freeFrom: refined.zone.free_from,
+        minOrder: refined.zone.min_order,
+        matchedStreet: refined.matchedStreet,
+        district: g.district,
+        source: refined.ambiguous ? ("geocode_ambiguous" as const) : ("geocode_district" as const),
+      };
+    }
+    return { ok: false as const, reason: "no_zone" as const, district: g.district };
+  });
+
 

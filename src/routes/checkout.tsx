@@ -10,7 +10,7 @@ import { validatePromo, type PromoCode } from "@/lib/promo";
 import { getDeliverySlots } from "@/lib/timeSlots";
 import logo from "@/assets/logo.svg";
 import { detectBranchKey, branchKeyFromName } from "@/lib/branch-detect";
-import { detectBranchByAddress } from "@/lib/geocode.functions";
+import { detectBranchByAddress, resolveZoneSmart } from "@/lib/geocode.functions";
 import { matchZoneByAddress } from "@/lib/zone-match";
 import { formatRuPhone, isValidRuPhone, isValidName } from "@/lib/phone-format";
 
@@ -80,12 +80,13 @@ function Checkout() {
   const [branchId, setBranchId] = useState<string>("");
   const [branchAutoSet, setBranchAutoSet] = useState(false);
   const [branchManual, setBranchManual] = useState(false);
-  const [zones, setZones] = useState<{ id: string; name: string; cost: number; free_from: number | null; min_order: number; streets: string | null }[]>([]);
+  const [zones, setZones] = useState<{ id: string; name: string; cost: number; free_from: number | null; min_order: number; streets: string | null; districts: string[] | null }[]>([]);
   const [zoneId, setZoneId] = useState<string>("");
   const [zoneManual, setZoneManual] = useState(false);
   type ZoneStatus =
     | { kind: "idle" }
-    | { kind: "detected"; name: string; cost: number; matchedStreet: string }
+    | { kind: "detecting" }
+    | { kind: "detected"; name: string; cost: number; matchedStreet: string; district: string | null; source: string }
     | { kind: "no_match" };
   const [zoneStatus, setZoneStatus] = useState<ZoneStatus>({ kind: "idle" });
 
@@ -111,7 +112,7 @@ function Checkout() {
         supabase.from("settings").select("value").eq("key", "general").maybeSingle(),
         supabase.from("products").select("id,name,price,image_url,weight").eq("is_active", true).eq("in_stock", true).eq("is_addon", true).eq("is_semi_product", false).order("sort_order"),
         supabase.from("branches").select("id,name,address").eq("is_active", true).order("sort_order"),
-        supabase.from("delivery_zones").select("id,name,cost,free_from,min_order,streets").eq("is_active", true).order("sort_order"),
+        (supabase.from("delivery_zones") as any).select("id,name,cost,free_from,min_order,streets,districts").eq("is_active", true).order("sort_order"),
       ]);
       if (st?.value) setSettings({ ...DEFAULT_SETTINGS, ...(st.value as any) });
       setAddons((ad as Addon[]) ?? []);
@@ -174,7 +175,8 @@ function Checkout() {
     return () => { cancelled = true; clearTimeout(t); };
   }, [form.address, form.delivery_type, branches, branchManual]);
 
-  // Автоопределение зоны доставки по названию улицы из адреса
+  // Автоопределение зоны: текст → при неоднозначности геокодер уточняет по району
+  const resolveZone = useServerFn(resolveZoneSmart);
   useEffect(() => {
     if (form.delivery_type !== "delivery") {
       setZoneStatus({ kind: "idle" });
@@ -191,19 +193,51 @@ function Checkout() {
       setZoneId("");
       return;
     }
-    const match = matchZoneByAddress(addr, zones);
-    if (match) {
-      setZoneId(match.zone.id);
+
+    // Быстрый локальный матч для мгновенного отклика
+    const local = matchZoneByAddress(addr, zones);
+    if (local && !local.ambiguous) {
+      setZoneId(local.zone.id);
       setZoneStatus({
         kind: "detected",
-        name: match.zone.name,
-        cost: Number(match.zone.cost),
-        matchedStreet: match.matchedStreet,
+        name: local.zone.name,
+        cost: Number(local.zone.cost),
+        matchedStreet: local.matchedStreet,
+        district: null,
+        source: "text",
       });
-    } else {
-      setZoneId("");
-      setZoneStatus({ kind: "no_match" });
+      return;
     }
+
+    // Иначе — спросим сервер (он догеокодирует и уточнит район)
+    setZoneStatus({ kind: "detecting" });
+    let cancelled = false;
+    const t = setTimeout(async () => {
+      try {
+        const res = await resolveZone({ data: { address: addr } });
+        if (cancelled) return;
+        if (res.ok) {
+          setZoneId(res.zoneId);
+          setZoneStatus({
+            kind: "detected",
+            name: res.zoneName,
+            cost: Number(res.cost),
+            matchedStreet: res.matchedStreet,
+            district: res.district,
+            source: res.source,
+          });
+        } else {
+          setZoneId("");
+          setZoneStatus({ kind: "no_match" });
+        }
+      } catch {
+        if (cancelled) return;
+        setZoneId("");
+        setZoneStatus({ kind: "no_match" });
+      }
+    }, 600);
+
+    return () => { cancelled = true; clearTimeout(t); };
   }, [form.address, form.delivery_type, zones, zoneManual]);
 
 
@@ -444,18 +478,27 @@ function Checkout() {
                       </Field>
                       {zones.length > 0 && (
                         <div className="space-y-2">
+                          {zoneStatus.kind === "detecting" && !zoneManual && (
+                            <div className="px-3 py-2 rounded-xl bg-neutral-50 text-neutral-600 text-sm">
+                              Определяем зону по адресу…
+                            </div>
+                          )}
                           {zoneStatus.kind === "detected" && !zoneManual && zone && (
                             <div className="px-3 py-2 rounded-xl bg-emerald-50 text-emerald-800 text-sm">
                               <b>Зона: «{zone.name}»</b> · доставка {Number(zone.cost)} ₽
                               {zone.free_from != null ? ` (бесплатно от ${Number(zone.free_from)} ₽)` : ""}
                               <div className="text-xs opacity-70 mt-0.5">
-                                Определено автоматически по улице «{zoneStatus.matchedStreet}».
+                                {zoneStatus.source === "geocode_district" && zoneStatus.district
+                                  ? `Уточнено по району «${zoneStatus.district}» (улица «${zoneStatus.matchedStreet}»).`
+                                  : zoneStatus.source === "geocode_ambiguous"
+                                    ? `Улица «${zoneStatus.matchedStreet}» проходит через несколько зон — выбрана наиболее вероятная. Проверьте.`
+                                    : `Определено по улице «${zoneStatus.matchedStreet}».`}
                               </div>
                             </div>
                           )}
                           {zoneStatus.kind === "no_match" && !zoneManual && (
                             <div className="px-3 py-2 rounded-xl bg-amber-50 text-amber-800 text-sm">
-                              Не удалось определить зону по названию улицы. Проверьте адрес или выберите зону вручную.
+                              Не удалось определить зону по адресу. Проверьте улицу/дом или выберите зону вручную.
                             </div>
                           )}
                           {(zoneManual || zoneStatus.kind === "no_match") && (

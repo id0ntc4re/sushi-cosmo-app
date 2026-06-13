@@ -404,6 +404,7 @@ export type Database = {
           center_lng: number | null
           cost: number
           created_at: string
+          districts: string[] | null
           free_from: number | null
           id: string
           is_active: boolean
@@ -418,6 +419,7 @@ export type Database = {
           center_lng?: number | null
           cost?: number
           created_at?: string
+          districts?: string[] | null
           free_from?: number | null
           id?: string
           is_active?: boolean
@@ -432,6 +434,7 @@ export type Database = {
           center_lng?: number | null
           cost?: number
           created_at?: string
+          districts?: string[] | null
           free_from?: number | null
           id?: string
           is_active?: boolean

@@ -488,11 +488,13 @@ function Checkout() {
                               <b>Зона: «{zone.name}»</b> · доставка {Number(zone.cost)} ₽
                               {zone.free_from != null ? ` (бесплатно от ${Number(zone.free_from)} ₽)` : ""}
                               <div className="text-xs opacity-70 mt-0.5">
-                                {zoneStatus.source === "geocode_district" && zoneStatus.district
-                                  ? `Уточнено по району «${zoneStatus.district}» (улица «${zoneStatus.matchedStreet}»).`
-                                  : zoneStatus.source === "geocode_ambiguous"
-                                    ? `Улица «${zoneStatus.matchedStreet}» проходит через несколько зон — выбрана наиболее вероятная. Проверьте.`
-                                    : `Определено по улице «${zoneStatus.matchedStreet}».`}
+                                {zoneStatus.source === "polygon"
+                                  ? `Определено по карте (зона нарисована администратором)${zoneStatus.district ? ` · ${zoneStatus.district}` : ""}.`
+                                  : zoneStatus.source === "geocode_district" && zoneStatus.district
+                                    ? `Уточнено по району «${zoneStatus.district}»${zoneStatus.matchedStreet ? ` (улица «${zoneStatus.matchedStreet}»)` : ""}.`
+                                    : zoneStatus.source === "geocode_ambiguous"
+                                      ? `Улица${zoneStatus.matchedStreet ? ` «${zoneStatus.matchedStreet}»` : ""} проходит через несколько зон — выбрана наиболее вероятная. Проверьте.`
+                                      : `Определено по улице${zoneStatus.matchedStreet ? ` «${zoneStatus.matchedStreet}»` : ""}.`}
                               </div>
                             </div>
                           )}

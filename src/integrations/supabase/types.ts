@@ -410,6 +410,7 @@ export type Database = {
           is_active: boolean
           min_order: number
           name: string
+          polygon: Json | null
           radius_km: number | null
           sort_order: number
           streets: string | null
@@ -425,6 +426,7 @@ export type Database = {
           is_active?: boolean
           min_order?: number
           name: string
+          polygon?: Json | null
           radius_km?: number | null
           sort_order?: number
           streets?: string | null
@@ -440,6 +442,7 @@ export type Database = {
           is_active?: boolean
           min_order?: number
           name?: string
+          polygon?: Json | null
           radius_km?: number | null
           sort_order?: number
           streets?: string | null

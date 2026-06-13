@@ -153,7 +153,7 @@ function PosPage() {
 
   async function placeOrder() {
     if (!cart.length) return toast.error("Корзина пуста");
-    if (!name.trim() || phone.replace(/\D/g, "").length < 10) return toast.error("Укажите имя и телефон клиента");
+    if (phone.replace(/\D/g, "").length < 10) return toast.error("Укажите телефон клиента");
     if (deliveryType === "delivery" && !address.trim()) return toast.error("Укажите адрес доставки");
     if (!effectiveBranch) return toast.error("Не выбран филиал");
 

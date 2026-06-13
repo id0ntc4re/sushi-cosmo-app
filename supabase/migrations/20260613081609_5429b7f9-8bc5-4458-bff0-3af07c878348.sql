@@ -1,0 +1,2 @@
+ALTER TABLE public.delivery_zones ADD COLUMN IF NOT EXISTS polygon jsonb;
+COMMENT ON COLUMN public.delivery_zones.polygon IS 'GeoJSON-подобный массив точек границы зоны: [{lat:number,lng:number}, ...]';

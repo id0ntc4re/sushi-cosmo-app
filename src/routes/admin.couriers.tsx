@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { resolveZoneSmart, detectBranchByAddress, createTestOrder } from "@/lib/geocode.functions";
+import ZoneMapEditor from "@/components/ZoneMapEditor";
 
 export const Route = createFileRoute("/admin/couriers")({ component: Page });
 
@@ -115,6 +116,7 @@ const KEMEROVO_DISTRICTS = ["Центральный", "Ленинский", "К�
 function Zones() {
   const [list, setList] = useState<any[]>([]);
   const [draft, setDraft] = useState({ name: "", cost: 0, min_order: 0, free_from: 0, streets: "", districts: [] as string[] });
+  const [mapZone, setMapZone] = useState<any | null>(null);
 
   async function load() {
     const { data } = await supabase.from("delivery_zones").select("*").order("sort_order");
@@ -238,11 +240,31 @@ function Zones() {
                   </button>
                 );
               })}
+              <button
+                type="button"
+                onClick={() => setMapZone(z)}
+                className={`ml-auto px-3 py-1 rounded-full text-xs font-semibold border ${Array.isArray(z.polygon) && z.polygon.length >= 3 ? "bg-emerald-500 text-white border-emerald-500" : "bg-white border-neutral-300 text-neutral-700"}`}
+              >
+                🗺 {Array.isArray(z.polygon) && z.polygon.length >= 3 ? "Полигон задан · изменить" : "Нарисовать на карте"}
+              </button>
             </div>
           </div>
         ))}
         {!list.length && <div className="py-8 text-center text-neutral-400">Зоны не заданы</div>}
       </div>
+
+      <ZoneMapEditor
+        open={!!mapZone}
+        onClose={() => setMapZone(null)}
+        zoneName={mapZone?.name ?? ""}
+        initialPolygon={Array.isArray(mapZone?.polygon) ? mapZone.polygon : null}
+        allZones={list.filter((z) => z.id !== mapZone?.id).map((z) => ({ id: z.id, name: z.name, polygon: Array.isArray(z.polygon) ? z.polygon : null }))}
+        onSave={async (poly: { lat: number; lng: number }[] | null) => {
+          if (!mapZone) return;
+          await update(mapZone.id, { polygon: poly });
+          toast.success(poly ? "Полигон сохранён" : "Полигон удалён");
+        }}
+      />
     </div>
   );
 }

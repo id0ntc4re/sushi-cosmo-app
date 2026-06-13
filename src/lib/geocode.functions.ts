@@ -138,14 +138,36 @@ export const resolveDeliveryZoneByAddress = createServerFn({ method: "POST" })
     };
   });
 
-// Умное определение зоны: сначала по тексту, при неоднозначности —
-// геокодируем и уточняем по району Кемерово.
+// Точка внутри полигона (ray casting). poly = [{lat,lng}, ...]
+function pointInPolygon(point: { lat: number; lng: number }, poly: Array<{ lat: number; lng: number }>) {
+  if (!Array.isArray(poly) || poly.length < 3) return false;
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const xi = poly[i].lng, yi = poly[i].lat;
+    const xj = poly[j].lng, yj = poly[j].lat;
+    const intersect = ((yi > point.lat) !== (yj > point.lat)) &&
+      (point.lng < ((xj - xi) * (point.lat - yi)) / ((yj - yi) || 1e-12) + xi);
+    if (intersect) inside = !inside;
+  }
+  return inside;
+}
+
+function polygonAreaApprox(poly: Array<{ lat: number; lng: number }>) {
+  // Грубая «площадь» в градусах² — для сортировки наименьшая зона при пересечении
+  let s = 0;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    s += (poly[j].lng + poly[i].lng) * (poly[j].lat - poly[i].lat);
+  }
+  return Math.abs(s / 2);
+}
+
+// Умное определение зоны: приоритет — полигон на карте; затем улица; затем район по геокодеру.
 export const resolveZoneSmart = createServerFn({ method: "POST" })
   .inputValidator((data: unknown) => inputSchema.parse(data))
   .handler(async ({ data }) => {
     const { data: rows } = await supabaseAdmin
       .from("delivery_zones")
-      .select("id,name,cost,free_from,min_order,streets,districts")
+      .select("id,name,cost,free_from,min_order,streets,districts,polygon")
       .eq("is_active", true)
       .order("sort_order");
 
@@ -157,56 +179,78 @@ export const resolveZoneSmart = createServerFn({ method: "POST" })
       min_order: Number(z.min_order),
       streets: (z.streets ?? null) as string | null,
       districts: (z.districts ?? null) as string[] | null,
+      polygon: (Array.isArray(z.polygon) ? z.polygon : null) as Array<{ lat: number; lng: number }> | null,
     }));
 
+    const hasPolygons = zones.some((z) => z.polygon && z.polygon.length >= 3);
+
+    // 1) Текстовое совпадение — если однозначно И у зоны нет полигона, можно вернуть сразу
     const text = matchZoneByAddress(data.address, zones);
-    if (text && !text.ambiguous) {
+    if (text && !text.ambiguous && !hasPolygons) {
       return {
         ok: true as const,
-        zoneId: text.zone.id,
-        zoneName: text.zone.name,
-        cost: text.zone.cost,
-        freeFrom: text.zone.free_from,
-        minOrder: text.zone.min_order,
-        matchedStreet: text.matchedStreet,
-        district: null as string | null,
+        zoneId: text.zone.id, zoneName: text.zone.name,
+        cost: text.zone.cost, freeFrom: text.zone.free_from, minOrder: text.zone.min_order,
+        matchedStreet: text.matchedStreet, district: null as string | null,
         source: "text" as const,
       };
     }
 
+    // 2) Геокодирование + проверка точки в полигоне (самый точный способ)
     const g = await geocode(data.address);
-    if (!g.ok) {
-      if (text) {
+    if (g.ok && hasPolygons) {
+      const point = { lat: g.lat, lng: g.lng };
+      const hits = zones
+        .filter((z) => z.polygon && z.polygon.length >= 3 && pointInPolygon(point, z.polygon))
+        .sort((a, b) => polygonAreaApprox(a.polygon!) - polygonAreaApprox(b.polygon!));
+      if (hits.length) {
+        const z = hits[0];
         return {
           ok: true as const,
-          zoneId: text.zone.id,
-          zoneName: text.zone.name,
-          cost: text.zone.cost,
-          freeFrom: text.zone.free_from,
-          minOrder: text.zone.min_order,
-          matchedStreet: text.matchedStreet,
-          district: null,
-          source: "text_ambiguous" as const,
+          zoneId: z.id, zoneName: z.name,
+          cost: z.cost, freeFrom: z.free_from, minOrder: z.min_order,
+          matchedStreet: null as string | null, district: g.district,
+          source: "polygon" as const,
         };
       }
-      return { ok: false as const, reason: g.reason };
     }
 
-    const refined = matchZoneByAddress(data.address, zones, g.district);
-    if (refined) {
+    // 3) Текст без полигона — если был
+    if (text && !text.ambiguous) {
       return {
         ok: true as const,
-        zoneId: refined.zone.id,
-        zoneName: refined.zone.name,
-        cost: refined.zone.cost,
-        freeFrom: refined.zone.free_from,
-        minOrder: refined.zone.min_order,
-        matchedStreet: refined.matchedStreet,
-        district: g.district,
-        source: refined.ambiguous ? ("geocode_ambiguous" as const) : ("geocode_district" as const),
+        zoneId: text.zone.id, zoneName: text.zone.name,
+        cost: text.zone.cost, freeFrom: text.zone.free_from, minOrder: text.zone.min_order,
+        matchedStreet: text.matchedStreet, district: g.ok ? g.district : null,
+        source: "text" as const,
       };
     }
-    return { ok: false as const, reason: "no_zone" as const, district: g.district };
+
+    // 4) Уточнение по району
+    if (g.ok) {
+      const refined = matchZoneByAddress(data.address, zones, g.district);
+      if (refined) {
+        return {
+          ok: true as const,
+          zoneId: refined.zone.id, zoneName: refined.zone.name,
+          cost: refined.zone.cost, freeFrom: refined.zone.free_from, minOrder: refined.zone.min_order,
+          matchedStreet: refined.matchedStreet, district: g.district,
+          source: refined.ambiguous ? ("geocode_ambiguous" as const) : ("geocode_district" as const),
+        };
+      }
+      return { ok: false as const, reason: "no_zone" as const, district: g.district };
+    }
+
+    if (text) {
+      return {
+        ok: true as const,
+        zoneId: text.zone.id, zoneName: text.zone.name,
+        cost: text.zone.cost, freeFrom: text.zone.free_from, minOrder: text.zone.min_order,
+        matchedStreet: text.matchedStreet, district: null,
+        source: "text_ambiguous" as const,
+      };
+    }
+    return { ok: false as const, reason: g.reason };
   });
 
 

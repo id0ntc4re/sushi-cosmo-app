@@ -24,6 +24,10 @@ function Kanban() {
   const [soundOn, setSoundOn] = useState(true);
   const [now, setNow] = useState(Date.now());
   const [filterBranch, setFilterBranch] = useState<string>("all");
+  const [payOrder, setPayOrder] = useState<any | null>(null);
+  const [payMethod, setPayMethod] = useState<"cash" | "card_courier" | "card_online">("cash");
+  const [payCashGiven, setPayCashGiven] = useState<string>("");
+  const [payFiscal, setPayFiscal] = useState<string>("");
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const knownIds = useRef<Set<string>>(new Set());
   const { isSuper, branchId, branches } = useAdminRole();
@@ -51,18 +55,36 @@ function Kanban() {
     }
   }
 
-  async function markPaid(o: any) {
-    const num = prompt("Номер фискального чека (можно оставить пустым):") ?? "";
+  function openPay(o: any) {
+    setPayOrder(o);
+    setPayMethod((o.payment_method as any) || "cash");
+    setPayCashGiven("");
+    setPayFiscal("");
+  }
+
+  async function confirmPay() {
+    if (!payOrder) return;
     const { error } = await (supabase.from("orders") as any)
-      .update({ payment_status: "paid", paid_at: new Date().toISOString(), fiscal_receipt_number: num || null })
-      .eq("id", o.id);
+      .update({
+        payment_status: "paid",
+        paid_at: new Date().toISOString(),
+        payment_method: payMethod,
+        fiscal_receipt_number: payFiscal || null,
+      })
+      .eq("id", payOrder.id);
     if (error) return toast.error(error.message);
     const { data: { user } } = await supabase.auth.getUser();
     await (supabase.from("order_changes") as any).insert({
-      order_id: o.id, user_id: user?.id ?? null, action: "paid",
-      details: { fiscal_receipt_number: num || null },
+      order_id: payOrder.id, user_id: user?.id ?? null, action: "paid",
+      details: {
+        fiscal_receipt_number: payFiscal || null,
+        payment_method: payMethod,
+        cash_given: payMethod === "cash" && payCashGiven ? Number(payCashGiven) : null,
+      },
     });
-    toast.success("Оплата принята");
+    const label = payMethod === "cash" ? "Наличными" : payMethod === "card_courier" ? "Картой курьеру" : "Онлайн";
+    toast.success(`Оплата принята · ${label}`);
+    setPayOrder(null);
     load();
   }
 

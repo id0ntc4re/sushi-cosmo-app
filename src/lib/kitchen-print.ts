@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { loadReceiptSettings, ReceiptSettings } from "@/lib/receipt-settings";
+import { loadReceiptSettings, ReceiptSettings, t } from "@/lib/receipt-settings";
 
 type ReceiptOrder = {
   id: string;
@@ -54,11 +54,14 @@ function esc(value: unknown) {
 
 const fmt = (n: number) => (Math.round(n * 100) / 100).toLocaleString("ru");
 
+const MAPS_KEY = import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY as string | undefined;
+
 function buildReceiptHtml(
   order: ReceiptOrder,
   items: ReceiptItem[],
   s: ReceiptSettings,
   bonusBalance: number | null,
+  employeeName: string | null,
 ) {
   const created = new Date(order.created_at).toLocaleString("ru");
   const subtotal = Number(order.subtotal ?? items.reduce((a, b) => a + Number(b.total ?? Number(b.price ?? 0) * Number(b.quantity ?? 0)), 0));
@@ -67,7 +70,7 @@ function buildReceiptHtml(
 
   const itemsRows = s.show_items_table
     ? `
-    <div class="row head"><span class="name">Наименование</span><span class="qty">Кол.</span><span class="sum">Сумма</span></div>
+    <div class="row head"><span class="name">${t(s, "name")}</span><span class="qty">${t(s, "qty")}</span><span class="sum">${t(s, "sum")}</span></div>
     ${items
       .map((it) => {
         const lineSum = Number(it.total ?? Number(it.price ?? 0) * Number(it.quantity ?? 0));
@@ -90,55 +93,62 @@ function buildReceiptHtml(
   const totalsBlock = s.show_totals
     ? `
     <div class="line"></div>
-    <div class="row"><b class="name">ИТОГО</b><span class="sum">${fmt(subtotal)}</span></div>
-    ${discount > 0 ? `<div class="row"><span class="name">Скидка</span><span class="sum">−${fmt(discount)}</span></div>` : ""}
-    ${order.delivery_cost ? `<div class="row"><span class="name">Доставка</span><span class="sum">${fmt(Number(order.delivery_cost))}</span></div>` : ""}
-    <div class="row pay"><b class="name">К ОПЛАТЕ</b><b class="sum">${fmt(total)}</b></div>
-    ${order.payment_method ? `<div class="small">Оплата: ${esc(payMethodLabel(order.payment_method))}</div>` : ""}
+    <div class="row"><b class="name">${t(s, "total")}</b><span class="sum">${fmt(subtotal)}</span></div>
+    ${discount > 0 ? `<div class="row"><span class="name">${t(s, "discount")}</span><span class="sum">−${fmt(discount)}</span></div>` : ""}
+    ${order.delivery_cost ? `<div class="row"><span class="name">${t(s, "delivery")}</span><span class="sum">${fmt(Number(order.delivery_cost))}</span></div>` : ""}
+    <div class="row pay"><b class="name">${t(s, "pay")}</b><b class="sum">${fmt(total)}</b></div>
+    ${order.payment_method ? `<div class="small">${t(s, "payment")}: ${esc(payMethodLabel(order.payment_method))}</div>` : ""}
   `
     : "";
 
-  const customerBlock = s.show_customer
+  const showAnyCustomer = s.show_customer || s.show_customer_name || s.show_comment || s.show_employee_name || (s.show_bonus && bonusBalance !== null);
+  const customerBlock = showAnyCustomer
     ? `
     <div class="line"></div>
     <div class="info">
-      <div><b>Тип:</b> ${order.delivery_type === "delivery" ? "ДОСТАВКА" : "САМОВЫВОЗ"}</div>
-      <div><b>Клиент:</b> ${esc(order.customer_name)}</div>
-      <div><b>Телефон:</b> ${esc(order.phone)}</div>
-      ${order.address ? `<div><b>Адрес:</b> ${esc(order.address)}</div>` : ""}
-      ${order.delivery_time ? `<div><b>На время:</b> ${esc(order.delivery_time)}</div>` : ""}
-      ${order.persons ? `<div><b>Персон:</b> ${esc(order.persons)}</div>` : ""}
-      ${s.show_bonus && bonusBalance !== null ? `<div><b>Баллы:</b> ${bonusBalance}${order.bonus_used ? `, списано: ${order.bonus_used}` : ""}${order.bonus_earned ? `, начислено: ${order.bonus_earned}` : ""}</div>` : ""}
-      ${order.comment ? `<div><b>Примечание:</b> ${esc(order.comment)}</div>` : ""}
+      ${s.show_customer ? `<div><b>${t(s, "type")}:</b> ${order.delivery_type === "delivery" ? t(s, "delivery_t") : t(s, "pickup_t")}</div>` : ""}
+      ${s.show_customer_name ? `<div><b>${t(s, "client")}:</b> ${esc(order.customer_name)}</div>` : ""}
+      ${s.show_customer ? `<div><b>${t(s, "phone")}:</b> ${esc(order.phone)}</div>` : ""}
+      ${s.show_customer && order.address ? `<div><b>${t(s, "address")}:</b> ${esc(order.address)}</div>` : ""}
+      ${s.show_customer && order.delivery_time ? `<div><b>${t(s, "time")}:</b> ${esc(order.delivery_time)}</div>` : ""}
+      ${s.show_customer && order.persons ? `<div><b>${t(s, "persons")}:</b> ${esc(order.persons)}</div>` : ""}
+      ${s.show_bonus && bonusBalance !== null ? `<div><b>${t(s, "bonus")}:</b> ${bonusBalance}${order.bonus_used ? `, ${t(s, "bonus_used")}: ${order.bonus_used}` : ""}${order.bonus_earned ? `, ${t(s, "bonus_earned")}: ${order.bonus_earned}` : ""}</div>` : ""}
+      ${s.show_employee_name && employeeName ? `<div><b>${t(s, "employee")}:</b> ${esc(employeeName)}</div>` : ""}
+      ${s.show_comment && order.comment ? `<div><b>${t(s, "comment")}:</b> ${esc(order.comment)}</div>` : ""}
     </div>
   `
     : "";
 
+  const mapBlock = s.show_map && order.delivery_type === "delivery" && order.address && MAPS_KEY
+    ? `<div class="line"></div><img class="map" src="https://maps.googleapis.com/maps/api/staticmap?center=${encodeURIComponent(order.address)}&zoom=${s.map_zoom}&size=600x400&scale=2&markers=color:red%7C${encodeURIComponent(order.address)}&key=${MAPS_KEY}" alt="" />`
+    : "";
+
   return `<!doctype html>
-<html lang="ru"><head><meta charset="utf-8" /><title>Кухня #${esc(order.number)}</title>
+<html lang="${s.language}"><head><meta charset="utf-8" /><title>${t(s, "client")} #${esc(order.number)}</title>
 <style>
-  @page { size: 80mm auto; margin: 4mm; }
+  @page { size: ${s.paper_width}mm auto; margin: 4mm; }
   * { box-sizing: border-box; }
-  body { margin: 0; background: #fff; color: #000; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
-  .receipt { width: 80mm; max-width: 80mm; padding: 6mm; margin: 0 auto; }
+  body { margin: 0; background: #fff; color: #000; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: ${s.font_size}px; }
+  .receipt { width: ${s.paper_width}mm; max-width: ${s.paper_width}mm; padding: 6mm; margin: 0 auto; }
   .center { text-align: center; }
-  .logo { max-width: 60mm; max-height: 22mm; object-fit: contain; margin: 0 auto 4px; display: block; }
-  .title { font-size: 22px; font-weight: 900; }
-  .header-line { font-size: 13px; }
-  .num { font-size: 28px; font-weight: 900; margin: 3px 0; }
-  .small { font-size: 12px; }
+  .logo { max-width: ${Math.max(s.paper_width - 20, 30)}mm; max-height: 22mm; object-fit: contain; margin: 0 auto 4px; display: block; }
+  .map { width: 100%; height: auto; display: block; margin: 6px auto; }
+  .title { font-size: ${s.font_size + 9}px; font-weight: 900; }
+  .header-line { font-size: ${s.font_size}px; }
+  .num { font-size: ${s.font_size + 15}px; font-weight: 900; margin: 3px 0; }
+  .small { font-size: ${s.font_size - 1}px; }
   .line { border-top: 1px dashed #000; margin: 8px 0; }
-  .info { font-size: 13px; line-height: 1.4; }
+  .info { font-size: ${s.font_size}px; line-height: 1.4; }
   .info b { font-weight: 700; }
-  .row { display: flex; font-size: 13px; gap: 6px; }
+  .row { display: flex; font-size: ${s.font_size}px; gap: 6px; }
   .row.head { font-weight: 800; border-bottom: 1px dashed #000; padding-bottom: 2px; margin-bottom: 2px; }
-  .row.big { font-size: 16px; font-weight: 800; }
-  .row.pay { font-size: 16px; margin-top: 2px; border-top: 1px solid #000; padding-top: 3px; }
+  .row.big { font-size: ${s.font_size + 3}px; font-weight: 800; }
+  .row.pay { font-size: ${s.font_size + 3}px; margin-top: 2px; border-top: 1px solid #000; padding-top: 3px; }
   .row .name { flex: 1; overflow-wrap: anywhere; }
   .row .qty { width: 28px; text-align: right; }
   .row .sum { width: 60px; text-align: right; }
-  .mods { font-size: 11px; padding-left: 8px; margin-bottom: 2px; }
-  .footer-msg { text-align: center; font-size: 13px; margin: 8px 0; white-space: pre-wrap; }
+  .mods { font-size: ${s.font_size - 2}px; padding-left: 8px; margin-bottom: 2px; }
+  .footer-msg { text-align: center; font-size: ${s.font_size}px; margin: 8px 0; white-space: pre-wrap; }
   .actions { display: flex; justify-content: center; gap: 8px; margin-top: 16px; }
   button { border: 0; border-radius: 8px; padding: 10px 14px; font-weight: 800; cursor: pointer; }
   .print { background: #000; color: #fff; } .close { background: #eee; color: #000; }
@@ -156,13 +166,14 @@ function buildReceiptHtml(
     <div class="small">${esc(created)}</div>
     <div class="num">## ${esc(order.number)}</div>
     <div class="line"></div>
-    <section>${itemsRows || `<div class="small center">Нет позиций</div>`}</section>
+    <section>${itemsRows || `<div class="small center">${t(s, "noItems")}</div>`}</section>
     ${totalsBlock}
     ${s.footer ? `<div class="footer-msg">${esc(s.footer)}</div>` : ""}
     ${customerBlock}
+    ${mapBlock}
     <div class="line"></div>
-    <div class="center small">— конец заказа —</div>
-    <div class="actions"><button class="print" onclick="window.print()">🖨 Печать</button><button class="close" onclick="window.close()">Закрыть</button></div>
+    <div class="center small">${t(s, "end")}</div>
+    <div class="actions"><button class="print" onclick="window.print()">${t(s, "print")}</button><button class="close" onclick="window.close()">${t(s, "close")}</button></div>
   </main>
   <script>window.addEventListener('load', function(){ setTimeout(function(){ window.focus(); window.print(); }, 350); });</script>
 </body></html>`;
@@ -194,14 +205,22 @@ export async function printKitchenReceipt(orderId: string) {
   if (orderError) throw new Error(orderError.message);
   if (!order) throw new Error("Заказ не найден или нет доступа");
 
-  const [{ data: items, error: itemsError }, settings, bonus] = await Promise.all([
+  const [{ data: items, error: itemsError }, settings, bonus, changeRow] = await Promise.all([
     supabase.from("order_items").select("*").eq("order_id", orderId),
     loadReceiptSettings(order.branch_id),
     order.user_id
       ? supabase.from("profiles").select("bonus_balance").eq("id", order.user_id).maybeSingle()
       : Promise.resolve({ data: null }),
+    supabase.from("order_changes").select("user_id").eq("order_id", orderId).order("created_at", { ascending: true }).limit(1).maybeSingle(),
   ]);
   if (itemsError) throw new Error(itemsError.message);
+
+  let employeeName: string | null = null;
+  const empId = (changeRow as any)?.data?.user_id ?? (changeRow as any)?.user_id ?? null;
+  if (empId) {
+    const { data: emp } = await supabase.from("profiles").select("full_name,email").eq("id", empId).maybeSingle();
+    employeeName = (emp as any)?.full_name || (emp as any)?.email || null;
+  }
 
   if (!order.kitchen_printed_at) {
     await (supabase.from("orders") as unknown as UpdatableTable)
@@ -219,6 +238,6 @@ export async function printKitchenReceipt(orderId: string) {
   }
 
   popup.document.open();
-  popup.document.write(buildReceiptHtml(order, items ?? [], settings, (bonus?.data as any)?.bonus_balance ?? null));
+  popup.document.write(buildReceiptHtml(order, items ?? [], settings, (bonus?.data as any)?.bonus_balance ?? null, employeeName));
   popup.document.close();
 }

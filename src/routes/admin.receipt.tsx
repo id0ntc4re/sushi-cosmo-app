@@ -171,13 +171,53 @@ function ReceiptAdmin() {
               onChange={(e) => setS({ ...s, footer: e.target.value })} />
           </Field>
 
+          <h2 className="font-extrabold text-lg pt-2">Настройки печати</h2>
+          <div className="grid grid-cols-2 gap-3">
+            <Field label="Язык чека">
+              <select className={inp} value={s.language}
+                onChange={(e) => setS({ ...s, language: e.target.value as any })}>
+                <option value="ru">Русский</option>
+                <option value="en">English</option>
+                <option value="kz">Қазақша</option>
+              </select>
+            </Field>
+            <Field label="Вид чека (ширина)">
+              <select className={inp} value={s.paper_width}
+                onChange={(e) => setS({ ...s, paper_width: Number(e.target.value) as any })}>
+                <option value={50}>Чек 50 мм</option>
+                <option value={58}>Чек 58 мм</option>
+                <option value={80}>Чек 80 мм</option>
+              </select>
+            </Field>
+            <Field label="Размер шрифта">
+              <select className={inp} value={s.font_size}
+                onChange={(e) => setS({ ...s, font_size: Number(e.target.value) })}>
+                {[10,11,12,13,14,15,16,18,20].map((n) => <option key={n} value={n}>{n}</option>)}
+              </select>
+            </Field>
+            <Field label="Приближение карты">
+              <select className={inp} value={s.map_zoom}
+                onChange={(e) => setS({ ...s, map_zoom: Number(e.target.value) })}>
+                {[10,11,12,13,14,15,16,17,18].map((n) => <option key={n} value={n}>{n}</option>)}
+              </select>
+            </Field>
+          </div>
+
           <h2 className="font-extrabold text-lg pt-2">Что печатать</h2>
           <Toggle label="Таблица позиций (наименование / кол. / сумма)"
             value={s.show_items_table} onChange={(v) => setS({ ...s, show_items_table: v })} />
           <Toggle label="Итог, скидка, к оплате"
             value={s.show_totals} onChange={(v) => setS({ ...s, show_totals: v })} />
-          <Toggle label="Данные клиента (адрес, телефон, примечание)"
+          <Toggle label="Данные клиента (тип, телефон, адрес)"
             value={s.show_customer} onChange={(v) => setS({ ...s, show_customer: v })} />
+          <Toggle label="Печатать имя клиента в чеке"
+            value={s.show_customer_name} onChange={(v) => setS({ ...s, show_customer_name: v })} />
+          <Toggle label="Печатать имя сотрудника в чеке"
+            value={s.show_employee_name} onChange={(v) => setS({ ...s, show_employee_name: v })} />
+          <Toggle label="Печатать примечания заказа"
+            value={s.show_comment} onChange={(v) => setS({ ...s, show_comment: v })} />
+          <Toggle label="Печатать карту в чеке"
+            value={s.show_map} onChange={(v) => setS({ ...s, show_map: v })} />
           <Toggle label="Баллы клиента"
             value={s.show_bonus} onChange={(v) => setS({ ...s, show_bonus: v })} />
 

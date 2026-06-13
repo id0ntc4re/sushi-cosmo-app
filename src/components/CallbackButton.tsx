@@ -18,7 +18,7 @@ export function CallbackButton() {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    supabase.from("branches").select("id,name").eq("is_active", true).order("sort_order")
+    (supabase.from("branches_public") as any).select("id,name").eq("is_active", true).order("sort_order")
       .then(({ data }) => {
         const list = (data ?? []) as Branch[];
         setBranches(list);

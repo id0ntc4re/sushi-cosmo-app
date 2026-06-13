@@ -4,9 +4,9 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { matchZoneByAddress } from "@/lib/zone-match";
 
 // Координаты филиалов Кемерово
-const BRANCH_COORDS: Record<"shahterov" | "stroiteley", { lat: number; lng: number; label: string }> = {
-  shahterov: { lat: 55.3877, lng: 86.1244, label: "Проспект Шахтёров, 68" },
-  stroiteley: { lat: 55.3328, lng: 86.0758, label: "Бульвар Строителей, 21" },
+const BRANCH_COORDS: Record<"shahterov" | "stroiteley", { lat: number; lng: number; label: string; id: string }> = {
+  shahterov: { lat: 55.3877, lng: 86.1244, label: "Проспект Шахтёров, 68", id: "00000000-0000-0000-0000-000000000001" },
+  stroiteley: { lat: 55.3328, lng: 86.0758, label: "Бульвар Строителей, 21", id: "891e497e-33b8-462c-b268-c5c73245c380" },
 };
 
 function haversineKm(a: { lat: number; lng: number }, b: { lat: number; lng: number }) {

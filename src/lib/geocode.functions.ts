@@ -85,9 +85,11 @@ export const detectBranchByAddress = createServerFn({ method: "POST" })
     return {
       ok: true as const,
       branchKey: key,
+      branchId: BRANCH_COORDS[key].id,
       label: BRANCH_COORDS[key].label,
       distanceKm: Math.round((key === "shahterov" ? dSh : dSt) * 10) / 10,
       formatted: g.formatted,
+      district: g.district,
     };
   });
 

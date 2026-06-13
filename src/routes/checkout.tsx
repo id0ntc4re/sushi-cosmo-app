@@ -13,6 +13,7 @@ import { detectBranchKey, branchKeyFromName } from "@/lib/branch-detect";
 import { detectBranchByAddress, resolveZoneSmart } from "@/lib/geocode.functions";
 import { matchZoneByAddress } from "@/lib/zone-match";
 import { formatRuPhone, isValidRuPhone, isValidName } from "@/lib/phone-format";
+import { AddressFields } from "@/components/AddressFields";
 
 export const Route = createFileRoute("/checkout")({
   head: () => ({ meta: [{ title: "Оформление заказа — КосмоСуши" }] }),

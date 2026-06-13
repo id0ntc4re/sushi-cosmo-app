@@ -37,6 +37,7 @@ function OrdersAdmin() {
   const [productSearch, setProductSearch] = useState("");
   const [history, setHistory] = useState<any[]>([]);
   const [showHistory, setShowHistory] = useState(false);
+  const [customer, setCustomer] = useState<{ bonus_balance: number; total_spent: number; orders_count: number } | null>(null);
 
   async function load() {
     const q = supabase.from("orders").select("*").is("deleted_at", null).order("created_at", { ascending: false }).limit(200);
@@ -67,10 +68,16 @@ function OrdersAdmin() {
   }
 
   async function openOrder(o: Order) {
-    setOpen(o); setEditing(false); setMeta(null); setShowHistory(false);
+    setOpen(o); setEditing(false); setMeta(null); setShowHistory(false); setCustomer(null);
     const { data } = await supabase.from("order_items").select("*").eq("order_id", o.id);
     setItems(data ?? []);
     loadHistory(o.id);
+    if (o.user_id) {
+      const { data: p } = await supabase.from("profiles").select("bonus_balance,total_spent").eq("id", o.user_id).maybeSingle();
+      const { count } = await supabase.from("orders").select("id", { count: "exact", head: true })
+        .eq("user_id", o.user_id).is("deleted_at", null).neq("status", "cancelled");
+      if (p) setCustomer({ bonus_balance: Number(p.bonus_balance) || 0, total_spent: Number(p.total_spent) || 0, orders_count: count ?? 0 });
+    }
   }
 
   function startEdit() {
@@ -260,6 +267,19 @@ function OrdersAdmin() {
               <Info k="Персон" v={open.persons} />
               <Info k="Время" v={open.delivery_time || "—"} />
               {open.comment && <div className="sm:col-span-2"><Info k="Комментарий" v={open.comment} /></div>}
+              {customer && (
+                <div className="sm:col-span-2 flex flex-wrap gap-2 mt-1">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-100 text-amber-800 text-xs font-bold">
+                    🎁 Бонусов: {customer.bonus_balance}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-neutral-100 text-neutral-700 text-xs font-semibold">
+                    Заказов: {customer.orders_count}
+                  </span>
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-neutral-100 text-neutral-700 text-xs font-semibold">
+                    Потрачено: {customer.total_spent.toLocaleString("ru")} ₽
+                  </span>
+                </div>
+              )}
             </div>
           ) : (
             <div className="bg-blue-50/50 rounded-2xl p-4 mb-5 space-y-3">

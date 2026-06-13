@@ -19,7 +19,7 @@ export function CallbackButton() {
 
   useEffect(() => {
     (supabase.from("branches_public") as any).select("id,name").eq("is_active", true).order("sort_order")
-      .then(({ data }) => {
+      .then(({ data }: { data: Branch[] | null }) => {
         const list = (data ?? []) as Branch[];
         setBranches(list);
         if (list[0]) setBranchId(list[0].id);

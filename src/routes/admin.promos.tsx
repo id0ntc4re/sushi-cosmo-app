@@ -133,7 +133,7 @@ function PromosAdmin() {
                 <td className="px-4 py-3">{rewardText(p)}</td>
                 <td className="px-4 py-3">{p.min_order} ₽</td>
                 <td className="px-4 py-3">{p.used_count}{p.max_uses ? ` / ${p.max_uses}` : ""}</td>
-                <td className="px-4 py-3 text-xs text-neutral-500">{p.expires_at ? new Date(p.expires_at).toLocaleDateString("ru") : "—"}</td>
+                <td className="px-4 py-3 text-xs text-neutral-500">{p.expires_at ? new Date(p.expires_at).toLocaleDateString("ru") : "Бессрочно"}</td>
                 <td className="px-4 py-3">
                   <span className={`text-xs px-2 py-1 rounded-full ${p.is_active ? "bg-green-100 text-green-700" : "bg-neutral-200 text-neutral-600"}`}>
                     {p.is_active ? "Активен" : "Выкл."}

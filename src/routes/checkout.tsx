@@ -478,18 +478,27 @@ function Checkout() {
                       </Field>
                       {zones.length > 0 && (
                         <div className="space-y-2">
+                          {zoneStatus.kind === "detecting" && !zoneManual && (
+                            <div className="px-3 py-2 rounded-xl bg-neutral-50 text-neutral-600 text-sm">
+                              Определяем зону по адресу…
+                            </div>
+                          )}
                           {zoneStatus.kind === "detected" && !zoneManual && zone && (
                             <div className="px-3 py-2 rounded-xl bg-emerald-50 text-emerald-800 text-sm">
                               <b>Зона: «{zone.name}»</b> · доставка {Number(zone.cost)} ₽
                               {zone.free_from != null ? ` (бесплатно от ${Number(zone.free_from)} ₽)` : ""}
                               <div className="text-xs opacity-70 mt-0.5">
-                                Определено автоматически по улице «{zoneStatus.matchedStreet}».
+                                {zoneStatus.source === "geocode_district" && zoneStatus.district
+                                  ? `Уточнено по району «${zoneStatus.district}» (улица «${zoneStatus.matchedStreet}»).`
+                                  : zoneStatus.source === "geocode_ambiguous"
+                                    ? `Улица «${zoneStatus.matchedStreet}» проходит через несколько зон — выбрана наиболее вероятная. Проверьте.`
+                                    : `Определено по улице «${zoneStatus.matchedStreet}».`}
                               </div>
                             </div>
                           )}
                           {zoneStatus.kind === "no_match" && !zoneManual && (
                             <div className="px-3 py-2 rounded-xl bg-amber-50 text-amber-800 text-sm">
-                              Не удалось определить зону по названию улицы. Проверьте адрес или выберите зону вручную.
+                              Не удалось определить зону по адресу. Проверьте улицу/дом или выберите зону вручную.
                             </div>
                           )}
                           {(zoneManual || zoneStatus.kind === "no_match") && (

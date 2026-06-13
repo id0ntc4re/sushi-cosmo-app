@@ -216,7 +216,7 @@ export async function printKitchenReceipt(orderId: string) {
   if (itemsError) throw new Error(itemsError.message);
 
   let employeeName: string | null = null;
-  const empId = (changeRow as any)?.data?.user_id ?? null;
+  const empId = (changeRow as any)?.data?.user_id ?? (changeRow as any)?.user_id ?? null;
   if (empId) {
     const { data: emp } = await supabase.from("profiles").select("full_name,email").eq("id", empId).maybeSingle();
     employeeName = (emp as any)?.full_name || (emp as any)?.email || null;

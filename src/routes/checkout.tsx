@@ -285,7 +285,7 @@ function Checkout() {
       return;
     }
     setPromo({ code: res.promo.code, discount: res.discount, gift: res.gift, promo: res.promo });
-    if (res.gift) toast.success(`🎁 Подарок: ${res.gift.name}`);
+    if (res.gift) toast.success(`🎁 «${res.gift.name}» добавлен в корзину в подарок`, { description: `По промокоду ${res.promo.code}` });
     else toast.success(`Промокод применён: −${res.discount} ₽`);
   }
 

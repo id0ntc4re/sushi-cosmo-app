@@ -183,11 +183,19 @@ function Kanban() {
                       <div className="text-sm font-extrabold mt-1 text-primary flex items-center gap-1.5 flex-wrap">
                         {Number(o.total)} ₽
                         {o.payment_status === "paid" ? (
-                          <span className="text-[9px] font-bold bg-green-100 text-green-700 px-1 py-0.5 rounded">
-                            ОПЛ · {o.payment_method === "cash" ? "💵 нал" : o.payment_method === "card_courier" ? "💳 курьеру" : o.payment_method === "card_online" ? "🌐 онлайн" : "—"}
+                          <span
+                            title={o.payment_method === "cash" ? "Оплачено наличными" : o.payment_method === "card_courier" ? "Оплачено картой курьеру" : o.payment_method === "card_online" ? "Оплачено онлайн" : ""}
+                            className={`inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] ${
+                              o.payment_method === "cash"
+                                ? "bg-emerald-100 text-emerald-700"
+                                : o.payment_method === "card_courier"
+                                  ? "bg-sky-100 text-sky-700"
+                                  : "bg-violet-100 text-violet-700"
+                            }`}>
+                            {o.payment_method === "cash" ? "💵" : o.payment_method === "card_courier" ? "💳" : "🌐"}
                           </span>
                         ) : (
-                          <span className="text-[9px] font-bold bg-red-100 text-red-700 px-1 py-0.5 rounded">НЕ ОПЛ</span>
+                          <span title="Не оплачено" className="inline-flex items-center justify-center w-5 h-5 rounded-full text-[10px] bg-red-100 text-red-700">💵</span>
                         )}
                       </div>
                       <div className="flex gap-1 mt-1.5 flex-wrap">

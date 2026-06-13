@@ -1,20 +1,23 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { resolveZoneSmart, detectBranchByAddress, createTestOrder } from "@/lib/geocode.functions";
 
 export const Route = createFileRoute("/admin/couriers")({ component: Page });
 
 function Page() {
-  const [tab, setTab] = useState<"couriers" | "zones">("couriers");
+  const [tab, setTab] = useState<"couriers" | "zones" | "check">("couriers");
   return (
     <div>
       <h1 className="text-3xl font-extrabold mb-6">Курьеры и зоны доставки</h1>
       <div className="flex gap-2 mb-5">
         <Tab on={tab === "couriers"} onClick={() => setTab("couriers")}>🛵 Курьеры</Tab>
         <Tab on={tab === "zones"} onClick={() => setTab("zones")}>📍 Зоны</Tab>
+        <Tab on={tab === "check"} onClick={() => setTab("check")}>🧪 Проверка адреса</Tab>
       </div>
-      {tab === "couriers" ? <Couriers /> : <Zones />}
+      {tab === "couriers" ? <Couriers /> : tab === "zones" ? <Zones /> : <AddressChecker />}
     </div>
   );
 }

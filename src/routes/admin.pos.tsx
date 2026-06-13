@@ -163,7 +163,7 @@ function PosPage() {
         data: {
           customer_user_id: profile?.id ?? null,
           order: {
-            customer_name: name.trim(),
+            customer_name: name.trim() || "Клиент",
             phone: phone.trim(),
             delivery_type: deliveryType,
             address: deliveryType === "delivery" ? address.trim() : null,

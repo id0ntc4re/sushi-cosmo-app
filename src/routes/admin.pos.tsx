@@ -153,7 +153,7 @@ function PosPage() {
 
   async function placeOrder() {
     if (!cart.length) return toast.error("Корзина пуста");
-    if (!name.trim() || phone.replace(/\D/g, "").length < 10) return toast.error("Укажите имя и телефон клиента");
+    if (phone.replace(/\D/g, "").length < 10) return toast.error("Укажите телефон клиента");
     if (deliveryType === "delivery" && !address.trim()) return toast.error("Укажите адрес доставки");
     if (!effectiveBranch) return toast.error("Не выбран филиал");
 
@@ -163,7 +163,7 @@ function PosPage() {
         data: {
           customer_user_id: profile?.id ?? null,
           order: {
-            customer_name: name.trim(),
+            customer_name: name.trim() || "Клиент",
             phone: phone.trim(),
             delivery_type: deliveryType,
             address: deliveryType === "delivery" ? address.trim() : null,
@@ -217,7 +217,7 @@ function PosPage() {
                 onChange={(e) => setPhone(formatRuPhone(e.target.value))}
                 onFocus={(e) => { if (!e.target.value) setPhone("+7 ("); }}
                 onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); lookupClient(); } }} />
-              <input className={inp} placeholder="Имя*" value={name} onChange={(e) => setName(e.target.value.replace(/[^A-Za-zА-Яа-яЁё\s-]/g, ""))} maxLength={50} />
+              <input className={inp} placeholder="Имя" value={name} onChange={(e) => setName(e.target.value.replace(/[^A-Za-zА-Яа-яЁё\s-]/g, ""))} maxLength={50} />
               <button onClick={lookupClient} disabled={searching}
                 className="px-4 py-2 rounded-xl bg-neutral-900 text-white text-sm font-semibold disabled:opacity-50">
                 {searching ? "…" : "🔍 Найти"}

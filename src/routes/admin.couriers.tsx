@@ -163,16 +163,28 @@ function Zones() {
         через несколько районов (Ленина, Пролетарская и т.п.) — отметьте <b>районы</b> зоны:
         тогда при неоднозначности система уточнит зону через геокодер.
       </p>
-      <div className="grid grid-cols-12 gap-2 mb-2">
-        <input className={inp + " col-span-3"} placeholder="Район / зона" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
-        <input type="number" className={inp + " col-span-2"} placeholder="Доставка ₽" value={draft.cost} onChange={(e) => setDraft({ ...draft, cost: Number(e.target.value) })} />
-        <input type="number" className={inp + " col-span-2"} placeholder="Мин.заказ" value={draft.min_order} onChange={(e) => setDraft({ ...draft, min_order: Number(e.target.value) })} />
-        <input type="number" className={inp + " col-span-2"} placeholder="Бесплатно от" value={draft.free_from} onChange={(e) => setDraft({ ...draft, free_from: Number(e.target.value) })} />
-        <button onClick={add} className="col-span-3 rounded-xl bg-primary text-white font-bold">+ Добавить</button>
+      <div className="grid grid-cols-12 gap-3 mb-3">
+        <Field className="col-span-3" label="Название зоны" hint="например: Центральный, Рудничный, Лесная Поляна">
+          <input className={inp} placeholder="Район / зона" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
+        </Field>
+        <Field className="col-span-2" label="Доставка, ₽" hint="сколько берём за доставку в эту зону">
+          <input type="number" className={inp} value={draft.cost} onChange={(e) => setDraft({ ...draft, cost: Number(e.target.value) })} />
+        </Field>
+        <Field className="col-span-2" label="Мин. заказ, ₽" hint="ниже этой суммы заказ оформить нельзя">
+          <input type="number" className={inp} value={draft.min_order} onChange={(e) => setDraft({ ...draft, min_order: Number(e.target.value) })} />
+        </Field>
+        <Field className="col-span-2" label="Бесплатно от, ₽" hint="доставка станет 0 ₽ при заказе от этой суммы (пусто = всегда платная)">
+          <input type="number" className={inp} value={draft.free_from} onChange={(e) => setDraft({ ...draft, free_from: Number(e.target.value) })} />
+        </Field>
+        <div className="col-span-3 flex items-end">
+          <button onClick={add} className="w-full h-[42px] rounded-xl bg-primary text-white font-bold">+ Добавить зону</button>
+        </div>
       </div>
-      <div className="mb-2">
-        <textarea className={inp + " min-h-[60px]"} placeholder="Улицы зоны (через запятую или с новой строки)"
+      <div className="mb-3">
+        <div className="text-xs font-semibold text-neutral-600 mb-1">Улицы зоны</div>
+        <textarea className={inp + " min-h-[60px]"} placeholder="через запятую или с новой строки: Шахтёров, Красноармейская, Притомский"
           value={draft.streets} onChange={(e) => setDraft({ ...draft, streets: e.target.value })} />
+        <div className="text-[11px] text-neutral-400 mt-1">По этим названиям система определяет зону автоматически по адресу клиента.</div>
       </div>
       <div className="mb-5 flex flex-wrap gap-2">
         <span className="text-xs text-neutral-500 self-center mr-1">Районы:</span>
@@ -367,5 +379,15 @@ function AddressChecker() {
         </div>
       )}
     </div>
+  );
+}
+
+function Field({ label, hint, children, className = "" }: { label: string; hint?: string; children: React.ReactNode; className?: string }) {
+  return (
+    <label className={`block ${className}`}>
+      <div className="text-xs font-semibold text-neutral-600 mb-1">{label}</div>
+      {children}
+      {hint && <div className="text-[11px] text-neutral-400 mt-1 leading-tight">{hint}</div>}
+    </label>
   );
 }

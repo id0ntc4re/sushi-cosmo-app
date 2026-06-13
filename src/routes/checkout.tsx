@@ -473,9 +473,7 @@ function Checkout() {
                         </div>
                       )}
                       <Field label="Адрес доставки*">
-                        <input className={inputCls} value={form.address}
-                          onChange={(e) => set("address", e.target.value)}
-                          placeholder="Улица, дом, кв., подъезд, этаж" required />
+                        <AddressFields value={form.address} onChange={(v) => set("address", v)} required inputClassName={inputCls} />
                       </Field>
                       {zones.length > 0 && (
                         <div className="space-y-2">

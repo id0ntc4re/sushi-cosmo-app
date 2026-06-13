@@ -212,6 +212,18 @@ function Zones() {
               placeholder="Улицы (через запятую или с новой строки): Шахтёров, Притомский, Ленина"
               className="w-full mt-2 px-3 py-2 rounded-xl border border-neutral-200 outline-none focus:border-primary text-sm min-h-[50px]"
             />
+            <div className="mt-2 flex flex-wrap gap-2 items-center">
+              <span className="text-xs text-neutral-500">Районы:</span>
+              {KEMEROVO_DISTRICTS.map((d) => {
+                const on = Array.isArray(z.districts) && z.districts.includes(d);
+                return (
+                  <button key={d} type="button" onClick={() => toggleZoneDistrict(z, d)}
+                    className={`px-2.5 py-1 rounded-full text-xs font-semibold border ${on ? "bg-primary text-white border-primary" : "bg-white border-neutral-300 text-neutral-700"}`}>
+                    {d}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         ))}
         {!list.length && <div className="py-8 text-center text-neutral-400">Зоны не заданы</div>}

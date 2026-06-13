@@ -239,6 +239,13 @@ function Zones() {
                   </button>
                 );
               })}
+              <button
+                type="button"
+                onClick={() => setMapZone(z)}
+                className={`ml-auto px-3 py-1 rounded-full text-xs font-semibold border ${Array.isArray(z.polygon) && z.polygon.length >= 3 ? "bg-emerald-500 text-white border-emerald-500" : "bg-white border-neutral-300 text-neutral-700"}`}
+              >
+                🗺 {Array.isArray(z.polygon) && z.polygon.length >= 3 ? "Полигон задан · изменить" : "Нарисовать на карте"}
+              </button>
             </div>
           </div>
         ))}

@@ -408,6 +408,13 @@ function PosPage() {
           </button>
         </div>
       </div>
+
+      {fiscalOrderId && (
+        <FiscalReceiptModal
+          orderId={fiscalOrderId}
+          onClose={() => setFiscalOrderId(null)}
+        />
+      )}
     </div>
   );
 }

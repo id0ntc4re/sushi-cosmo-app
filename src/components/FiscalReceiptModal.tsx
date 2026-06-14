@@ -221,7 +221,14 @@ export function FiscalReceiptModal({ orderId, onClose, onPrinted }: Props) {
           <>
             {/* Предпросмотр чека — моноширинный */}
             <div className="bg-neutral-50 rounded-xl p-3 mb-4 font-mono text-[12px] leading-tight">
-              <div className="text-center font-bold mb-1">{branch?.name ?? ""}</div>
+              <div className="text-center font-bold mb-1 flex items-center justify-center gap-1.5">
+                {branch?.name ?? ""}
+                {branch?.is_demo && (
+                  <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 text-[10px] font-extrabold leading-none">
+                    ДЕМО
+                  </span>
+                )}
+              </div>
               <div className="text-center text-[10px] text-neutral-500 mb-2">КАССОВЫЙ ЧЕК · ПРОДАЖА</div>
               <div className="border-t border-dashed border-neutral-300 my-1" />
               {items.map((it) => (

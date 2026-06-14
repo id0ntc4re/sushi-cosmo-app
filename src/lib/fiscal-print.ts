@@ -130,7 +130,7 @@ async function fetchJson(url: string, init?: RequestInit, timeoutMs = 8000) {
   }
 }
 
-export async function printFiscalReceipt(input: FiscalPrintInput): Promise<FiscalPrintResult | FiscalPrintError> {
+export async function printFiscalReceipt(input: FiscalPrintInput, _retry = false): Promise<FiscalPrintResult | FiscalPrintError> {
   const base = (input.kktUrl || "").trim().replace(/\/$/, "");
   if (!base) return { ok: false, message: "Не задан адрес драйвера ККТ для филиала" };
 

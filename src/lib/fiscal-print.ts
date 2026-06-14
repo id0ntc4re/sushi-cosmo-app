@@ -103,7 +103,7 @@ function buildTask(input: FiscalPrintInput, taskUuid: string) {
         : null;
 
   const request: any = {
-    type: "sell",
+    type: input.receiptType === "sellRefund" ? "sellRefund" : "sell",
     taxationType: input.taxationType || "usn_income",
     operator: { name: input.operatorName, ...(input.operatorInn ? { vatin: input.operatorInn } : {}) },
     items,

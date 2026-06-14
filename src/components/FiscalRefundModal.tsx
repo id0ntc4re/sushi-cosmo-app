@@ -130,6 +130,7 @@ export function FiscalRefundModal({ orderId, onClose, onRefunded }: Props) {
     setSelectedId(id);
     const sell = sells.find((s) => s.id === id);
     if (!sell) return;
+    setMethod(sell.payment_method);
     // загрузим все, чтобы пересчитать остатки (повторно дёргаем БД)
     (async () => {
       const { data: receipts } = await (supabase.from("fiscal_receipts") as any)

@@ -85,6 +85,7 @@ export function FiscalRefundModal({ orderId, onClose, onRefunded }: Props) {
       if (sellRows.length > 0) {
         const first = sellRows[sellRows.length - 1]; // последний — обычно последняя продажа
         setSelectedId(first.id);
+        setMethod(first.payment_method); // способ возврата = способ исходной продажи (требование 54-ФЗ)
         buildLines(first, all);
       }
       setLoading(false);
@@ -129,6 +130,7 @@ export function FiscalRefundModal({ orderId, onClose, onRefunded }: Props) {
     setSelectedId(id);
     const sell = sells.find((s) => s.id === id);
     if (!sell) return;
+    setMethod(sell.payment_method);
     // загрузим все, чтобы пересчитать остатки (повторно дёргаем БД)
     (async () => {
       const { data: receipts } = await (supabase.from("fiscal_receipts") as any)
@@ -199,7 +201,7 @@ export function FiscalRefundModal({ orderId, onClose, onRefunded }: Props) {
         shiftId = sh?.id ?? null;
       }
 
-      await (supabase.from("fiscal_receipts") as any).insert({
+      const { error: insErr } = await (supabase.from("fiscal_receipts") as any).insert({
         order_id: order.id,
         branch_id: order.branch_id,
         shift_id: shiftId,
@@ -221,6 +223,11 @@ export function FiscalRefundModal({ orderId, onClose, onRefunded }: Props) {
         operator_inn: branch.kkt_operator_inn ?? null,
         raw_response: res.raw ?? null,
       });
+      if (insErr) {
+        // Касса возврат уже пробила, но в БД не записалось — критично, нужно ручное вмешательство
+        toast.error(`ВНИМАНИЕ! Чек пробит на кассе (№${fiscalNumber}), но не записан в БД: ${insErr.message}. Сохраните номер чека и обратитесь к администратору.`, { duration: 30000 });
+        return;
+      }
 
       await (supabase.from("order_changes") as any).insert({
         order_id: order.id, user_id: user?.id ?? null, action: "fiscal_refunded",
@@ -334,15 +341,11 @@ export function FiscalRefundModal({ orderId, onClose, onRefunded }: Props) {
 
             <div className="mb-4">
               <div className="text-xs font-bold text-neutral-600 mb-1.5">Способ возврата</div>
-              <div className="grid grid-cols-3 gap-1.5">
-                {(["cash","card_courier","card_online"] as FiscalPaymentMethod[]).map((m) => (
-                  <button key={m} onClick={() => setMethod(m)}
-                    className={`py-2 rounded-lg text-xs font-bold border-2 ${
-                      method === m ? "border-primary bg-primary/10 text-primary" : "border-neutral-200"
-                    }`}>
-                    {m === "cash" ? "💵 Наличные" : m === "card_courier" ? "💳 Картой" : "🌐 Онлайн"}
-                  </button>
-                ))}
+              <div className="flex items-center gap-2 bg-neutral-100 border border-neutral-200 rounded-lg px-3 py-2.5">
+                <span className="text-sm font-bold">
+                  {method === "cash" ? "💵 Наличные" : method === "card_courier" ? "💳 Картой" : "🌐 Онлайн"}
+                </span>
+                <span className="text-[11px] text-neutral-500">— как в исходном чеке (требование 54-ФЗ)</span>
               </div>
             </div>
 

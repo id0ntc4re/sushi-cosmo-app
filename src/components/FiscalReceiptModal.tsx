@@ -33,6 +33,8 @@ type Branch = {
   kkt_vat: string;
   kkt_operator_name: string;
   kkt_operator_inn: string | null;
+  kkt_payments_place: string | null;
+  kkt_payments_address: string | null;
   name: string;
 };
 

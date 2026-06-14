@@ -54,6 +54,41 @@ export const createCheckoutOrder = createServerFn({ method: "POST" })
       branchId = br?.id ?? null;
     }
 
+    // Защита от подделки бонусов: гость не может списать бонусы; пользователь — не больше, чем есть на балансе
+    let safeBonusUsed = 0;
+    if (data.order.bonus_used > 0) {
+      if (!userId) {
+        throw new Error("Списание бонусов доступно только авторизованным пользователям");
+      }
+      const { data: prof } = await supabaseAdmin
+        .from("profiles").select("bonus_balance").eq("id", userId).maybeSingle();
+      const balance = Math.floor(Number(prof?.bonus_balance ?? 0));
+      safeBonusUsed = Math.max(0, Math.min(Math.floor(data.order.bonus_used), balance));
+      if (safeBonusUsed !== Math.floor(data.order.bonus_used)) {
+        throw new Error("Списано больше бонусов, чем доступно на балансе");
+      }
+    }
+
+    // Перерасчёт итогов на сервере — клиентским значениям не доверяем
+    const itemsSubtotal = data.items.reduce((sum, it) => sum + it.price * it.quantity, 0);
+    if (Math.abs(itemsSubtotal - data.order.subtotal) > 1) {
+      throw new Error("Сумма позиций не совпадает с подытогом");
+    }
+    const safeDelivery = Math.max(0, Math.floor(Number(data.order.delivery_cost) || 0));
+    const safeDiscount = Math.max(0, Math.floor(Number(data.order.discount) || 0));
+    const safeTotal = Math.max(0, itemsSubtotal - safeDiscount - safeBonusUsed + safeDelivery);
+    if (Math.abs(safeTotal - data.order.total) > 1) {
+      throw new Error("Итоговая сумма заказа не совпадает с расчётом");
+    }
+    const orderPayload = {
+      ...data.order,
+      bonus_used: safeBonusUsed,
+      delivery_cost: safeDelivery,
+      discount: safeDiscount,
+      total: safeTotal,
+    };
+
+
     const { data: order, error: orderError } = await supabaseAdmin
       .from("orders")
       .insert({ ...data.order, user_id: userId, branch_id: branchId })

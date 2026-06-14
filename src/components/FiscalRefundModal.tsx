@@ -201,7 +201,7 @@ export function FiscalRefundModal({ orderId, onClose, onRefunded }: Props) {
         shiftId = sh?.id ?? null;
       }
 
-      await (supabase.from("fiscal_receipts") as any).insert({
+      const { error: insErr } = await (supabase.from("fiscal_receipts") as any).insert({
         order_id: order.id,
         branch_id: order.branch_id,
         shift_id: shiftId,
@@ -223,6 +223,11 @@ export function FiscalRefundModal({ orderId, onClose, onRefunded }: Props) {
         operator_inn: branch.kkt_operator_inn ?? null,
         raw_response: res.raw ?? null,
       });
+      if (insErr) {
+        // Касса возврат уже пробила, но в БД не записалось — критично, нужно ручное вмешательство
+        toast.error(`ВНИМАНИЕ! Чек пробит на кассе (№${fiscalNumber}), но не записан в БД: ${insErr.message}. Сохраните номер чека и обратитесь к администратору.`, { duration: 30000 });
+        return;
+      }
 
       await (supabase.from("order_changes") as any).insert({
         order_id: order.id, user_id: user?.id ?? null, action: "fiscal_refunded",

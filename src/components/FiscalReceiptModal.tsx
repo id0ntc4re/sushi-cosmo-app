@@ -33,6 +33,8 @@ type Branch = {
   kkt_vat: string;
   kkt_operator_name: string;
   kkt_operator_inn: string | null;
+  kkt_payments_place: string | null;
+  kkt_payments_address: string | null;
   name: string;
 };
 
@@ -57,7 +59,7 @@ export function FiscalReceiptModal({ orderId, onClose, onPrinted }: Props) {
       let b: Branch | null = null;
       if (o?.branch_id) {
         const { data } = await (supabase.from("branches") as any)
-          .select("name,kkt_url,kkt_tax_system,kkt_vat,kkt_operator_name,kkt_operator_inn")
+          .select("name,kkt_url,kkt_tax_system,kkt_vat,kkt_operator_name,kkt_operator_inn,kkt_payments_place,kkt_payments_address")
           .eq("id", o.branch_id).maybeSingle();
         b = data as Branch | null;
       }
@@ -93,6 +95,8 @@ export function FiscalReceiptModal({ orderId, onClose, onPrinted }: Props) {
         items: items.map((x) => ({ name: x.name, price: Number(x.price), quantity: Number(x.quantity) })),
         customerEmail: email || null,
         customerPhone: order.phone,
+        paymentsPlace: branch.kkt_payments_place,
+        paymentsAddress: branch.kkt_payments_address,
       });
 
       if (!res.ok) {

@@ -205,6 +205,8 @@ export type Database = {
           kkt_model: string | null
           kkt_operator_inn: string | null
           kkt_operator_name: string
+          kkt_payments_address: string | null
+          kkt_payments_place: string | null
           kkt_tax_system: string
           kkt_url: string | null
           kkt_vat: string
@@ -221,6 +223,8 @@ export type Database = {
           kkt_model?: string | null
           kkt_operator_inn?: string | null
           kkt_operator_name?: string
+          kkt_payments_address?: string | null
+          kkt_payments_place?: string | null
           kkt_tax_system?: string
           kkt_url?: string | null
           kkt_vat?: string
@@ -237,6 +241,8 @@ export type Database = {
           kkt_model?: string | null
           kkt_operator_inn?: string | null
           kkt_operator_name?: string
+          kkt_payments_address?: string | null
+          kkt_payments_place?: string | null
           kkt_tax_system?: string
           kkt_url?: string | null
           kkt_vat?: string

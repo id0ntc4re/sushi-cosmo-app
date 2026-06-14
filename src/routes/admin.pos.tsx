@@ -7,6 +7,7 @@ import { useAdminRole } from "@/lib/admin-role";
 import { createOrderAsAdmin } from "@/lib/orders.functions";
 import { formatRuPhone } from "@/lib/phone-format";
 import { AddressFields } from "@/components/AddressFields";
+import { FiscalReceiptModal } from "@/components/FiscalReceiptModal";
 
 export const Route = createFileRoute("/admin/pos")({ component: PosPage });
 

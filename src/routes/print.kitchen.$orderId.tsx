@@ -119,7 +119,7 @@ function KitchenReceipt() {
           {order.payment_method && <div className="text-xs">Оплата: {payLabel(order.payment_method)}</div>}
           {order.payment_method === "cash" && s.show_change && Number(order.change_from ?? 0) > 0 && (
             <div className="text-sm font-bold mt-1">
-              Купюра: {fmt(Number(order.change_from))}, Сдача: {fmt(Math.max(0, Number(order.change_from) - total))}
+              Внесено: {fmt(Number(order.change_from))}, Сдача: {fmt(Math.max(0, Number(order.change_from) - total))}
             </div>
           )}
         </>

@@ -109,8 +109,39 @@ function OrdersAdmin() {
     if (error) return toast.error(error.message);
     await recalcOrderTotals(open.id);
     const { data: { user } } = await supabase.auth.getUser();
+
+    // Считаем что именно изменилось, чтобы в истории было понятно
+    const fieldLabels: Record<string, string> = {
+      customer_name: "Имя клиента",
+      phone: "Телефон",
+      delivery_type: "Тип заказа",
+      address: "Адрес",
+      pickup_point: "Точка самовывоза",
+      delivery_time: "Время",
+      payment_method: "Способ оплаты",
+      change_from: "Сдача с",
+      persons: "Кол-во персон",
+      comment: "Комментарий",
+      delivery_cost: "Стоимость доставки",
+      discount: "Скидка",
+    };
+    const fmt = (k: string, v: any) => {
+      if (v === null || v === undefined || v === "") return "—";
+      if (k === "delivery_type") return v === "delivery" ? "Доставка" : "Самовывоз";
+      if (k === "payment_method") return v === "cash" ? "Наличные" : v === "card_courier" ? "Карта" : v === "card_online" ? "Онлайн" : String(v);
+      return String(v);
+    };
+    const changes: Array<{ field: string; label: string; from: string; to: string }> = [];
+    for (const k of Object.keys(fieldLabels)) {
+      const oldV = (open as any)[k] ?? "";
+      const newV = (payload as any)[k] ?? "";
+      const a = oldV === null ? "" : String(oldV);
+      const b = newV === null ? "" : String(newV);
+      if (a !== b) changes.push({ field: k, label: fieldLabels[k], from: fmt(k, oldV), to: fmt(k, newV) });
+    }
+
     await (supabase.from("order_changes") as any).insert({
-      order_id: open.id, user_id: user?.id ?? null, action: "details_edited", details: payload,
+      order_id: open.id, user_id: user?.id ?? null, action: "details_edited", details: { changes },
     });
     loadHistory(open.id);
     toast.success("Сохранено");
@@ -423,29 +454,67 @@ function OrdersAdmin() {
               <div className="mt-3 space-y-2 max-h-72 overflow-y-auto">
                 {history.length === 0 && <div className="text-xs text-neutral-400 py-2">Изменений пока нет</div>}
                 {history.map((h) => {
-                  const labels: Record<string, string> = {
+                  const titles: Record<string, string> = {
                     details_edited: "✎ Изменены данные заказа",
                     item_added: "➕ Добавлен товар",
                     item_removed: "🗑 Удалён товар",
                     item_qty_changed: "🔢 Изменено количество",
                     kitchen_printed: "🖨 Напечатан кухонный чек",
                     status_changed: "🔄 Изменён статус",
+                    payment_method_changed: "💳 Изменён способ оплаты",
+                    fiscal_printed: "🧾 Пробит фискальный чек",
+                    fiscal_refunded: "↩ Оформлен возврат",
                   };
+                  const payLabel = (m: string) =>
+                    m === "cash" ? "Наличные" : m === "card_courier" ? "Карта" : m === "card_online" ? "Онлайн" : m;
                   const d = h.details || {};
                   return (
                     <div key={h.id} className="bg-white rounded-lg p-2.5 border border-neutral-200 text-xs">
                       <div className="flex justify-between items-start gap-2">
-                        <div className="font-semibold">{labels[h.action] || h.action}</div>
+                        <div className="font-semibold">{titles[h.action] || h.action}</div>
                         <div className="text-neutral-400 whitespace-nowrap">{new Date(h.created_at).toLocaleString("ru")}</div>
                       </div>
                       {h.action === "item_added" && d.name && (
-                        <div className="text-neutral-600 mt-1">{d.name} · {Number(d.price)} ₽</div>
+                        <div className="text-neutral-600 mt-1">Добавлен «{d.name}» по {Number(d.price)} ₽</div>
                       )}
-                      {(h.action === "item_removed" || h.action === "item_qty_changed") && d.name && (
-                        <div className="text-neutral-600 mt-1">{d.name} · {d.from} → {d.to}</div>
+                      {h.action === "item_removed" && d.name && (
+                        <div className="text-neutral-600 mt-1">Удалён «{d.name}» (было {d.from} шт.)</div>
                       )}
-                      {h.action === "details_edited" && (
-                        <div className="text-neutral-600 mt-1">Клиент: {d.customer_name}, тел: {d.phone}, тип: {d.delivery_type === "delivery" ? "доставка" : "самовывоз"}</div>
+                      {h.action === "item_qty_changed" && d.name && (
+                        <div className="text-neutral-600 mt-1">«{d.name}»: {d.from} шт. → {d.to} шт.</div>
+                      )}
+                      {h.action === "payment_method_changed" && (
+                        <div className="text-neutral-600 mt-1">{payLabel(d.from)} → {payLabel(d.to)}</div>
+                      )}
+                      {h.action === "details_edited" && Array.isArray(d.changes) && d.changes.length > 0 && (
+                        <ul className="mt-1 space-y-0.5 text-neutral-600">
+                          {d.changes.map((c: any, i: number) => (
+                            <li key={i}><span className="font-semibold">{c.label}:</span> {c.from} → {c.to}</li>
+                          ))}
+                        </ul>
+                      )}
+                      {h.action === "details_edited" && (!Array.isArray(d.changes) || d.changes.length === 0) && (
+                        <div className="text-neutral-500 mt-1 italic">Данные сохранены без изменений</div>
+                      )}
+                      {h.action === "fiscal_printed" && (
+                        <div className="text-neutral-600 mt-1">
+                          Оплата: {payLabel(d.payment_method)}
+                          {d.fiscal_receipt_number && <> · чек №{d.fiscal_receipt_number}</>}
+                          {d.fiscal_document_number && <> · ФД {d.fiscal_document_number}</>}
+                        </div>
+                      )}
+                      {h.action === "fiscal_refunded" && (
+                        <div className="text-neutral-600 mt-1">
+                          Возврат на {Number(d.total || 0)} ₽ ({payLabel(d.payment_method)})
+                          {d.fiscal_receipt_number && <> · чек №{d.fiscal_receipt_number}</>}
+                          {Array.isArray(d.items) && d.items.length > 0 && (
+                            <ul className="mt-0.5 pl-3 list-disc">
+                              {d.items.map((it: any, i: number) => (
+                                <li key={i}>{it.name} × {it.quantity}</li>
+                              ))}
+                            </ul>
+                          )}
+                        </div>
                       )}
                     </div>
                   );

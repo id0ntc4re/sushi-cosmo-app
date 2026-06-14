@@ -209,10 +209,7 @@ function PosPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
-        <h1 className="text-3xl font-extrabold">📞 Создание заказа</h1>
-        <ShiftButtons branchId={effectiveBranch} />
-      </div>
+      <h1 className="text-3xl font-extrabold mb-6">📞 Создание заказа</h1>
 
       <div className="grid lg:grid-cols-[1.2fr_1fr] gap-5">
         {/* LEFT: catalog */}
@@ -451,42 +448,4 @@ function PosPage() {
 const inp = "w-full px-3 py-2 rounded-xl border border-neutral-200 text-sm focus:outline-none focus:border-primary";
 function Row({ k, v, accent }: { k: string; v: string; accent?: boolean }) {
   return <div className="flex justify-between"><span className="text-neutral-600">{k}</span><span className={accent ? "text-primary font-semibold" : "font-semibold"}>{v}</span></div>;
-}
-
-function ShiftButtons({ branchId }: { branchId: string | null | undefined }) {
-  const [busy, setBusy] = useState<null | "openShift" | "closeShift">(null);
-  async function run(cmd: "openShift" | "closeShift") {
-    if (!branchId) return toast.error("Не выбран филиал");
-    setBusy(cmd);
-    try {
-      const { data: b } = await (supabase.from("branches") as any)
-        .select("kkt_url,kkt_operator_name,kkt_operator_inn")
-        .eq("id", branchId).maybeSingle();
-      if (!b?.kkt_url) {
-        toast.error("В настройках филиала не указан адрес драйвера ККТ");
-        return;
-      }
-      const { runShiftCommand } = await import("@/lib/fiscal-print");
-      const res = await runShiftCommand(b.kkt_url, b.kkt_operator_name || "Кассир", b.kkt_operator_inn, cmd);
-      if (!res.ok) {
-        toast.error(res.message);
-        return;
-      }
-      toast.success(cmd === "openShift" ? "Смена открыта" : "Смена закрыта · Z-отчёт напечатан");
-    } finally {
-      setBusy(null);
-    }
-  }
-  return (
-    <div className="flex gap-2">
-      <button onClick={() => run("openShift")} disabled={!!busy}
-        className="px-4 py-2 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold disabled:opacity-50">
-        {busy === "openShift" ? "Открываем…" : "🔓 Открыть смену"}
-      </button>
-      <button onClick={() => run("closeShift")} disabled={!!busy}
-        className="px-4 py-2 rounded-full bg-neutral-900 hover:bg-neutral-800 text-white text-sm font-bold disabled:opacity-50">
-        {busy === "closeShift" ? "Закрываем…" : "🔒 Закрыть смену (Z-отчёт)"}
-      </button>
-    </div>
-  );
 }

@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import { useAdminRole, branchName } from "@/lib/admin-role";
 
 export const Route = createFileRoute("/admin/")({
@@ -76,11 +77,22 @@ function Dashboard() {
           </select>
         )}
       </div>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <Stat label="Заказов сегодня" value={s?.ordersToday ?? "—"} />
         <Stat label="Выручка сегодня" value={s ? `${s.revenueToday} ₽` : "—"} accent />
         <Stat label="За 7 дней" value={s?.ordersWeek ?? "—"} />
         <Stat label="Новых" value={s?.newOrders ?? "—"} highlight />
+      </div>
+
+      <div className="bg-white rounded-2xl p-4 mb-8 flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <div className="font-bold text-sm">Касса (ККТ)</div>
+          <div className="text-xs text-neutral-500">
+            Открытие/закрытие смены на онлайн-кассе филиала
+            {!isSuper || filterBranch !== "all" ? "" : " — выберите конкретный филиал выше"}
+          </div>
+        </div>
+        <ShiftButtons branchId={isSuper ? (filterBranch !== "all" ? filterBranch : null) : branchId} />
       </div>
 
       <div className="bg-white rounded-3xl p-6">
@@ -138,4 +150,42 @@ const STATUS_LABEL: Record<string, string> = {
 };
 function StatusBadge({ s }: { s: string }) {
   return <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${STATUS_COLOR[s] ?? "bg-neutral-100"}`}>{STATUS_LABEL[s] ?? s}</span>;
+}
+
+function ShiftButtons({ branchId }: { branchId: string | null | undefined }) {
+  const [busy, setBusy] = useState<null | "openShift" | "closeShift">(null);
+  async function run(cmd: "openShift" | "closeShift") {
+    if (!branchId) return toast.error("Выберите конкретный филиал — у каждой кассы своя смена");
+    setBusy(cmd);
+    try {
+      const { data: b } = await (supabase.from("branches") as any)
+        .select("kkt_url,kkt_operator_name,kkt_operator_inn")
+        .eq("id", branchId).maybeSingle();
+      if (!b?.kkt_url) {
+        toast.error("В настройках филиала не указан адрес драйвера ККТ");
+        return;
+      }
+      const { runShiftCommand } = await import("@/lib/fiscal-print");
+      const res = await runShiftCommand(b.kkt_url, b.kkt_operator_name || "Кассир", b.kkt_operator_inn, cmd);
+      if (!res.ok) {
+        toast.error(res.message);
+        return;
+      }
+      toast.success(cmd === "openShift" ? "Смена открыта · отчёт об открытии напечатан" : "Смена закрыта · Z-отчёт напечатан");
+    } finally {
+      setBusy(null);
+    }
+  }
+  return (
+    <div className="flex gap-2">
+      <button onClick={() => run("openShift")} disabled={!!busy || !branchId}
+        className="px-4 py-2 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold disabled:opacity-50">
+        {busy === "openShift" ? "Открываем…" : "🔓 Открыть смену"}
+      </button>
+      <button onClick={() => run("closeShift")} disabled={!!busy || !branchId}
+        className="px-4 py-2 rounded-full bg-neutral-900 hover:bg-neutral-800 text-white text-sm font-bold disabled:opacity-50">
+        {busy === "closeShift" ? "Закрываем…" : "🔒 Закрыть смену (Z-отчёт)"}
+      </button>
+    </div>
+  );
 }

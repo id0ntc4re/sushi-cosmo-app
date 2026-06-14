@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
-import { resolveZoneSmart, detectBranchByAddress, createTestOrder } from "@/lib/geocode.functions";
+import { resolveZoneSmart, detectBranchByAddress } from "@/lib/geocode.functions";
 import ZoneMapEditor from "@/components/ZoneMapEditor";
 
 export const Route = createFileRoute("/admin/couriers")({ component: Page });
@@ -275,12 +275,10 @@ const inp = "w-full px-3 py-2 rounded-xl border border-neutral-200 outline-none 
 function AddressChecker() {
   const resolve = useServerFn(resolveZoneSmart);
   const detect = useServerFn(detectBranchByAddress);
-  const makeTest = useServerFn(createTestOrder);
   const [address, setAddress] = useState("");
   const [busy, setBusy] = useState(false);
   const [res, setRes] = useState<{ zone: any; branch: any } | null>(null);
-  const [creating, setCreating] = useState(false);
-  const [createdOrder, setCreatedOrder] = useState<{ id: string; number: number } | null>(null);
+  const [createdOrder] = useState<{ id: string; number: number } | null>(null);
 
   async function check() {
     if (address.trim().length < 3) return;

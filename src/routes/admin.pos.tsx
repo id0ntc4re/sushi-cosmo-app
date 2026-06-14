@@ -193,6 +193,7 @@ function PosPage() {
         await (supabase.from("orders") as any).update({ holiday_discount_kind: holidayKind }).eq("id", order.id);
       }
       toast.success(`Заказ №${order.number} создан`);
+      setFiscalOrderId(order.id);
       // Reset
       setCart([]); setComment(""); setAdminNote(""); setDiscountPct(0); setBonusUse(0); setHolidayKind(null);
     } catch (e: any) {

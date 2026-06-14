@@ -217,6 +217,10 @@ export async function printFiscalReceipt(input: FiscalPrintInput, _retry = false
   }
 }
 
+export function refundFiscalReceipt(input: FiscalPrintInput) {
+  return printFiscalReceipt({ ...input, receiptType: "sellRefund" });
+}
+
 export function paymentLabel(m: FiscalPaymentMethod): string {
   return m === "cash" ? "Наличные" : m === "card_courier" ? "Карта" : "Онлайн";
 }

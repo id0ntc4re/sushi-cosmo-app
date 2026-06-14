@@ -43,6 +43,7 @@ function PosPage() {
   const [adminNote, setAdminNote] = useState("");
   const [holidayKind, setHolidayKind] = useState<"birthday" | "anniversary" | null>(null);
   const [busy, setBusy] = useState(false);
+  const [fiscalOrderId, setFiscalOrderId] = useState<string | null>(null);
 
   function daysToNext(dateStr: string | null): number | null {
     if (!dateStr) return null;

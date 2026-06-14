@@ -37,6 +37,7 @@ function PosPage() {
   const [address, setAddress] = useState("");
   const [comment, setComment] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "card_courier" | "card_online">("cash");
+  const [changeFrom, setChangeFrom] = useState<string>("");
   const [discountPct, setDiscountPct] = useState(0);
   const [bonusUse, setBonusUse] = useState(0);
   const [posBranch, setPosBranch] = useState<string>("");

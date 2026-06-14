@@ -273,7 +273,7 @@ function Preview({ s }: { s: ReceiptSettings }) {
           <div className="flex justify-between font-extrabold"><span>{t(s, "pay")}</span><span>585</span></div>
           <div>Оплата: Наличные</div>
           {s.show_change && (
-            <div className="font-bold mt-1">Купюра: 1000, Сдача: 415</div>
+            <div className="font-bold mt-1">Внесено: 1000, Сдача: 415</div>
           )}
         </>
       )}

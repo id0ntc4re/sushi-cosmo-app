@@ -486,6 +486,14 @@ function OrdersAdmin() {
           }}
         />
       )}
+
+      {refundOrderId && (
+        <FiscalRefundModal
+          orderId={refundOrderId}
+          onClose={() => setRefundOrderId(null)}
+          onRefunded={async () => { load(); }}
+        />
+      )}
     </div>
   );
 }

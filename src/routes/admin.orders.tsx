@@ -457,6 +457,12 @@ function OrdersAdmin() {
           <div className="flex justify-between flex-wrap gap-2">
             <button onClick={() => remove(open.id)} className="px-4 py-2 rounded-full bg-red-50 text-red-600 font-semibold text-sm">Удалить</button>
             <div className="flex gap-2 flex-wrap">
+              {open.fiscal_printed_at && (
+                <button onClick={() => setRefundOrderId(open.id)}
+                  className="px-4 py-2 rounded-full bg-rose-600 text-white font-semibold text-sm">
+                  ↩ Возврат
+                </button>
+              )}
               <button onClick={() => setFiscalOrderId(open.id)}
                 className="px-4 py-2 rounded-full bg-emerald-600 text-white font-semibold text-sm">
                 🧾 {open.fiscal_printed_at ? "Перепробить чек" : "Пробить чек"}

@@ -123,14 +123,27 @@ export function FiscalReceiptModal({ orderId, onClose, onPrinted }: Props) {
 
       const { data: { user } } = await supabase.auth.getUser();
 
-      // Find current open shift for this branch (for linkage)
+      // Find (or auto-create) current open shift for this branch.
+      // Auto-create handles the case when ККТ auto-opened a shift during print
+      // because no manual open was done — we still want shift_id linkage.
       let shiftId: string | null = null;
       if (order.branch_id) {
         const { data: sh } = await supabase.from("cash_shifts")
           .select("id").eq("branch_id", order.branch_id).is("closed_at", null)
           .order("opened_at", { ascending: false }).limit(1).maybeSingle();
-        shiftId = sh?.id ?? null;
+        if (sh?.id) {
+          shiftId = sh.id;
+        } else {
+          const { data: created } = await (supabase.from("cash_shifts") as any).insert({
+            branch_id: order.branch_id,
+            opened_by: user?.id,
+            opening_cash: 0,
+            shift_number: res.shiftNumber ?? null,
+          }).select("id").maybeSingle();
+          shiftId = created?.id ?? null;
+        }
       }
+
 
       // Persist fiscal receipt in DB for OFD lookup / refunds / reconciliation
       await (supabase.from("fiscal_receipts") as any).insert({

@@ -54,6 +54,7 @@ function BranchesPage() {
 
   async function save() {
     if (!editing) return;
+    const e: any = editing;
     const payload: any = {
       name: editing.name?.trim(),
       address: editing.address ?? null,
@@ -61,11 +62,16 @@ function BranchesPage() {
       email: editing.email?.trim() || null,
       is_active: editing.is_active ?? true,
       sort_order: editing.sort_order ?? 0,
+      kkt_url: e.kkt_url?.trim() || null,
+      kkt_tax_system: e.kkt_tax_system || "usn_income",
+      kkt_vat: e.kkt_vat || "none",
+      kkt_operator_name: e.kkt_operator_name?.trim() || "Кассир",
+      kkt_operator_inn: e.kkt_operator_inn?.trim() || null,
     };
     if (!payload.name) return toast.error("Введите название");
     const { error } = editing.id
-      ? await supabase.from("branches").update(payload).eq("id", editing.id)
-      : await supabase.from("branches").insert(payload);
+      ? await (supabase.from("branches") as any).update(payload).eq("id", editing.id)
+      : await (supabase.from("branches") as any).insert(payload);
     if (error) return toast.error(error.message);
     toast.success("Сохранено");
     setEditing(null); load();

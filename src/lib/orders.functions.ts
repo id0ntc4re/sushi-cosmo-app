@@ -79,11 +79,16 @@ export const createCheckoutOrder = createServerFn({ method: "POST" })
     }
 
     if (data.promo) {
-      await supabaseAdmin
-        .from("promo_codes")
-        .update({ used_count: data.promo.used_count + 1 })
-        .eq("id", data.promo.id);
+      // Атомарный инкремент через SECURITY DEFINER RPC с проверкой max_uses / срока / активности
+      const { data: ok } = await (supabaseAdmin.rpc as any)("bump_promo_usage", { _id: data.promo.id });
+      if (!ok) {
+        // Промокод стал невалиден между валидацией и оформлением — откатываем заказ
+        await supabaseAdmin.from("order_items").delete().eq("order_id", order.id);
+        await supabaseAdmin.from("orders").delete().eq("id", order.id);
+        throw new Error("Промокод больше не действителен");
+      }
     }
+
 
     if (userId) {
       const { data: profile } = await supabaseAdmin

@@ -285,6 +285,22 @@ function BranchesPage() {
                         className="w-full px-3 py-2 rounded-xl border" />
                     </Field>
                   </div>
+                  <div className="grid grid-cols-1 gap-3">
+                    <Field label="Место расчётов (печатается в чеке)">
+                      <input
+                        value={(editing as any).kkt_payments_place ?? ""}
+                        onChange={(e) => setEditing({ ...editing, ...({ kkt_payments_place: e.target.value } as any) })}
+                        placeholder={`Доставка "Космо Суши"`}
+                        className="w-full px-3 py-2 rounded-xl border" />
+                    </Field>
+                    <Field label="Адрес расчётов (печатается в чеке)">
+                      <input
+                        value={(editing as any).kkt_payments_address ?? ""}
+                        onChange={(e) => setEditing({ ...editing, ...({ kkt_payments_address: e.target.value } as any) })}
+                        placeholder="650061, г. Кемерово, пр-кт Шахтёров, д. 68"
+                        className="w-full px-3 py-2 rounded-xl border" />
+                    </Field>
+                  </div>
                 </div>
               </div>
             </div>

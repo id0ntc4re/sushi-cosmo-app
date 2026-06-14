@@ -91,9 +91,10 @@ export const createCheckoutOrder = createServerFn({ method: "POST" })
 
     const { data: order, error: orderError } = await supabaseAdmin
       .from("orders")
-      .insert({ ...data.order, user_id: userId, branch_id: branchId })
+      .insert({ ...orderPayload, user_id: userId, branch_id: branchId })
       .select("id, number")
       .single();
+
 
     if (orderError || !order) throw new Error(orderError?.message ?? "Не удалось создать заказ");
 

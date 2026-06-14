@@ -22,6 +22,7 @@ export type ReceiptSettings = {
   show_customer_name: boolean;
   show_employee_name: boolean;
   show_map: boolean;
+  show_change: boolean;
   map_zoom: number;
 };
 
@@ -43,6 +44,7 @@ export const DEFAULT_RECEIPT: ReceiptSettings = {
   show_customer_name: true,
   show_employee_name: false,
   show_map: false,
+  show_change: true,
   map_zoom: 15,
 };
 

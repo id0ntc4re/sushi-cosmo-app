@@ -218,6 +218,8 @@ function ReceiptAdmin() {
             value={s.show_comment} onChange={(v) => setS({ ...s, show_comment: v })} />
           <Toggle label="Печатать карту в чеке"
             value={s.show_map} onChange={(v) => setS({ ...s, show_map: v })} />
+          <Toggle label="Печатать сдачу (только для наличных)"
+            value={s.show_change} onChange={(v) => setS({ ...s, show_change: v })} />
           <Toggle label="Баллы клиента"
             value={s.show_bonus} onChange={(v) => setS({ ...s, show_bonus: v })} />
 
@@ -270,7 +272,9 @@ function Preview({ s }: { s: ReceiptSettings }) {
           <div className="flex justify-between"><span>{t(s, "discount")}</span><span>10%</span></div>
           <div className="flex justify-between font-extrabold"><span>{t(s, "pay")}</span><span>585</span></div>
           <div>Оплата: Наличные</div>
-          <div className="font-bold mt-1">Купюра: 1000, Сдача: 415 <span className="font-normal opacity-70">(только для наличных)</span></div>
+          {s.show_change && (
+            <div className="font-bold mt-1">Купюра: 1000, Сдача: 415</div>
+          )}
         </>
       )}
       {s.footer && (

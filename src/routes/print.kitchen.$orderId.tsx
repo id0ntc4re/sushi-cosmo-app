@@ -117,7 +117,7 @@ function KitchenReceipt() {
           {order.delivery_cost ? <div className="flex justify-between text-sm"><span>Доставка</span><span>{fmt(Number(order.delivery_cost))}</span></div> : null}
           <div className="flex justify-between text-base font-extrabold border-t border-black mt-1 pt-1"><span>К ОПЛАТЕ</span><span>{fmt(total)}</span></div>
           {order.payment_method && <div className="text-xs">Оплата: {payLabel(order.payment_method)}</div>}
-          {order.payment_method === "cash" && Number(order.change_from ?? 0) > 0 && (
+          {order.payment_method === "cash" && s.show_change && Number(order.change_from ?? 0) > 0 && (
             <div className="text-sm font-bold mt-1">
               Купюра: {fmt(Number(order.change_from))}, Сдача: {fmt(Math.max(0, Number(order.change_from) - total))}
             </div>

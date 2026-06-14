@@ -336,6 +336,20 @@ function PosPage() {
                   }`}>{l}</button>
               ))}
             </div>
+            {paymentMethod === "cash" && (
+              <div>
+                <label className="text-xs text-neutral-500 block mb-1">С какой суммы (купюра)</label>
+                <input type="number" inputMode="decimal" value={changeFrom}
+                  onChange={(e) => setChangeFrom(e.target.value)}
+                  placeholder="например 1000"
+                  className={inp} />
+                {changeFrom !== "" && Number(changeFrom) >= total && total > 0 && (
+                  <div className="text-xs text-neutral-600 mt-1">
+                    Сдача: <b>{(Number(changeFrom) - total).toLocaleString("ru")} ₽</b>
+                  </div>
+                )}
+              </div>
+            )}
             {(holidayBirth || holidayAnniv) && (
               <div className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl p-3 space-y-2">
                 <div className="text-xs font-bold text-purple-900">

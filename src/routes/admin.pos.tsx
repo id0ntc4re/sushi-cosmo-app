@@ -209,10 +209,7 @@ function PosPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between flex-wrap gap-3 mb-6">
-        <h1 className="text-3xl font-extrabold">📞 Создание заказа</h1>
-        <ShiftButtons branchId={effectiveBranch} />
-      </div>
+      <h1 className="text-3xl font-extrabold mb-6">📞 Создание заказа</h1>
 
       <div className="grid lg:grid-cols-[1.2fr_1fr] gap-5">
         {/* LEFT: catalog */}

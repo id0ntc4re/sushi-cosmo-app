@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Modal } from "./admin.products";
 import { printKitchenReceipt } from "@/lib/kitchen-print";
 import { AddressFields } from "@/components/AddressFields";
+import { FiscalReceiptModal } from "@/components/FiscalReceiptModal";
 
 export const Route = createFileRoute("/admin/orders")({
   component: OrdersAdmin,

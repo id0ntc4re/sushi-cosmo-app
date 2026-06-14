@@ -21,8 +21,9 @@ export type FiscalPrintInput = {
   items: FiscalItem[];
   customerEmail?: string | null;
   customerPhone?: string | null;
-  paymentsPlace?: string | null;     // «Место расчётов»: например, Доставка "Космо Суши"
-  paymentsAddress?: string | null;   // «Адрес расчётов»: 650061, г. Кемерово, ...
+  paymentsPlace?: string | null;
+  paymentsAddress?: string | null;
+  receiptType?: "sell" | "sellRefund"; // по умолчанию sell
 };
 
 export type FiscalPrintResult = {
@@ -102,7 +103,7 @@ function buildTask(input: FiscalPrintInput, taskUuid: string) {
         : null;
 
   const request: any = {
-    type: "sell",
+    type: input.receiptType === "sellRefund" ? "sellRefund" : "sell",
     taxationType: input.taxationType || "usn_income",
     operator: { name: input.operatorName, ...(input.operatorInn ? { vatin: input.operatorInn } : {}) },
     items,
@@ -214,6 +215,10 @@ export async function printFiscalReceipt(input: FiscalPrintInput, _retry = false
     }
     // status === "wait" | "inProgress" — продолжаем опрос
   }
+}
+
+export function refundFiscalReceipt(input: FiscalPrintInput) {
+  return printFiscalReceipt({ ...input, receiptType: "sellRefund" });
 }
 
 export function paymentLabel(m: FiscalPaymentMethod): string {

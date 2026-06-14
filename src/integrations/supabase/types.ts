@@ -588,13 +588,16 @@ export type Database = {
           fiscal_sign: string | null
           fn_number: string | null
           id: string
+          items: Json | null
           ofd_receipt_url: string | null
           operator_inn: string | null
           operator_name: string | null
           order_id: string | null
+          parent_receipt_id: string | null
           payment_method: string | null
           raw_response: Json | null
           receipt_datetime: string | null
+          receipt_type: string
           shift_id: string | null
           shift_number: number | null
           taxation_type: string | null
@@ -609,13 +612,16 @@ export type Database = {
           fiscal_sign?: string | null
           fn_number?: string | null
           id?: string
+          items?: Json | null
           ofd_receipt_url?: string | null
           operator_inn?: string | null
           operator_name?: string | null
           order_id?: string | null
+          parent_receipt_id?: string | null
           payment_method?: string | null
           raw_response?: Json | null
           receipt_datetime?: string | null
+          receipt_type?: string
           shift_id?: string | null
           shift_number?: number | null
           taxation_type?: string | null
@@ -630,13 +636,16 @@ export type Database = {
           fiscal_sign?: string | null
           fn_number?: string | null
           id?: string
+          items?: Json | null
           ofd_receipt_url?: string | null
           operator_inn?: string | null
           operator_name?: string | null
           order_id?: string | null
+          parent_receipt_id?: string | null
           payment_method?: string | null
           raw_response?: Json | null
           receipt_datetime?: string | null
+          receipt_type?: string
           shift_id?: string | null
           shift_number?: number | null
           taxation_type?: string | null
@@ -663,6 +672,13 @@ export type Database = {
             columns: ["order_id"]
             isOneToOne: false
             referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fiscal_receipts_parent_receipt_id_fkey"
+            columns: ["parent_receipt_id"]
+            isOneToOne: false
+            referencedRelation: "fiscal_receipts"
             referencedColumns: ["id"]
           },
           {

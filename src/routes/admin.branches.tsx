@@ -232,6 +232,13 @@ function BranchesPage() {
                       Локальный HTTP-сервер драйвера ККТ на ПК кассира. Сайт должен быть открыт на том же ПК.
                     </p>
                   </Field>
+                  <Field label="Модель ККТ (памятка)">
+                    <input
+                      value={(editing as any).kkt_model ?? ""}
+                      onChange={(e) => setEditing({ ...editing, ...({ kkt_model: e.target.value } as any) })}
+                      placeholder="Например: Атол 30Ф"
+                      className="w-full px-3 py-2 rounded-xl border" />
+                  </Field>
                   <div className="grid grid-cols-2 gap-3">
                     <Field label="Система налогообложения">
                       <select

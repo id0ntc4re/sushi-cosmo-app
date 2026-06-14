@@ -363,18 +363,6 @@ function AddressChecker() {
         </div>
       )}
 
-      {createdOrder && (
-        <div className="border-2 border-amber-300 bg-amber-50 rounded-2xl p-4 flex items-center justify-between">
-          <div>
-            <div className="font-bold">Тестовый заказ #{createdOrder.number} создан</div>
-            <div className="text-xs text-neutral-600">Можно посмотреть его в Канбане или Заказах</div>
-          </div>
-          <div className="flex gap-2">
-            <Link to="/admin/kanban" className="px-3 py-2 rounded-xl bg-white border font-semibold text-sm">→ Канбан</Link>
-            <Link to="/admin/orders" className="px-3 py-2 rounded-xl bg-primary text-white font-semibold text-sm">→ Заказы</Link>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

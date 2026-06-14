@@ -176,27 +176,35 @@ function ShiftButtons({ branchId }: { branchId: string | null | undefined }) {
       const r0 = (res.raw?.results && res.raw.results[0]) || {};
       const fiscalTime = r0.receiptDatetime ?? new Date().toISOString();
 
+      // Latest non-closed row for this branch
       let { data: sh } = await supabase.from("cash_shifts")
-        .select("id").eq("branch_id", branchId).is("closed_at", null)
+        .select("id,opened_fd,closed_fd").eq("branch_id", branchId).is("closed_at", null)
         .order("opened_at", { ascending: false }).limit(1).maybeSingle();
 
       if (cmd === "openShift") {
-        // Auto-create cash_shifts row if cashier didn't open one manually,
-        // so subsequent receipts get a shift_id and Z-report has a row to update.
+        // If previous row already has Z-report data (closed_fd) but wasn't formally
+        // closed in /admin/shifts, auto-close it now so we don't overwrite its open fields.
+        if (sh?.id && sh.closed_fd) {
+          await (supabase.from("cash_shifts") as any)
+            .update({ closed_at: new Date().toISOString() }).eq("id", sh.id);
+          sh = null;
+        }
+        // Create a new cash_shifts row if no open one exists.
         if (!sh?.id) {
           const { data: { user } } = await supabase.auth.getUser();
           const { data: created, error: cErr } = await (supabase.from("cash_shifts") as any).insert({
             branch_id: branchId,
             opened_by: user?.id,
             opening_cash: 0,
-          }).select("id").maybeSingle();
+          }).select("id,opened_fd").maybeSingle();
           if (cErr) {
             toast.error("Смена открыта на ККТ, но не удалось завести смену в БД: " + cErr.message);
           } else {
             sh = created;
           }
         }
-        if (sh?.id) {
+        // Fill open-fiscal fields only once per row (don't overwrite on repeated clicks).
+        if (sh?.id && !sh.opened_fd) {
           await (supabase.from("cash_shifts") as any).update({
             shift_number: res.shiftNumber ?? null,
             opened_fd: r0.fiscalDocumentNumber ? String(r0.fiscalDocumentNumber) : null,
@@ -216,6 +224,7 @@ function ShiftButtons({ branchId }: { branchId: string | null | undefined }) {
           closed_raw: res.raw ?? null,
         }).eq("id", sh.id);
       }
+
 
 
       toast.success(cmd === "openShift" ? "Смена открыта · отчёт об открытии напечатан" : "Смена закрыта · Z-отчёт напечатан");

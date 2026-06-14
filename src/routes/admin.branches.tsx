@@ -34,8 +34,10 @@ function BranchesPage() {
   }
 
   async function load() {
-    const { data } = await supabase.from("branches").select("*").order("sort_order");
+    // Полный набор колонок (включая kkt_*, email) приходит только через SECURITY DEFINER RPC
+    const { data } = await (supabase.rpc as any)("list_branches_full");
     setList((data ?? []) as Branch[]);
+
 
     const { data: roles } = await supabase
       .from("user_roles")

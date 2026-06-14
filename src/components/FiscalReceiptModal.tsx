@@ -58,11 +58,12 @@ export function FiscalReceiptModal({ orderId, onClose, onPrinted }: Props) {
         .select("id,name,price,quantity,total").eq("order_id", orderId);
       let b: Branch | null = null;
       if (o?.branch_id) {
-        const { data } = await (supabase.from("branches") as any)
-          .select("name,kkt_url,kkt_tax_system,kkt_vat,kkt_operator_name,kkt_operator_inn,kkt_payments_place,kkt_payments_address")
-          .eq("id", o.branch_id).maybeSingle();
-        b = data as Branch | null;
+        // ККТ-настройки филиала доступны только через SECURITY DEFINER RPC (column-level security)
+        const { data } = await (supabase.rpc as any)("get_branch_full", { _id: o.branch_id });
+        const row = Array.isArray(data) ? data[0] : data;
+        b = (row ?? null) as Branch | null;
       }
+
       setOrder(o as OrderRow);
       setItems((its ?? []) as ItemRow[]);
       setBranch(b);

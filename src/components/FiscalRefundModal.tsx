@@ -60,11 +60,12 @@ export function FiscalRefundModal({ orderId, onClose, onRefunded }: Props) {
       setOrder(o);
       if ((o as any)?.payment_method) setMethod((o as any).payment_method);
       if ((o as any)?.branch_id) {
-        const { data } = await (supabase.from("branches") as any)
-          .select("name,kkt_url,kkt_tax_system,kkt_vat,kkt_operator_name,kkt_operator_inn,kkt_payments_place,kkt_payments_address")
-          .eq("id", (o as any).branch_id).maybeSingle();
-        setBranch(data as Branch | null);
+        // ККТ-настройки филиала — только через SECURITY DEFINER RPC
+        const { data } = await (supabase.rpc as any)("get_branch_full", { _id: (o as any).branch_id });
+        const row = Array.isArray(data) ? data[0] : data;
+        setBranch((row ?? null) as Branch | null);
       }
+
       // Загружаем все фискальные чеки по заказу
       const { data: receipts } = await (supabase.from("fiscal_receipts") as any)
         .select("id,receipt_type,parent_receipt_id,fiscal_receipt_number,fiscal_document_number,receipt_datetime,total,payment_method,items,raw_response")

@@ -54,11 +54,47 @@ export const createCheckoutOrder = createServerFn({ method: "POST" })
       branchId = br?.id ?? null;
     }
 
+    // Защита от подделки бонусов: гость не может списать бонусы; пользователь — не больше, чем есть на балансе
+    let safeBonusUsed = 0;
+    if (data.order.bonus_used > 0) {
+      if (!userId) {
+        throw new Error("Списание бонусов доступно только авторизованным пользователям");
+      }
+      const { data: prof } = await supabaseAdmin
+        .from("profiles").select("bonus_balance").eq("id", userId).maybeSingle();
+      const balance = Math.floor(Number(prof?.bonus_balance ?? 0));
+      safeBonusUsed = Math.max(0, Math.min(Math.floor(data.order.bonus_used), balance));
+      if (safeBonusUsed !== Math.floor(data.order.bonus_used)) {
+        throw new Error("Списано больше бонусов, чем доступно на балансе");
+      }
+    }
+
+    // Перерасчёт итогов на сервере — клиентским значениям не доверяем
+    const itemsSubtotal = data.items.reduce((sum, it) => sum + it.price * it.quantity, 0);
+    if (Math.abs(itemsSubtotal - data.order.subtotal) > 1) {
+      throw new Error("Сумма позиций не совпадает с подытогом");
+    }
+    const safeDelivery = Math.max(0, Math.floor(Number(data.order.delivery_cost) || 0));
+    const safeDiscount = Math.max(0, Math.floor(Number(data.order.discount) || 0));
+    const safeTotal = Math.max(0, itemsSubtotal - safeDiscount - safeBonusUsed + safeDelivery);
+    if (Math.abs(safeTotal - data.order.total) > 1) {
+      throw new Error("Итоговая сумма заказа не совпадает с расчётом");
+    }
+    const orderPayload = {
+      ...data.order,
+      bonus_used: safeBonusUsed,
+      delivery_cost: safeDelivery,
+      discount: safeDiscount,
+      total: safeTotal,
+    };
+
+
     const { data: order, error: orderError } = await supabaseAdmin
       .from("orders")
-      .insert({ ...data.order, user_id: userId, branch_id: branchId })
+      .insert({ ...orderPayload, user_id: userId, branch_id: branchId })
       .select("id, number")
       .single();
+
 
     if (orderError || !order) throw new Error(orderError?.message ?? "Не удалось создать заказ");
 
@@ -79,11 +115,16 @@ export const createCheckoutOrder = createServerFn({ method: "POST" })
     }
 
     if (data.promo) {
-      await supabaseAdmin
-        .from("promo_codes")
-        .update({ used_count: data.promo.used_count + 1 })
-        .eq("id", data.promo.id);
+      // Атомарный инкремент через SECURITY DEFINER RPC с проверкой max_uses / срока / активности
+      const { data: ok } = await (supabaseAdmin.rpc as any)("bump_promo_usage", { _id: data.promo.id });
+      if (!ok) {
+        // Промокод стал невалиден между валидацией и оформлением — откатываем заказ
+        await supabaseAdmin.from("order_items").delete().eq("order_id", order.id);
+        await supabaseAdmin.from("orders").delete().eq("id", order.id);
+        throw new Error("Промокод больше не действителен");
+      }
     }
+
 
     if (userId) {
       const { data: profile } = await supabaseAdmin
@@ -94,19 +135,20 @@ export const createCheckoutOrder = createServerFn({ method: "POST" })
 
       if (profile) {
         // Кэшбэк начисляется только после доставки (триггер credit_bonus_on_delivery).
-        const newBalance = Number(profile.bonus_balance || 0) - data.order.bonus_used;
-        const newSpent = Number(profile.total_spent || 0) + data.order.total;
+        const newBalance = Number(profile.bonus_balance || 0) - safeBonusUsed;
+        const newSpent = Number(profile.total_spent || 0) + safeTotal;
         await supabaseAdmin.from("profiles").update({ bonus_balance: newBalance, total_spent: newSpent }).eq("id", userId);
 
-        if (data.order.bonus_used > 0) {
+        if (safeBonusUsed > 0) {
           await supabaseAdmin.from("bonus_transactions").insert({
             user_id: userId,
             order_id: order.id,
-            amount: -data.order.bonus_used,
+            amount: -safeBonusUsed,
             reason: `Списание · заказ №${order.number}`,
           });
         }
       }
+
     }
 
     // Копия заказа на почту филиала + резервные адреса из settings.order_emails
@@ -137,11 +179,12 @@ export const createCheckoutOrder = createServerFn({ method: "POST" })
             change_from: data.order.change_from,
             delivery_time: data.order.delivery_time,
             comment: data.order.comment,
-            subtotal: data.order.subtotal,
-            delivery_cost: data.order.delivery_cost,
-            discount: data.order.discount,
-            bonus_used: data.order.bonus_used,
-            total: data.order.total,
+            subtotal: itemsSubtotal,
+            delivery_cost: safeDelivery,
+            discount: safeDiscount,
+            bonus_used: safeBonusUsed,
+            total: safeTotal,
+
             branch_name: branchName ?? null,
             items: data.items.map((i) => ({ name: i.name, price: i.price, quantity: i.quantity })),
           },

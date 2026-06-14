@@ -28,33 +28,20 @@ export async function validatePromo(code: string, subtotal: number): Promise<
   const c = code.trim().toUpperCase();
   if (!c) return { ok: false, error: "Введите промокод" };
 
-  const { data, error } = await (supabase
-    .from("promo_codes") as any)
-    .select("*")
-    .ilike("code", c)
-    .eq("is_active", true)
-    .maybeSingle();
+  // Серверная валидация через SECURITY DEFINER RPC: не отдаёт всю таблицу промокодов наружу
+  const { data: rows, error } = await (supabase.rpc as any)("validate_promo", {
+    _code: c,
+    _subtotal: subtotal,
+  });
 
-  if (error || !data) return { ok: false, error: "Промокод не найден" };
-
-  const now = new Date();
-  if (data.starts_at && new Date(data.starts_at) > now)
-    return { ok: false, error: "Промокод ещё не активен" };
-  if (data.expires_at && new Date(data.expires_at) < now)
-    return { ok: false, error: "Срок действия истёк" };
-  if (data.max_uses != null && data.used_count >= data.max_uses)
-    return { ok: false, error: "Промокод исчерпан" };
-  if (Number(data.min_order) > subtotal)
-    return {
-      ok: false,
-      error: `Минимальная сумма для промокода: ${data.min_order} ₽`,
-    };
+  if (error) return { ok: false, error: "Не удалось проверить промокод" };
+  const data = Array.isArray(rows) ? rows[0] : rows;
+  if (!data) return { ok: false, error: "Промокод не найден или не подходит" };
 
   let discount = 0;
   let gift: GiftItem | null = null;
 
   if (data.discount_type === "gift") {
-    // Resolve gift product info — prefer linked product, fallback to custom fields
     if (data.gift_product_id) {
       const { data: prod } = await supabase
         .from("products")
@@ -78,5 +65,14 @@ export async function validatePromo(code: string, subtotal: number): Promise<
         : Math.min(value, subtotal);
   }
 
-  return { ok: true, discount, gift, promo: data as PromoCode };
+  return {
+    ok: true,
+    discount,
+    gift,
+    promo: {
+      ...(data as any),
+      is_active: true,
+    } as PromoCode,
+  };
 }
+

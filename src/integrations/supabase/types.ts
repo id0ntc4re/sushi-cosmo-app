@@ -202,6 +202,7 @@ export type Database = {
           email: string | null
           id: string
           is_active: boolean
+          kkt_model: string | null
           kkt_operator_inn: string | null
           kkt_operator_name: string
           kkt_tax_system: string
@@ -217,6 +218,7 @@ export type Database = {
           email?: string | null
           id?: string
           is_active?: boolean
+          kkt_model?: string | null
           kkt_operator_inn?: string | null
           kkt_operator_name?: string
           kkt_tax_system?: string
@@ -232,6 +234,7 @@ export type Database = {
           email?: string | null
           id?: string
           is_active?: boolean
+          kkt_model?: string | null
           kkt_operator_inn?: string | null
           kkt_operator_name?: string
           kkt_tax_system?: string

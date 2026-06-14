@@ -28,6 +28,7 @@ type Branch = {
   kkt_operator_inn: string | null;
   kkt_payments_place: string | null;
   kkt_payments_address: string | null;
+  is_demo: boolean | null;
 };
 
 type Line = {
@@ -256,7 +257,14 @@ export function FiscalRefundModal({ orderId, onClose, onRefunded }: Props) {
     <div className="fixed inset-0 bg-black/50 z-[60] flex items-center justify-center p-4" onClick={onClose}>
       <div className="bg-white rounded-2xl p-6 w-full max-w-lg shadow-2xl max-h-[92vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
         <div className="text-center mb-4">
-          <div className="text-xs uppercase tracking-wide text-neutral-400">Возврат прихода</div>
+          <div className="text-xs uppercase tracking-wide text-neutral-400 flex items-center justify-center gap-1.5">
+            Возврат прихода
+            {branch?.is_demo && (
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 text-[10px] font-extrabold leading-none">
+                ДЕМО
+              </span>
+            )}
+          </div>
           <div className="text-xl font-extrabold">Заказ #{order?.number ?? "…"}</div>
         </div>
 

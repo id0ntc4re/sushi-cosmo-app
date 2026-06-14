@@ -1,6 +1,42 @@
 // Печать фискального чека через драйвер Атол ККТ v10 (DTO 10.x)
 // Локальный HTTP-сервер драйвера: по умолчанию http://localhost:16732
 // Документация: POST /requests/ создаёт задачу, GET /requests/<uuid> отдаёт результат.
+// Демо-режим: kktUrl = "demo://atol" эмулирует успешный ответ без реального запроса.
+
+function isDemoKkt(kktUrl: string): boolean {
+  return (kktUrl || "").trim().toLowerCase().startsWith("demo://");
+}
+
+function makeDemoResult(taskUuid: string, input: FiscalPrintInput): FiscalPrintResult {
+  const now = new Date().toISOString();
+  const demoFn = "9999078900001234";
+  const demoDocNum = String(Math.floor(100000 + Math.random() * 899999));
+  return {
+    ok: true,
+    uuid: taskUuid,
+    fiscalReceiptNumber: demoDocNum,
+    fiscalDocumentNumber: demoDocNum,
+    fiscalSign: String(Math.floor(1000000000 + Math.random() * 8999999999)),
+    fnNumber: demoFn,
+    shiftNumber: 1,
+    receiptDatetime: now,
+    ofdReceiptUrl: `https://check.ofd.ru/?fn=${demoFn}&fd=${demoDocNum}`,
+    raw: {
+      status: "ready",
+      uuid: taskUuid,
+      results: [{
+        status: "ready",
+        fiscalDocumentNumber: Number(demoDocNum),
+        fiscalReceiptNumber: Number(demoDocNum),
+        fiscalSign: Math.floor(1000000000 + Math.random() * 8999999999),
+        fnNumber: demoFn,
+        shiftNumber: 1,
+        receiptDatetime: now,
+        ofdReceiptUrl: `https://check.ofd.ru/?fn=${demoFn}&fd=${demoDocNum}`,
+      }],
+    },
+  };
+}
 
 export type FiscalPaymentMethod = "cash" | "card_courier" | "card_online";
 
@@ -136,6 +172,14 @@ export async function printFiscalReceipt(input: FiscalPrintInput, _retry = false
   if (!base) return { ok: false, message: "Не задан адрес драйвера ККТ для филиала" };
 
   const taskUuid = uuid();
+
+  // Демо-режим: эмулируем ответ без реального запроса к кассе
+  if (isDemoKkt(base)) {
+    // Имитируем небольшую задержку «печати»
+    await new Promise((r) => setTimeout(r, 600));
+    return makeDemoResult(taskUuid, input);
+  }
+
   const body = buildTask(input, taskUuid);
 
   // 1) Отправляем задачу

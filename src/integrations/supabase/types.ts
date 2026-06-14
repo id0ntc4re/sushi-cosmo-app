@@ -202,6 +202,7 @@ export type Database = {
           email: string | null
           id: string
           is_active: boolean
+          is_demo: boolean
           kkt_model: string | null
           kkt_operator_inn: string | null
           kkt_operator_name: string
@@ -220,6 +221,7 @@ export type Database = {
           email?: string | null
           id?: string
           is_active?: boolean
+          is_demo?: boolean
           kkt_model?: string | null
           kkt_operator_inn?: string | null
           kkt_operator_name?: string
@@ -238,6 +240,7 @@ export type Database = {
           email?: string | null
           id?: string
           is_active?: boolean
+          is_demo?: boolean
           kkt_model?: string | null
           kkt_operator_inn?: string | null
           kkt_operator_name?: string
@@ -1823,6 +1826,7 @@ export type Database = {
           email: string | null
           id: string
           is_active: boolean
+          is_demo: boolean
           kkt_model: string | null
           kkt_operator_inn: string | null
           kkt_operator_name: string
@@ -1858,6 +1862,7 @@ export type Database = {
           email: string | null
           id: string
           is_active: boolean
+          is_demo: boolean
           kkt_model: string | null
           kkt_operator_inn: string | null
           kkt_operator_name: string

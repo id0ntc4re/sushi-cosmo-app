@@ -45,7 +45,7 @@ export const sendTestBranchEmail = createServerFn({ method: "POST" })
       <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#222">
         <h2>✅ Тестовое письмо</h2>
         <p>Если вы видите это сообщение, значит уведомления о новых заказах для филиала
-          <b>${branch.name}</b> будут приходить на адрес <b>${branch.email}</b>.</p>
+          <b>${branchName}</b> будут приходить на адрес <b>${branchEmail}</b>.</p>
         <p style="color:#666;font-size:13px">Отправлено из админки сайта КосмоСуши.</p>
       </div>`;
 
@@ -57,8 +57,8 @@ export const sendTestBranchEmail = createServerFn({ method: "POST" })
       },
       body: JSON.stringify({
         from: "КосмоСуши <onboarding@resend.dev>",
-        to: [branch.email],
-        subject: `Тестовое письмо · ${branch.name}`,
+        to: [branchEmail],
+        subject: `Тестовое письмо · ${branchName}`,
         html,
       }),
     });
@@ -67,5 +67,5 @@ export const sendTestBranchEmail = createServerFn({ method: "POST" })
       throw new Error(`Resend ${resp.status}: ${text}`);
     }
 
-    return { ok: true, sentTo: branch.email };
+    return { ok: true, sentTo: branchEmail };
   });

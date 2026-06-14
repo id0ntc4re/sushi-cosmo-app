@@ -171,7 +171,33 @@ function ShiftButtons({ branchId }: { branchId: string | null | undefined }) {
         toast.error(res.message);
         return;
       }
+
+      // Persist fiscal shift data on the current open cash_shift row, if any
+      const { data: sh } = await supabase.from("cash_shifts")
+        .select("id").eq("branch_id", branchId).is("closed_at", null)
+        .order("opened_at", { ascending: false }).limit(1).maybeSingle();
+      if (sh?.id) {
+        const r0 = (res.raw?.results && res.raw.results[0]) || {};
+        const patch: any = cmd === "openShift"
+          ? {
+              shift_number: res.shiftNumber ?? null,
+              opened_fd: r0.fiscalDocumentNumber ? String(r0.fiscalDocumentNumber) : null,
+              opened_fp: r0.fiscalSign ? String(r0.fiscalSign) : null,
+              opened_at_fiscal: r0.receiptDatetime ?? new Date().toISOString(),
+              opened_raw: res.raw ?? null,
+            }
+          : {
+              shift_number: res.shiftNumber ?? null,
+              closed_fd: r0.fiscalDocumentNumber ? String(r0.fiscalDocumentNumber) : null,
+              closed_fp: r0.fiscalSign ? String(r0.fiscalSign) : null,
+              closed_at_fiscal: r0.receiptDatetime ?? new Date().toISOString(),
+              closed_raw: res.raw ?? null,
+            };
+        await (supabase.from("cash_shifts") as any).update(patch).eq("id", sh.id);
+      }
+
       toast.success(cmd === "openShift" ? "Смена открыта · отчёт об открытии напечатан" : "Смена закрыта · Z-отчёт напечатан");
+
     } finally {
       setBusy(null);
     }

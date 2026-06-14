@@ -37,6 +37,7 @@ function PosPage() {
   const [address, setAddress] = useState("");
   const [comment, setComment] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "card_courier" | "card_online">("cash");
+  const [changeFrom, setChangeFrom] = useState<string>("");
   const [discountPct, setDiscountPct] = useState(0);
   const [bonusUse, setBonusUse] = useState(0);
   const [posBranch, setPosBranch] = useState<string>("");
@@ -172,7 +173,7 @@ function PosPage() {
             address: deliveryType === "delivery" ? address.trim() : null,
             pickup_point: deliveryType === "pickup" ? "Самовывоз" : null,
             payment_method: paymentMethod,
-            change_from: null,
+            change_from: paymentMethod === "cash" && changeFrom !== "" ? Number(changeFrom) : null,
             persons: 1,
             delivery_time: null,
             comment: comment.trim() || null,
@@ -335,6 +336,20 @@ function PosPage() {
                   }`}>{l}</button>
               ))}
             </div>
+            {paymentMethod === "cash" && (
+              <div>
+                <label className="text-xs text-neutral-500 block mb-1">С какой суммы (купюра)</label>
+                <input type="number" inputMode="decimal" value={changeFrom}
+                  onChange={(e) => setChangeFrom(e.target.value)}
+                  placeholder="например 1000"
+                  className={inp} />
+                {changeFrom !== "" && Number(changeFrom) >= total && total > 0 && (
+                  <div className="text-xs text-neutral-600 mt-1">
+                    Сдача: <b>{(Number(changeFrom) - total).toLocaleString("ru")} ₽</b>
+                  </div>
+                )}
+              </div>
+            )}
             {(holidayBirth || holidayAnniv) && (
               <div className="bg-gradient-to-r from-pink-50 to-purple-50 rounded-xl p-3 space-y-2">
                 <div className="text-xs font-bold text-purple-900">

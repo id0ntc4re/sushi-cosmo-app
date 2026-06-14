@@ -54,6 +54,7 @@ function BranchesPage() {
 
   async function save() {
     if (!editing) return;
+    const e: any = editing;
     const payload: any = {
       name: editing.name?.trim(),
       address: editing.address ?? null,
@@ -61,11 +62,16 @@ function BranchesPage() {
       email: editing.email?.trim() || null,
       is_active: editing.is_active ?? true,
       sort_order: editing.sort_order ?? 0,
+      kkt_url: e.kkt_url?.trim() || null,
+      kkt_tax_system: e.kkt_tax_system || "usn_income",
+      kkt_vat: e.kkt_vat || "none",
+      kkt_operator_name: e.kkt_operator_name?.trim() || "Кассир",
+      kkt_operator_inn: e.kkt_operator_inn?.trim() || null,
     };
     if (!payload.name) return toast.error("Введите название");
     const { error } = editing.id
-      ? await supabase.from("branches").update(payload).eq("id", editing.id)
-      : await supabase.from("branches").insert(payload);
+      ? await (supabase.from("branches") as any).update(payload).eq("id", editing.id)
+      : await (supabase.from("branches") as any).insert(payload);
     if (error) return toast.error(error.message);
     toast.success("Сохранено");
     setEditing(null); load();
@@ -211,6 +217,66 @@ function BranchesPage() {
                   onChange={(e) => setEditing({ ...editing, is_active: e.target.checked })} />
                 <span>Активен</span>
               </label>
+
+              <div className="pt-3 mt-2 border-t">
+                <div className="text-sm font-bold mb-2">🧾 Фискальная касса (Атол)</div>
+                <div className="space-y-3">
+                  <Field label="Адрес драйвера ККТ v10">
+                    <input
+                      value={(editing as any).kkt_url ?? ""}
+                      onChange={(e) => setEditing({ ...editing, ...({ kkt_url: e.target.value } as any) })}
+                      placeholder="http://localhost:16732"
+                      className="w-full px-3 py-2 rounded-xl border" />
+                    <p className="text-xs text-neutral-500 mt-1">
+                      Локальный HTTP-сервер драйвера ККТ на ПК кассира. Сайт должен быть открыт на том же ПК.
+                    </p>
+                  </Field>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Field label="Система налогообложения">
+                      <select
+                        value={(editing as any).kkt_tax_system ?? "usn_income"}
+                        onChange={(e) => setEditing({ ...editing, ...({ kkt_tax_system: e.target.value } as any) })}
+                        className="w-full px-3 py-2 rounded-xl border bg-white">
+                        <option value="osn">ОСН</option>
+                        <option value="usn_income">УСН доход</option>
+                        <option value="usn_income_outcome">УСН доход − расход</option>
+                        <option value="envd">ЕНВД</option>
+                        <option value="esn">ЕСН</option>
+                        <option value="patent">Патент</option>
+                      </select>
+                    </Field>
+                    <Field label="Ставка НДС">
+                      <select
+                        value={(editing as any).kkt_vat ?? "none"}
+                        onChange={(e) => setEditing({ ...editing, ...({ kkt_vat: e.target.value } as any) })}
+                        className="w-full px-3 py-2 rounded-xl border bg-white">
+                        <option value="none">Без НДС</option>
+                        <option value="vat0">0%</option>
+                        <option value="vat10">10%</option>
+                        <option value="vat20">20%</option>
+                        <option value="vat110">10/110</option>
+                        <option value="vat120">20/120</option>
+                      </select>
+                    </Field>
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <Field label="ФИО кассира">
+                      <input
+                        value={(editing as any).kkt_operator_name ?? ""}
+                        onChange={(e) => setEditing({ ...editing, ...({ kkt_operator_name: e.target.value } as any) })}
+                        placeholder="Иванов И.И."
+                        className="w-full px-3 py-2 rounded-xl border" />
+                    </Field>
+                    <Field label="ИНН кассира (необязательно)">
+                      <input
+                        value={(editing as any).kkt_operator_inn ?? ""}
+                        onChange={(e) => setEditing({ ...editing, ...({ kkt_operator_inn: e.target.value } as any) })}
+                        placeholder="123456789012"
+                        className="w-full px-3 py-2 rounded-xl border" />
+                    </Field>
+                  </div>
+                </div>
+              </div>
             </div>
             <div className="flex justify-end gap-2 mt-5">
               <button onClick={() => setEditing(null)} className="px-4 py-2 rounded-full bg-neutral-100 font-semibold">Отмена</button>

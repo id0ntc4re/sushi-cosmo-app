@@ -7,6 +7,7 @@ import { useAdminRole } from "@/lib/admin-role";
 import { createOrderAsAdmin } from "@/lib/orders.functions";
 import { formatRuPhone } from "@/lib/phone-format";
 import { AddressFields } from "@/components/AddressFields";
+import { FiscalReceiptModal } from "@/components/FiscalReceiptModal";
 
 export const Route = createFileRoute("/admin/pos")({ component: PosPage });
 
@@ -42,6 +43,7 @@ function PosPage() {
   const [adminNote, setAdminNote] = useState("");
   const [holidayKind, setHolidayKind] = useState<"birthday" | "anniversary" | null>(null);
   const [busy, setBusy] = useState(false);
+  const [fiscalOrderId, setFiscalOrderId] = useState<string | null>(null);
 
   function daysToNext(dateStr: string | null): number | null {
     if (!dateStr) return null;
@@ -191,6 +193,7 @@ function PosPage() {
         await (supabase.from("orders") as any).update({ holiday_discount_kind: holidayKind }).eq("id", order.id);
       }
       toast.success(`Заказ №${order.number} создан`);
+      setFiscalOrderId(order.id);
       // Reset
       setCart([]); setComment(""); setAdminNote(""); setDiscountPct(0); setBonusUse(0); setHolidayKind(null);
     } catch (e: any) {
@@ -405,6 +408,13 @@ function PosPage() {
           </button>
         </div>
       </div>
+
+      {fiscalOrderId && (
+        <FiscalReceiptModal
+          orderId={fiscalOrderId}
+          onClose={() => setFiscalOrderId(null)}
+        />
+      )}
     </div>
   );
 }

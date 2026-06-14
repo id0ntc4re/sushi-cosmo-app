@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Modal } from "./admin.products";
 import { printKitchenReceipt } from "@/lib/kitchen-print";
 import { AddressFields } from "@/components/AddressFields";
+import { FiscalReceiptModal } from "@/components/FiscalReceiptModal";
 
 export const Route = createFileRoute("/admin/orders")({
   component: OrdersAdmin,
@@ -38,6 +39,7 @@ function OrdersAdmin() {
   const [history, setHistory] = useState<any[]>([]);
   const [showHistory, setShowHistory] = useState(false);
   const [customer, setCustomer] = useState<{ bonus_balance: number; total_spent: number; orders_count: number } | null>(null);
+  const [fiscalOrderId, setFiscalOrderId] = useState<string | null>(null);
 
   async function load() {
     const q = supabase.from("orders").select("*").is("deleted_at", null).order("created_at", { ascending: false }).limit(200);
@@ -453,12 +455,28 @@ function OrdersAdmin() {
           <div className="flex justify-between flex-wrap gap-2">
             <button onClick={() => remove(open.id)} className="px-4 py-2 rounded-full bg-red-50 text-red-600 font-semibold text-sm">Удалить</button>
             <div className="flex gap-2 flex-wrap">
+              <button onClick={() => setFiscalOrderId(open.id)}
+                className="px-4 py-2 rounded-full bg-emerald-600 text-white font-semibold text-sm">
+                🧾 {open.fiscal_printed_at ? "Перепробить чек" : "Пробить чек"}
+              </button>
               <button onClick={() => printKitchen(open.id)}
                 className="px-4 py-2 rounded-full bg-amber-500 text-white font-semibold text-sm">🖨 Кухонный чек</button>
               <button onClick={() => setOpen(null)} className="px-5 py-2 rounded-full bg-neutral-900 text-white font-semibold text-sm">Закрыть</button>
             </div>
           </div>
         </Modal>
+      )}
+
+      {fiscalOrderId && (
+        <FiscalReceiptModal
+          orderId={fiscalOrderId}
+          onClose={() => setFiscalOrderId(null)}
+          onPrinted={async () => {
+            const { data } = await supabase.from("orders").select("*").eq("id", fiscalOrderId).maybeSingle();
+            if (data && open?.id === fiscalOrderId) setOpen(data);
+            load();
+          }}
+        />
       )}
     </div>
   );

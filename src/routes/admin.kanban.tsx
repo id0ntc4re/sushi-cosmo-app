@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAdminRole, branchName } from "@/lib/admin-role";
 import { printKitchenReceipt } from "@/lib/kitchen-print";
+import { FiscalReceiptModal } from "@/components/FiscalReceiptModal";
 
 export const Route = createFileRoute("/admin/kanban")({ component: Kanban });
 
@@ -24,10 +25,7 @@ function Kanban() {
   const [soundOn, setSoundOn] = useState(true);
   const [now, setNow] = useState(Date.now());
   const [filterBranch, setFilterBranch] = useState<string>("all");
-  const [payOrder, setPayOrder] = useState<any | null>(null);
-  const [payMethod, setPayMethod] = useState<"cash" | "card_courier" | "card_online">("cash");
-  const [payCashGiven, setPayCashGiven] = useState<string>("");
-  const [payFiscal, setPayFiscal] = useState<string>("");
+  const [fiscalOrderId, setFiscalOrderId] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const knownIds = useRef<Set<string>>(new Set());
   const { isSuper, branchId, branches } = useAdminRole();
@@ -55,42 +53,7 @@ function Kanban() {
     }
   }
 
-  function openPay(o: any) {
-    setPayOrder(o);
-    setPayMethod((o.payment_method as any) || "cash");
-    setPayCashGiven("");
-    setPayFiscal("");
-  }
 
-  async function confirmPay(method: "cash" | "card_courier" | "card_online") {
-    if (!payOrder) return;
-    const total = Number(payOrder.total);
-    if (method === "cash" && payCashGiven && Number(payCashGiven) < total) {
-      return toast.error("Внесённая сумма меньше итога");
-    }
-    const { error } = await (supabase.from("orders") as any)
-      .update({
-        payment_status: "paid",
-        paid_at: new Date().toISOString(),
-        payment_method: method,
-        fiscal_receipt_number: payFiscal || null,
-      })
-      .eq("id", payOrder.id);
-    if (error) return toast.error(error.message);
-    const { data: { user } } = await supabase.auth.getUser();
-    await (supabase.from("order_changes") as any).insert({
-      order_id: payOrder.id, user_id: user?.id ?? null, action: "paid",
-      details: {
-        fiscal_receipt_number: payFiscal || null,
-        payment_method: method,
-        cash_given: method === "cash" && payCashGiven ? Number(payCashGiven) : null,
-      },
-    });
-    const label = method === "cash" ? "Наличными" : method === "card_courier" ? "Картой" : "Онлайн";
-    toast.success(`Оплата принята · ${label}`);
-    setPayOrder(null);
-    load();
-  }
 
   useEffect(() => {
     load();
@@ -206,8 +169,8 @@ function Kanban() {
                         <button onClick={() => printKitchen(o)} title="Печать кухонного чека"
                           className={`px-1.5 py-1 rounded-md text-[10px] font-bold ${o.kitchen_printed_at ? "bg-neutral-100 text-neutral-500" : "bg-amber-500 text-white"}`}>🖨</button>
                         {o.payment_status !== "paid" && (
-                          <button onClick={() => openPay(o)} title="Принять оплату"
-                            className="px-1.5 py-1 rounded-md bg-green-600 text-white text-[10px] font-bold">💰</button>
+                          <button onClick={() => setFiscalOrderId(o.id)} title="Пробить фискальный чек"
+                            className="px-1.5 py-1 rounded-md bg-emerald-600 text-white text-[10px] font-bold">🧾</button>
                         )}
                         <button onClick={() => cancel(o.id)}
                           className="px-1.5 py-1 rounded-md bg-neutral-100 text-[10px]">✕</button>
@@ -222,92 +185,13 @@ function Kanban() {
         })}
       </div>
 
-      {payOrder && (() => {
-        const total = Number(payOrder.total);
-        const given = Number(payCashGiven || 0);
-        const change = given >= total ? given - total : 0;
-        const insufficient = !!payCashGiven && given < total;
-        const appendDigit = (d: string) => setPayCashGiven((v) => (v === "0" ? d : v + d));
-        const setQuick = (n: number) => setPayCashGiven(String(n));
-        const clearAmount = () => setPayCashGiven("");
-        return (
-          <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setPayOrder(null)}>
-            <div className="bg-white rounded-2xl p-6 w-full max-w-lg shadow-2xl" onClick={(e) => e.stopPropagation()}>
-              <div className="text-center text-xl font-extrabold mb-5">Расчёт сдачи · заказ #{payOrder.number}</div>
-
-              <div className="grid grid-cols-[110px_1fr] gap-y-3 gap-x-4 items-center mb-4">
-                <div className="text-neutral-600">Итого</div>
-                <div className="text-lg font-extrabold text-primary">{total} ₽</div>
-
-                <div className="text-neutral-600">Внесено</div>
-                <input
-                  type="number" inputMode="decimal" autoFocus
-                  value={payCashGiven}
-                  onChange={(e) => setPayCashGiven(e.target.value.replace(/[^0-9.]/g, ""))}
-                  placeholder="0"
-                  className="px-3 py-2 rounded-md border border-neutral-300 text-lg font-bold w-full"
-                />
-
-                <div className="text-neutral-600">Сдача</div>
-                <div className={`text-lg font-extrabold ${insufficient ? "text-red-600" : "text-green-700"}`}>
-                  {insufficient ? "недостаточно" : `${change.toFixed(2)} ₽`}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-4 gap-2 mb-4">
-                {["7","8","9"].map((d) => (
-                  <button key={d} onClick={() => appendDigit(d)} className="py-3 rounded-lg border-2 border-neutral-200 text-lg font-bold hover:bg-neutral-50">{d}</button>
-                ))}
-                <button onClick={() => setQuick(5000)} className="py-3 rounded-lg border-2 border-primary/30 text-primary font-bold hover:bg-primary/5">5000</button>
-
-                {["4","5","6"].map((d) => (
-                  <button key={d} onClick={() => appendDigit(d)} className="py-3 rounded-lg border-2 border-neutral-200 text-lg font-bold hover:bg-neutral-50">{d}</button>
-                ))}
-                <button onClick={() => setQuick(2000)} className="py-3 rounded-lg border-2 border-primary/30 text-primary font-bold hover:bg-primary/5">2000</button>
-
-                {["1","2","3"].map((d) => (
-                  <button key={d} onClick={() => appendDigit(d)} className="py-3 rounded-lg border-2 border-neutral-200 text-lg font-bold hover:bg-neutral-50">{d}</button>
-                ))}
-                <button onClick={() => setQuick(1000)} className="py-3 rounded-lg border-2 border-primary/30 text-primary font-bold hover:bg-primary/5">1000</button>
-
-                <button onClick={() => appendDigit("0")} className="py-3 rounded-lg border-2 border-neutral-200 text-lg font-bold hover:bg-neutral-50">0</button>
-                <button onClick={() => setPayCashGiven((v) => v.slice(0, -1))} className="py-3 rounded-lg border-2 border-neutral-200 text-lg font-bold hover:bg-neutral-50">⌫</button>
-                <button onClick={clearAmount} className="py-3 rounded-lg border-2 border-red-200 text-red-600 text-lg font-bold hover:bg-red-50">C</button>
-                <button onClick={() => setQuick(500)} className="py-3 rounded-lg border-2 border-primary/30 text-primary font-bold hover:bg-primary/5">500</button>
-              </div>
-
-              <div className="mb-4">
-                <label className="text-xs font-bold text-neutral-600 block mb-1">Номер фискального чека (необязательно)</label>
-                <input
-                  value={payFiscal}
-                  onChange={(e) => setPayFiscal(e.target.value)}
-                  placeholder="—"
-                  className="w-full px-3 py-2 rounded-md border border-neutral-300 text-sm"
-                />
-              </div>
-
-              <div className="grid grid-cols-3 gap-2">
-                <button
-                  onClick={() => confirmPay("cash")}
-                  disabled={insufficient}
-                  className="py-3 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold disabled:opacity-40">
-                  💵 Наличными
-                </button>
-                <button
-                  onClick={() => confirmPay("card_courier")}
-                  className="py-3 rounded-lg bg-blue-500 hover:bg-blue-600 text-white font-extrabold">
-                  💳 Картой
-                </button>
-                <button
-                  onClick={() => setPayOrder(null)}
-                  className="py-3 rounded-lg bg-neutral-100 hover:bg-neutral-200 font-bold">
-                  Отмена
-                </button>
-              </div>
-            </div>
-          </div>
-        );
-      })()}
+      {fiscalOrderId && (
+        <FiscalReceiptModal
+          orderId={fiscalOrderId}
+          onClose={() => setFiscalOrderId(null)}
+          onPrinted={load}
+        />
+      )}
     </div>
   );
 }

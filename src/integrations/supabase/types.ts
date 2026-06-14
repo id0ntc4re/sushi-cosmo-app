@@ -202,6 +202,11 @@ export type Database = {
           email: string | null
           id: string
           is_active: boolean
+          kkt_operator_inn: string | null
+          kkt_operator_name: string
+          kkt_tax_system: string
+          kkt_url: string | null
+          kkt_vat: string
           name: string
           phone: string | null
           sort_order: number
@@ -212,6 +217,11 @@ export type Database = {
           email?: string | null
           id?: string
           is_active?: boolean
+          kkt_operator_inn?: string | null
+          kkt_operator_name?: string
+          kkt_tax_system?: string
+          kkt_url?: string | null
+          kkt_vat?: string
           name: string
           phone?: string | null
           sort_order?: number
@@ -222,6 +232,11 @@ export type Database = {
           email?: string | null
           id?: string
           is_active?: boolean
+          kkt_operator_inn?: string | null
+          kkt_operator_name?: string
+          kkt_tax_system?: string
+          kkt_url?: string | null
+          kkt_vat?: string
           name?: string
           phone?: string | null
           sort_order?: number
@@ -852,6 +867,8 @@ export type Database = {
           delivery_type: Database["public"]["Enums"]["delivery_type"]
           discount: number
           done_at: string | null
+          fiscal_payload: Json | null
+          fiscal_printed_at: string | null
           fiscal_receipt_number: string | null
           fiscal_receipt_url: string | null
           holiday_discount_kind:
@@ -893,6 +910,8 @@ export type Database = {
           delivery_type?: Database["public"]["Enums"]["delivery_type"]
           discount?: number
           done_at?: string | null
+          fiscal_payload?: Json | null
+          fiscal_printed_at?: string | null
           fiscal_receipt_number?: string | null
           fiscal_receipt_url?: string | null
           holiday_discount_kind?:
@@ -934,6 +953,8 @@ export type Database = {
           delivery_type?: Database["public"]["Enums"]["delivery_type"]
           discount?: number
           done_at?: string | null
+          fiscal_payload?: Json | null
+          fiscal_printed_at?: string | null
           fiscal_receipt_number?: string | null
           fiscal_receipt_url?: string | null
           holiday_discount_kind?:

@@ -135,19 +135,20 @@ export const createCheckoutOrder = createServerFn({ method: "POST" })
 
       if (profile) {
         // Кэшбэк начисляется только после доставки (триггер credit_bonus_on_delivery).
-        const newBalance = Number(profile.bonus_balance || 0) - data.order.bonus_used;
-        const newSpent = Number(profile.total_spent || 0) + data.order.total;
+        const newBalance = Number(profile.bonus_balance || 0) - safeBonusUsed;
+        const newSpent = Number(profile.total_spent || 0) + safeTotal;
         await supabaseAdmin.from("profiles").update({ bonus_balance: newBalance, total_spent: newSpent }).eq("id", userId);
 
-        if (data.order.bonus_used > 0) {
+        if (safeBonusUsed > 0) {
           await supabaseAdmin.from("bonus_transactions").insert({
             user_id: userId,
             order_id: order.id,
-            amount: -data.order.bonus_used,
+            amount: -safeBonusUsed,
             reason: `Списание · заказ №${order.number}`,
           });
         }
       }
+
     }
 
     // Копия заказа на почту филиала + резервные адреса из settings.order_emails

@@ -36,6 +36,7 @@ type Branch = {
   kkt_payments_place: string | null;
   kkt_payments_address: string | null;
   name: string;
+  is_demo: boolean | null;
 };
 
 export function FiscalReceiptModal({ orderId, onClose, onPrinted }: Props) {

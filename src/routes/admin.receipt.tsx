@@ -218,6 +218,8 @@ function ReceiptAdmin() {
             value={s.show_comment} onChange={(v) => setS({ ...s, show_comment: v })} />
           <Toggle label="Печатать карту в чеке"
             value={s.show_map} onChange={(v) => setS({ ...s, show_map: v })} />
+          <Toggle label="Печатать сдачу (только для наличных)"
+            value={s.show_change} onChange={(v) => setS({ ...s, show_change: v })} />
           <Toggle label="Баллы клиента"
             value={s.show_bonus} onChange={(v) => setS({ ...s, show_bonus: v })} />
 

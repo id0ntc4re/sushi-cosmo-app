@@ -25,10 +25,7 @@ function Kanban() {
   const [soundOn, setSoundOn] = useState(true);
   const [now, setNow] = useState(Date.now());
   const [filterBranch, setFilterBranch] = useState<string>("all");
-  const [payOrder, setPayOrder] = useState<any | null>(null);
-  const [payMethod, setPayMethod] = useState<"cash" | "card_courier" | "card_online">("cash");
-  const [payCashGiven, setPayCashGiven] = useState<string>("");
-  const [payFiscal, setPayFiscal] = useState<string>("");
+  const [fiscalOrderId, setFiscalOrderId] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const knownIds = useRef<Set<string>>(new Set());
   const { isSuper, branchId, branches } = useAdminRole();

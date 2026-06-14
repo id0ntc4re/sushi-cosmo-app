@@ -1803,6 +1803,7 @@ export type Database = {
       }
     }
     Functions: {
+      bump_promo_usage: { Args: { _id: string }; Returns: boolean }
       can_access_branch: {
         Args: { _branch_id: string; _user_id: string }
         Returns: boolean
@@ -1814,6 +1815,33 @@ export type Database = {
           qty: number
         }[]
       }
+      get_branch_full: {
+        Args: { _id: string }
+        Returns: {
+          address: string | null
+          created_at: string
+          email: string | null
+          id: string
+          is_active: boolean
+          kkt_model: string | null
+          kkt_operator_inn: string | null
+          kkt_operator_name: string
+          kkt_payments_address: string | null
+          kkt_payments_place: string | null
+          kkt_tax_system: string
+          kkt_url: string | null
+          kkt_vat: string
+          name: string
+          phone: string | null
+          sort_order: number
+        }
+        SetofOptions: {
+          from: "*"
+          to: "branches"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1822,6 +1850,33 @@ export type Database = {
         Returns: boolean
       }
       issue_vk_welcome_promo: { Args: never; Returns: string }
+      list_branches_full: {
+        Args: never
+        Returns: {
+          address: string | null
+          created_at: string
+          email: string | null
+          id: string
+          is_active: boolean
+          kkt_model: string | null
+          kkt_operator_inn: string | null
+          kkt_operator_name: string
+          kkt_payments_address: string | null
+          kkt_payments_place: string | null
+          kkt_tax_system: string
+          kkt_url: string | null
+          kkt_vat: string
+          name: string
+          phone: string | null
+          sort_order: number
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "branches"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       loyalty_tier: { Args: { _total: number }; Returns: string }
       post_purchase_invoice: {
         Args: { _invoice_id: string }
@@ -1835,6 +1890,23 @@ export type Database = {
       recompute_prepared_costs: { Args: never; Returns: undefined }
       run_writeoff_schedule: { Args: { _schedule_id: string }; Returns: Json }
       user_branch: { Args: { _user_id: string }; Returns: string }
+      validate_promo: {
+        Args: { _code: string; _subtotal: number }
+        Returns: {
+          code: string
+          discount_type: string
+          discount_value: number
+          expires_at: string
+          gift_product_id: string
+          gift_product_image_url: string
+          gift_product_name: string
+          id: string
+          max_uses: number
+          min_order: number
+          starts_at: string
+          used_count: number
+        }[]
+      }
     }
     Enums: {
       app_role: "admin" | "user" | "super_admin"

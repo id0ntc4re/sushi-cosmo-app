@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
-import { resolveZoneSmart, detectBranchByAddress, createTestOrder } from "@/lib/geocode.functions";
+import { resolveZoneSmart, detectBranchByAddress } from "@/lib/geocode.functions";
 import ZoneMapEditor from "@/components/ZoneMapEditor";
 
 export const Route = createFileRoute("/admin/couriers")({ component: Page });
@@ -275,16 +275,14 @@ const inp = "w-full px-3 py-2 rounded-xl border border-neutral-200 outline-none 
 function AddressChecker() {
   const resolve = useServerFn(resolveZoneSmart);
   const detect = useServerFn(detectBranchByAddress);
-  const makeTest = useServerFn(createTestOrder);
   const [address, setAddress] = useState("");
   const [busy, setBusy] = useState(false);
   const [res, setRes] = useState<{ zone: any; branch: any } | null>(null);
-  const [creating, setCreating] = useState(false);
-  const [createdOrder, setCreatedOrder] = useState<{ id: string; number: number } | null>(null);
+  const createdOrder: { id: string; number: number } | null = null;
 
   async function check() {
     if (address.trim().length < 3) return;
-    setBusy(true); setCreatedOrder(null); setRes(null);
+    setBusy(true); setRes(null);
     try {
       const [z, b] = await Promise.all([
         resolve({ data: { address } }),
@@ -298,25 +296,6 @@ function AddressChecker() {
     }
   }
 
-  async function makeOrder() {
-    if (address.trim().length < 3) return;
-    setCreating(true);
-    try {
-      const r = await makeTest({ data: { address } });
-      if (!(r as any).ok) {
-        toast.error("Не удалось создать заказ: " + ((r as any).reason ?? "—"));
-      } else {
-        const ok = r as any;
-        toast.success(`Создан тестовый заказ #${ok.number}`);
-        setCreatedOrder({ id: ok.orderId, number: ok.number });
-      }
-    } catch (e: any) {
-      toast.error(e?.message ?? "Ошибка");
-    } finally {
-      setCreating(false);
-    }
-  }
-
   const samples = [
     "Шахтёров 68", "Ленина 5", "Ленина 150", "Бульвар Строителей 21",
     "Притомский проспект 25", "Кирова 41",
@@ -326,8 +305,7 @@ function AddressChecker() {
     <div className="bg-white rounded-3xl p-5 space-y-5">
       <div>
         <p className="text-xs text-neutral-500 mb-2">
-          Проверьте адрес — система покажет район, филиал и зону. По кнопке
-          ниже можно создать <b>тестовый заказ</b> (попадёт в Канбан / Заказы).
+          Проверьте адрес — система покажет район, филиал и зону доставки.
         </p>
         <div className="flex gap-2">
           <input
@@ -339,9 +317,6 @@ function AddressChecker() {
           />
           <button onClick={check} disabled={busy} className="px-5 rounded-xl bg-primary text-white font-bold disabled:opacity-50">
             {busy ? "..." : "Проверить"}
-          </button>
-          <button onClick={makeOrder} disabled={creating} className="px-5 rounded-xl bg-amber-500 text-white font-bold disabled:opacity-50">
-            {creating ? "..." : "+ Тестовый заказ"}
           </button>
         </div>
         <div className="flex flex-wrap gap-2 mt-3">

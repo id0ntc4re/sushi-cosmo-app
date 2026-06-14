@@ -210,3 +210,67 @@ export async function printFiscalReceipt(input: FiscalPrintInput): Promise<Fisca
 export function paymentLabel(m: FiscalPaymentMethod): string {
   return m === "cash" ? "Наличные" : m === "card_courier" ? "Карта" : "Онлайн";
 }
+
+export type ShiftCommand = "openShift" | "closeShift";
+
+export async function runShiftCommand(
+  kktUrl: string,
+  operatorName: string,
+  operatorInn: string | null | undefined,
+  cmd: ShiftCommand,
+): Promise<FiscalPrintResult | FiscalPrintError> {
+  const base = (kktUrl || "").trim().replace(/\/$/, "");
+  if (!base) return { ok: false, message: "Не задан адрес драйвера ККТ для филиала" };
+
+  const taskUuid = uuid();
+  const body = {
+    uuid: taskUuid,
+    request: [{
+      type: cmd,
+      operator: { name: operatorName || "Кассир", ...(operatorInn ? { vatin: operatorInn } : {}) },
+    }],
+  };
+
+  let postRes;
+  try {
+    postRes = await fetchJson(`${base}/requests/`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(body),
+    });
+  } catch (e: any) {
+    const msg = String(e?.message || e);
+    if (msg.includes("Failed to fetch") || msg.includes("NetworkError") || msg.includes("aborted")) {
+      return { ok: false, message: `Касса недоступна по адресу ${base}. Проверьте, что драйвер ККТ запущен.` };
+    }
+    return { ok: false, message: msg };
+  }
+  if (!postRes.res.ok) {
+    return { ok: false, message: `Драйвер вернул ошибку ${postRes.res.status}: ${postRes.text || ""}`, raw: postRes.data };
+  }
+
+  const deadline = Date.now() + 25000;
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    if (Date.now() > deadline) return { ok: false, message: "Касса не вернула результат за 25 секунд." };
+    await new Promise((r) => setTimeout(r, 800));
+    let getRes;
+    try { getRes = await fetchJson(`${base}/requests/${taskUuid}`); } catch { continue; }
+    if (!getRes.res.ok || !getRes.data) continue;
+    const status = getRes.data.status;
+    if (status === "ready") {
+      const r0 = (getRes.data.results && getRes.data.results[0]) || {};
+      const err = r0.error || getRes.data.error;
+      if (err) {
+        const errMsg = typeof err === "string" ? err : (err.description || err.message || JSON.stringify(err));
+        return { ok: false, message: `Касса вернула ошибку: ${errMsg}`, raw: getRes.data };
+      }
+      return { ok: true, uuid: taskUuid, shiftNumber: r0.shiftNumber, raw: getRes.data };
+    }
+    if (status === "error") {
+      const err = getRes.data.error;
+      const errMsg = typeof err === "string" ? err : (err?.description || err?.message || "неизвестная ошибка");
+      return { ok: false, message: `Касса вернула ошибку: ${errMsg}`, raw: getRes.data };
+    }
+  }
+}

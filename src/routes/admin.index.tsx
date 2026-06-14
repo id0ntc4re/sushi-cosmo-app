@@ -77,11 +77,22 @@ function Dashboard() {
           </select>
         )}
       </div>
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         <Stat label="Заказов сегодня" value={s?.ordersToday ?? "—"} />
         <Stat label="Выручка сегодня" value={s ? `${s.revenueToday} ₽` : "—"} accent />
         <Stat label="За 7 дней" value={s?.ordersWeek ?? "—"} />
         <Stat label="Новых" value={s?.newOrders ?? "—"} highlight />
+      </div>
+
+      <div className="bg-white rounded-2xl p-4 mb-8 flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <div className="font-bold text-sm">Касса (ККТ)</div>
+          <div className="text-xs text-neutral-500">
+            Открытие/закрытие смены на онлайн-кассе филиала
+            {!isSuper || filterBranch !== "all" ? "" : " — выберите конкретный филиал выше"}
+          </div>
+        </div>
+        <ShiftButtons branchId={isSuper ? (filterBranch !== "all" ? filterBranch : null) : branchId} />
       </div>
 
       <div className="bg-white rounded-3xl p-6">

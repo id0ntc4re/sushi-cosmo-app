@@ -85,6 +85,7 @@ export function FiscalRefundModal({ orderId, onClose, onRefunded }: Props) {
       if (sellRows.length > 0) {
         const first = sellRows[sellRows.length - 1]; // последний — обычно последняя продажа
         setSelectedId(first.id);
+        setMethod(first.payment_method); // способ возврата = способ исходной продажи (требование 54-ФЗ)
         buildLines(first, all);
       }
       setLoading(false);

@@ -28,6 +28,7 @@ type Branch = {
   kkt_operator_inn: string | null;
   kkt_payments_place: string | null;
   kkt_payments_address: string | null;
+  is_demo: boolean | null;
 };
 
 type Line = {

@@ -122,6 +122,37 @@ export function FiscalReceiptModal({ orderId, onClose, onPrinted }: Props) {
       }
 
       const { data: { user } } = await supabase.auth.getUser();
+
+      // Find current open shift for this branch (for linkage)
+      let shiftId: string | null = null;
+      if (order.branch_id) {
+        const { data: sh } = await supabase.from("cash_shifts")
+          .select("id").eq("branch_id", order.branch_id).is("closed_at", null)
+          .order("opened_at", { ascending: false }).limit(1).maybeSingle();
+        shiftId = sh?.id ?? null;
+      }
+
+      // Persist fiscal receipt in DB for OFD lookup / refunds / reconciliation
+      await (supabase.from("fiscal_receipts") as any).insert({
+        order_id: order.id,
+        branch_id: order.branch_id,
+        shift_id: shiftId,
+        fiscal_document_number: res.fiscalDocumentNumber ?? null,
+        fiscal_sign: res.fiscalSign ?? null,
+        fiscal_receipt_number: res.fiscalReceiptNumber ?? null,
+        fn_number: res.fnNumber ?? null,
+        shift_number: res.shiftNumber ?? null,
+        receipt_datetime: res.receiptDatetime ?? null,
+        ofd_receipt_url: res.ofdReceiptUrl ?? null,
+        payment_method: method,
+        total: Number(order.total),
+        vat: branch.kkt_vat || "none",
+        taxation_type: branch.kkt_tax_system || "usn_income",
+        operator_name: branch.kkt_operator_name || "Кассир",
+        operator_inn: branch.kkt_operator_inn ?? null,
+        raw_response: res.raw ?? null,
+      });
+
       await (supabase.from("order_changes") as any).insert({
         order_id: order.id, user_id: user?.id ?? null, action: "fiscal_printed",
         details: {
@@ -132,6 +163,7 @@ export function FiscalReceiptModal({ orderId, onClose, onPrinted }: Props) {
           fn_number: res.fnNumber,
         },
       });
+
 
       setDone({ number: fiscalNumber, url: res.ofdReceiptUrl });
       toast.success(`Фискальный чек пробит · №${fiscalNumber}`);

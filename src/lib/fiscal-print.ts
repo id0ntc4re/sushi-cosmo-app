@@ -183,6 +183,11 @@ export async function printFiscalReceipt(input: FiscalPrintInput, _retry = false
       const err = r0.error || getRes.data.error;
       if (err) {
         const errMsg = typeof err === "string" ? err : (err.description || err.message || JSON.stringify(err));
+        if (!_retry && /смен[аы].*(закры|не\s*открыт)|need.*open.*shift|shift.*closed|необходимо открыть смену/i.test(errMsg)) {
+          // Авто-открытие смены и повторная попытка пробить чек
+          const open = await runShiftCommand(input.kktUrl, input.operatorName, input.operatorInn, "openShift");
+          if (open.ok) return printFiscalReceipt(input, true);
+        }
         return { ok: false, message: `Касса вернула ошибку: ${errMsg}`, raw: getRes.data };
       }
       return {
@@ -201,6 +206,10 @@ export async function printFiscalReceipt(input: FiscalPrintInput, _retry = false
     if (status === "error") {
       const err = getRes.data.error;
       const errMsg = typeof err === "string" ? err : (err?.description || err?.message || "неизвестная ошибка");
+      if (!_retry && /смен[аы].*(закры|не\s*открыт)|need.*open.*shift|shift.*closed|необходимо открыть смену/i.test(errMsg)) {
+        const open = await runShiftCommand(input.kktUrl, input.operatorName, input.operatorInn, "openShift");
+        if (open.ok) return printFiscalReceipt(input, true);
+      }
       return { ok: false, message: `Касса вернула ошибку: ${errMsg}`, raw: getRes.data };
     }
     // status === "wait" | "inProgress" — продолжаем опрос

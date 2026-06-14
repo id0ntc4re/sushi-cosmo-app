@@ -67,6 +67,7 @@ function BranchesPage() {
       kkt_vat: e.kkt_vat || "none",
       kkt_operator_name: e.kkt_operator_name?.trim() || "Кассир",
       kkt_operator_inn: e.kkt_operator_inn?.trim() || null,
+      kkt_model: e.kkt_model?.trim() || null,
     };
     if (!payload.name) return toast.error("Введите название");
     const { error } = editing.id

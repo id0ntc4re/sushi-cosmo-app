@@ -109,8 +109,39 @@ function OrdersAdmin() {
     if (error) return toast.error(error.message);
     await recalcOrderTotals(open.id);
     const { data: { user } } = await supabase.auth.getUser();
+
+    // Считаем что именно изменилось, чтобы в истории было понятно
+    const fieldLabels: Record<string, string> = {
+      customer_name: "Имя клиента",
+      phone: "Телефон",
+      delivery_type: "Тип заказа",
+      address: "Адрес",
+      pickup_point: "Точка самовывоза",
+      delivery_time: "Время",
+      payment_method: "Способ оплаты",
+      change_from: "Сдача с",
+      persons: "Кол-во персон",
+      comment: "Комментарий",
+      delivery_cost: "Стоимость доставки",
+      discount: "Скидка",
+    };
+    const fmt = (k: string, v: any) => {
+      if (v === null || v === undefined || v === "") return "—";
+      if (k === "delivery_type") return v === "delivery" ? "Доставка" : "Самовывоз";
+      if (k === "payment_method") return v === "cash" ? "Наличные" : v === "card_courier" ? "Карта" : v === "card_online" ? "Онлайн" : String(v);
+      return String(v);
+    };
+    const changes: Array<{ field: string; label: string; from: string; to: string }> = [];
+    for (const k of Object.keys(fieldLabels)) {
+      const oldV = (open as any)[k] ?? "";
+      const newV = (payload as any)[k] ?? "";
+      const a = oldV === null ? "" : String(oldV);
+      const b = newV === null ? "" : String(newV);
+      if (a !== b) changes.push({ field: k, label: fieldLabels[k], from: fmt(k, oldV), to: fmt(k, newV) });
+    }
+
     await (supabase.from("order_changes") as any).insert({
-      order_id: open.id, user_id: user?.id ?? null, action: "details_edited", details: payload,
+      order_id: open.id, user_id: user?.id ?? null, action: "details_edited", details: { changes },
     });
     loadHistory(open.id);
     toast.success("Сохранено");

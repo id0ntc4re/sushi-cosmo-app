@@ -337,16 +337,27 @@ function PosPage() {
               ))}
             </div>
             {paymentMethod === "cash" && (
-              <div>
-                <label className="text-xs text-neutral-500 block mb-1">С какой суммы (купюра)</label>
-                <input type="number" inputMode="decimal" value={changeFrom}
+              <div className="bg-neutral-50 rounded-xl p-3 space-y-1.5">
+                <label className="text-xs font-semibold text-neutral-700 block">
+                  Сумма от клиента (для расчёта сдачи)
+                </label>
+                <input type="number" inputMode="decimal" min="0" value={changeFrom}
                   onChange={(e) => setChangeFrom(e.target.value)}
-                  placeholder="например 1000"
+                  placeholder={`К оплате: ${total.toLocaleString("ru")} ₽`}
                   className={inp} />
-                {changeFrom !== "" && Number(changeFrom) >= total && total > 0 && (
-                  <div className="text-xs text-neutral-600 mt-1">
-                    Сдача: <b>{(Number(changeFrom) - total).toLocaleString("ru")} ₽</b>
-                  </div>
+                <p className="text-[11px] text-neutral-500">
+                  Сколько денег клиент даёт наличными. Сдача посчитается автоматически и попадёт в чек.
+                </p>
+                {changeFrom !== "" && total > 0 && (
+                  Number(changeFrom) >= total ? (
+                    <div className="text-sm font-bold text-emerald-700">
+                      Сдача: {(Number(changeFrom) - total).toLocaleString("ru")} ₽
+                    </div>
+                  ) : (
+                    <div className="text-sm font-bold text-red-600">
+                      Не хватает: {(total - Number(changeFrom)).toLocaleString("ru")} ₽
+                    </div>
+                  )
                 )}
               </div>
             )}

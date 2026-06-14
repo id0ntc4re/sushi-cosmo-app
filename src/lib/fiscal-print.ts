@@ -60,17 +60,39 @@ function buildTask(input: FiscalPrintInput, taskUuid: string) {
   const payType =
     input.paymentMethod === "cash" ? "cash" : "electronically"; // card_courier и card_online — безнал
 
-  const items = input.items.map((it) => ({
-    type: "position",
-    name: it.name.slice(0, 128),
-    price: r2(it.price),
-    quantity: Number(it.quantity),
-    amount: r2(it.price * it.quantity),
-    measurementUnit: "шт",
-    paymentMethod: "fullPayment",
-    paymentObject: "commodity",
-    tax: { type: input.vat || "none" },
-  }));
+  // Распределяем скидку (subtotal - total) пропорционально по позициям,
+  // чтобы касса показала «Скидка X.XX» под каждой строкой как на чеке АТОЛ.
+  const grossSubtotal = input.items.reduce((s, it) => s + Number(it.price) * Number(it.quantity), 0);
+  const targetTotal = r2(input.total);
+  const totalDiscount = Math.max(0, r2(grossSubtotal) - targetTotal);
+
+  let distributed = 0;
+  const items = input.items.map((it, idx) => {
+    const gross = r2(Number(it.price) * Number(it.quantity));
+    let discAmount = 0;
+    if (totalDiscount > 0 && grossSubtotal > 0) {
+      if (idx === input.items.length - 1) {
+        discAmount = r2(totalDiscount - distributed); // последний — добивка, чтобы сошлось до копейки
+      } else {
+        discAmount = r2((gross / grossSubtotal) * totalDiscount);
+        distributed = r2(distributed + discAmount);
+      }
+    }
+    const lineAmount = r2(gross - discAmount);
+    const qty = Number(it.quantity);
+    const finalPrice = qty > 0 ? r2(lineAmount / qty) : r2(it.price);
+    return {
+      type: "position",
+      name: it.name.slice(0, 128),
+      price: finalPrice,
+      quantity: qty,
+      amount: lineAmount,
+      measurementUnit: "шт",
+      paymentMethod: "fullPayment",
+      paymentObject: "commodity",
+      tax: { type: input.vat || "none" },
+    };
+  });
 
   const electronically =
     input.customerEmail
@@ -87,6 +109,8 @@ function buildTask(input: FiscalPrintInput, taskUuid: string) {
     payments: [{ type: payType, sum: r2(input.total) }],
     total: r2(input.total),
   };
+  if (input.paymentsPlace) request.paymentsPlace = input.paymentsPlace;
+  if (input.paymentsAddress) request.paymentsAddress = input.paymentsAddress;
   if (electronically) request.clientInfo = electronically;
 
   return { uuid: taskUuid, request: [request] };

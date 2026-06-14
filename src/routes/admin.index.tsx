@@ -184,7 +184,7 @@ function ShiftButtons({ branchId }: { branchId: string | null | undefined }) {
       </button>
       <button onClick={() => run("closeShift")} disabled={!!busy || !branchId}
         className="px-4 py-2 rounded-full bg-neutral-900 hover:bg-neutral-800 text-white text-sm font-bold disabled:opacity-50">
-        {busy === "closeShift" ? "Закрываем…" : "🔒 Закрыть смену (Z-отчёт)"}
+        {busy === "closeShift" ? "Закрываем…" : "🔒 Закрыть смену"}
       </button>
     </div>
   );

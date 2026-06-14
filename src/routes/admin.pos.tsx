@@ -173,7 +173,7 @@ function PosPage() {
             address: deliveryType === "delivery" ? address.trim() : null,
             pickup_point: deliveryType === "pickup" ? "Самовывоз" : null,
             payment_method: paymentMethod,
-            change_from: null,
+            change_from: paymentMethod === "cash" && changeFrom !== "" ? Number(changeFrom) : null,
             persons: 1,
             delivery_time: null,
             comment: comment.trim() || null,

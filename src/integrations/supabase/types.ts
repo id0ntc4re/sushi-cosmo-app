@@ -303,39 +303,66 @@ export type Database = {
           card_total: number
           cash_total: number
           closed_at: string | null
+          closed_at_fiscal: string | null
+          closed_fd: string | null
+          closed_fp: string | null
+          closed_raw: Json | null
           closing_cash: number | null
           id: string
           note: string | null
           opened_at: string
+          opened_at_fiscal: string | null
           opened_by: string
+          opened_fd: string | null
+          opened_fp: string | null
+          opened_raw: Json | null
           opening_cash: number
           orders_count: number
+          shift_number: number | null
         }
         Insert: {
           branch_id?: string | null
           card_total?: number
           cash_total?: number
           closed_at?: string | null
+          closed_at_fiscal?: string | null
+          closed_fd?: string | null
+          closed_fp?: string | null
+          closed_raw?: Json | null
           closing_cash?: number | null
           id?: string
           note?: string | null
           opened_at?: string
+          opened_at_fiscal?: string | null
           opened_by: string
+          opened_fd?: string | null
+          opened_fp?: string | null
+          opened_raw?: Json | null
           opening_cash?: number
           orders_count?: number
+          shift_number?: number | null
         }
         Update: {
           branch_id?: string | null
           card_total?: number
           cash_total?: number
           closed_at?: string | null
+          closed_at_fiscal?: string | null
+          closed_fd?: string | null
+          closed_fp?: string | null
+          closed_raw?: Json | null
           closing_cash?: number | null
           id?: string
           note?: string | null
           opened_at?: string
+          opened_at_fiscal?: string | null
           opened_by?: string
+          opened_fd?: string | null
+          opened_fp?: string | null
+          opened_raw?: Json | null
           opening_cash?: number
           orders_count?: number
+          shift_number?: number | null
         }
         Relationships: [
           {
@@ -551,6 +578,101 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      fiscal_receipts: {
+        Row: {
+          branch_id: string | null
+          created_at: string
+          fiscal_document_number: string | null
+          fiscal_receipt_number: string | null
+          fiscal_sign: string | null
+          fn_number: string | null
+          id: string
+          ofd_receipt_url: string | null
+          operator_inn: string | null
+          operator_name: string | null
+          order_id: string | null
+          payment_method: string | null
+          raw_response: Json | null
+          receipt_datetime: string | null
+          shift_id: string | null
+          shift_number: number | null
+          taxation_type: string | null
+          total: number | null
+          vat: string | null
+        }
+        Insert: {
+          branch_id?: string | null
+          created_at?: string
+          fiscal_document_number?: string | null
+          fiscal_receipt_number?: string | null
+          fiscal_sign?: string | null
+          fn_number?: string | null
+          id?: string
+          ofd_receipt_url?: string | null
+          operator_inn?: string | null
+          operator_name?: string | null
+          order_id?: string | null
+          payment_method?: string | null
+          raw_response?: Json | null
+          receipt_datetime?: string | null
+          shift_id?: string | null
+          shift_number?: number | null
+          taxation_type?: string | null
+          total?: number | null
+          vat?: string | null
+        }
+        Update: {
+          branch_id?: string | null
+          created_at?: string
+          fiscal_document_number?: string | null
+          fiscal_receipt_number?: string | null
+          fiscal_sign?: string | null
+          fn_number?: string | null
+          id?: string
+          ofd_receipt_url?: string | null
+          operator_inn?: string | null
+          operator_name?: string | null
+          order_id?: string | null
+          payment_method?: string | null
+          raw_response?: Json | null
+          receipt_datetime?: string | null
+          shift_id?: string | null
+          shift_number?: number | null
+          taxation_type?: string | null
+          total?: number | null
+          vat?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fiscal_receipts_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fiscal_receipts_branch_id_fkey"
+            columns: ["branch_id"]
+            isOneToOne: false
+            referencedRelation: "branches_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fiscal_receipts_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fiscal_receipts_shift_id_fkey"
+            columns: ["shift_id"]
+            isOneToOne: false
+            referencedRelation: "cash_shifts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ingredient_components: {
         Row: {

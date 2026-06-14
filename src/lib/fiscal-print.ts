@@ -21,6 +21,8 @@ export type FiscalPrintInput = {
   items: FiscalItem[];
   customerEmail?: string | null;
   customerPhone?: string | null;
+  paymentsPlace?: string | null;     // «Место расчётов»: например, Доставка "Космо Суши"
+  paymentsAddress?: string | null;   // «Адрес расчётов»: 650061, г. Кемерово, ...
 };
 
 export type FiscalPrintResult = {

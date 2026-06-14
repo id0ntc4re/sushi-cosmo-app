@@ -59,7 +59,7 @@ export function FiscalReceiptModal({ orderId, onClose, onPrinted }: Props) {
       let b: Branch | null = null;
       if (o?.branch_id) {
         const { data } = await (supabase.from("branches") as any)
-          .select("name,kkt_url,kkt_tax_system,kkt_vat,kkt_operator_name,kkt_operator_inn")
+          .select("name,kkt_url,kkt_tax_system,kkt_vat,kkt_operator_name,kkt_operator_inn,kkt_payments_place,kkt_payments_address")
           .eq("id", o.branch_id).maybeSingle();
         b = data as Branch | null;
       }

@@ -341,15 +341,11 @@ export function FiscalRefundModal({ orderId, onClose, onRefunded }: Props) {
 
             <div className="mb-4">
               <div className="text-xs font-bold text-neutral-600 mb-1.5">Способ возврата</div>
-              <div className="grid grid-cols-3 gap-1.5">
-                {(["cash","card_courier","card_online"] as FiscalPaymentMethod[]).map((m) => (
-                  <button key={m} onClick={() => setMethod(m)}
-                    className={`py-2 rounded-lg text-xs font-bold border-2 ${
-                      method === m ? "border-primary bg-primary/10 text-primary" : "border-neutral-200"
-                    }`}>
-                    {m === "cash" ? "💵 Наличные" : m === "card_courier" ? "💳 Картой" : "🌐 Онлайн"}
-                  </button>
-                ))}
+              <div className="flex items-center gap-2 bg-neutral-100 border border-neutral-200 rounded-lg px-3 py-2.5">
+                <span className="text-sm font-bold">
+                  {method === "cash" ? "💵 Наличные" : method === "card_courier" ? "💳 Картой" : "🌐 Онлайн"}
+                </span>
+                <span className="text-[11px] text-neutral-500">— как в исходном чеке (требование 54-ФЗ)</span>
               </div>
             </div>
 

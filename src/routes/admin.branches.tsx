@@ -197,7 +197,7 @@ function BranchesPage() {
 
       {editing && (
         <div className="fixed inset-0 bg-black/40 z-50 grid place-items-center p-4 overflow-y-auto" onClick={() => setEditing(null)}>
-          <div className="bg-white rounded-3xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto my-auto" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white rounded-3xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto my-auto scrollbar-hide" onClick={(e) => e.stopPropagation()}>
             <h3 className="text-xl font-extrabold mb-4">{editing.id ? "Изменить филиал" : "Новый филиал"}</h3>
             <div className="space-y-3">
               <Field label="Название"><input value={editing.name ?? ""} onChange={(e) => setEditing({ ...editing, name: e.target.value })}

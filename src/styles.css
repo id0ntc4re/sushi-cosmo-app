@@ -125,4 +125,11 @@ html {
   .scrollbar-fancy::-webkit-scrollbar-thumb:hover {
     background: var(--color-primary);
   }
+  .scrollbar-hide {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }

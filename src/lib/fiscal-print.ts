@@ -172,6 +172,14 @@ export async function printFiscalReceipt(input: FiscalPrintInput, _retry = false
   if (!base) return { ok: false, message: "Не задан адрес драйвера ККТ для филиала" };
 
   const taskUuid = uuid();
+
+  // Демо-режим: эмулируем ответ без реального запроса к кассе
+  if (isDemoKkt(base)) {
+    // Имитируем небольшую задержку «печати»
+    await new Promise((r) => setTimeout(r, 600));
+    return makeDemoResult(taskUuid, input);
+  }
+
   const body = buildTask(input, taskUuid);
 
   // 1) Отправляем задачу

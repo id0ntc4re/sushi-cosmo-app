@@ -268,7 +268,7 @@ function PosPage() {
                 ))}
               </div>
             )}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 max-h-[55vh] overflow-y-auto">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {filteredProds.map((p) => (
                 <button key={p.id} onClick={() => addProduct(p)}
                   className="text-left rounded-xl border border-neutral-100 hover:border-primary hover:bg-primary/5 p-2 transition">

@@ -95,6 +95,8 @@ export function FiscalReceiptModal({ orderId, onClose, onPrinted }: Props) {
         items: items.map((x) => ({ name: x.name, price: Number(x.price), quantity: Number(x.quantity) })),
         customerEmail: email || null,
         customerPhone: order.phone,
+        paymentsPlace: branch.kkt_payments_place,
+        paymentsAddress: branch.kkt_payments_address,
       });
 
       if (!res.ok) {

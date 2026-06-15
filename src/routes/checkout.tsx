@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/lib/cart";
 import { createCheckoutOrder } from "@/lib/orders.functions";
 import { validatePromo, type PromoCode, type GiftItem } from "@/lib/promo";
-import { getDeliverySlots } from "@/lib/timeSlots";
+import { DeliveryTimePicker } from "@/components/DeliveryTimePicker";
 import logo from "@/assets/logo.svg";
 import { detectBranchKey, branchKeyFromName } from "@/lib/branch-detect";
 import { detectBranchByAddress, resolveZoneSmart } from "@/lib/geocode.functions";
@@ -557,21 +557,17 @@ function Checkout() {
                   )}
 
 
-                  <div className="grid grid-cols-2 gap-3">
-                    <Field label="Время доставки">
-                      <select className={inputCls} value={form.delivery_time}
-                        onChange={(e) => set("delivery_time", e.target.value)}>
-                        <option value="">Как можно скорее</option>
-                        {getDeliverySlots().map((s) => (
-                          <option key={s.value} value={s.value}>{s.label}</option>
-                        ))}
-                      </select>
-                    </Field>
-                    <Field label="Персон">
-                      <input type="number" min={1} max={20} className={inputCls} value={form.persons}
-                        onChange={(e) => set("persons", Number(e.target.value))} />
-                    </Field>
-                  </div>
+                  <Field label={form.delivery_type === "pickup" ? "Время самовывоза" : "Время доставки"}>
+                    <DeliveryTimePicker
+                      value={form.delivery_time}
+                      onChange={(v) => set("delivery_time", v)}
+                      leadMin={form.delivery_type === "pickup" ? 30 : 60}
+                    />
+                  </Field>
+                  <Field label="Количество персон">
+                    <input type="number" min={1} max={20} className={inputCls} value={form.persons}
+                      onChange={(e) => set("persons", Number(e.target.value))} />
+                  </Field>
                 </Section>
 
                 <Section title="Оплата">

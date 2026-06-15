@@ -8,6 +8,7 @@ import { createOrderAsAdmin } from "@/lib/orders.functions";
 import { formatRuPhone } from "@/lib/phone-format";
 import { AddressFields } from "@/components/AddressFields";
 import { FiscalReceiptModal } from "@/components/FiscalReceiptModal";
+import { DeliveryTimePicker } from "@/components/DeliveryTimePicker";
 
 export const Route = createFileRoute("/admin/pos")({ component: PosPage });
 
@@ -34,6 +35,7 @@ function PosPage() {
 
   const [cart, setCart] = useState<CartLine[]>([]);
   const [deliveryType, setDeliveryType] = useState<"delivery" | "pickup">("delivery");
+  const [deliveryTime, setDeliveryTime] = useState<string>("");
   const [address, setAddress] = useState("");
   const [comment, setComment] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "card_courier" | "card_online">("cash");
@@ -175,7 +177,7 @@ function PosPage() {
             payment_method: paymentMethod,
             change_from: paymentMethod === "cash" && changeFrom !== "" ? Number(changeFrom) : null,
             persons: 1,
-            delivery_time: null,
+            delivery_time: deliveryTime || null,
             comment: comment.trim() || null,
             subtotal,
             delivery_cost: 0,
@@ -196,7 +198,7 @@ function PosPage() {
       toast.success(`Заказ №${order.number} создан`);
       setFiscalOrderId(order.id);
       // Reset
-      setCart([]); setComment(""); setAdminNote(""); setDiscountPct(0); setBonusUse(0); setHolidayKind(null);
+      setCart([]); setComment(""); setAdminNote(""); setDiscountPct(0); setBonusUse(0); setHolidayKind(null); setDeliveryTime("");
     } catch (e: any) {
       const { ruError } = await import("@/lib/errors");
       toast.error(ruError(e, "Не удалось создать заказ"));
@@ -317,6 +319,16 @@ function PosPage() {
             {deliveryType === "delivery" && (
               <AddressFields value={address} onChange={setAddress} required />
             )}
+            <div className="pt-1">
+              <div className="text-xs font-semibold text-neutral-600 mb-2">
+                {deliveryType === "pickup" ? "Когда забрать" : "Когда доставить"}
+              </div>
+              <DeliveryTimePicker
+                value={deliveryTime}
+                onChange={setDeliveryTime}
+                leadMin={deliveryType === "pickup" ? 30 : 60}
+              />
+            </div>
             <input className={inp} placeholder="Комментарий клиента"
               value={comment} onChange={(e) => setComment(e.target.value)} />
             {isSuper && branches.length > 1 && (

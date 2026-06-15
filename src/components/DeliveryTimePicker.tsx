@@ -1,25 +1,17 @@
-import { useMemo } from "react";
-import { Clock, CalendarClock } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useMemo, useState } from "react";
+import { Clock, CalendarClock, CalendarIcon } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 type Props = {
   value: string;
   onChange: (v: string) => void;
   leadMin?: number;
-  startHour?: number;
-  endHour?: number;
 };
 
 const WD = ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"];
-
-function dayLabel(d: Date, today: Date) {
-  const diff = Math.round((stripTime(d).getTime() - stripTime(today).getTime()) / 86400000);
-  if (diff === 0) return "Сегодня";
-  if (diff === 1) return "Завтра";
-  const dd = String(d.getDate()).padStart(2, "0");
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  return `${WD[d.getDay()]}, ${dd}.${mm}`;
-}
+const MO = ["янв", "фев", "мар", "апр", "мая", "июн", "июл", "авг", "сен", "окт", "ноя", "дек"];
 
 function stripTime(d: Date) {
   const x = new Date(d);
@@ -27,78 +19,80 @@ function stripTime(d: Date) {
   return x;
 }
 
-function buildTimes(date: Date, today: Date, leadMin: number, startHour: number, endHour: number) {
-  const isToday = stripTime(date).getTime() === stripTime(today).getTime();
-  let start = new Date(date);
-  start.setHours(startHour, 0, 0, 0);
-  if (isToday) {
-    const earliest = new Date(today.getTime() + leadMin * 60000);
-    const m = earliest.getMinutes();
-    earliest.setMinutes(m <= 30 ? 30 : 60, 0, 0);
-    if (earliest > start) start = earliest;
-  }
-  const end = new Date(date);
-  end.setHours(endHour, 0, 0, 0);
-  const out: string[] = [];
-  for (let t = new Date(start); t < end; t = new Date(t.getTime() + 30 * 60000)) {
-    out.push(`${String(t.getHours()).padStart(2, "0")}:${String(t.getMinutes()).padStart(2, "0")}`);
-  }
-  return out;
+function fmtDate(d: Date, today: Date) {
+  const diff = Math.round((stripTime(d).getTime() - stripTime(today).getTime()) / 86400000);
+  if (diff === 0) return "Сегодня";
+  if (diff === 1) return "Завтра";
+  return `${WD[d.getDay()]}, ${d.getDate()} ${MO[d.getMonth()]}`;
 }
 
-export function DeliveryTimePicker({
-  value,
-  onChange,
-  leadMin = 60,
-  startHour = 10,
-  endHour = 22,
-}: Props) {
+// Serialise: "YYYY-MM-DD HH:MM"
+function parseValue(v: string): { date: Date | null; time: string } {
+  if (!v) return { date: null, time: "" };
+  const m = v.match(/^(\d{4})-(\d{2})-(\d{2})\s(\d{1,2}:\d{2})$/);
+  if (!m) return { date: null, time: "" };
+  const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  return { date: d, time: m[4] };
+}
+
+function serialise(d: Date, time: string) {
+  const y = d.getFullYear();
+  const mo = String(d.getMonth() + 1).padStart(2, "0");
+  const da = String(d.getDate()).padStart(2, "0");
+  return `${y}-${mo}-${da} ${time}`;
+}
+
+export function DeliveryTimePicker({ value, onChange, leadMin = 60 }: Props) {
   const today = useMemo(() => new Date(), []);
-  const days = useMemo(() => {
-    const arr: { key: string; label: string; date: Date; times: string[] }[] = [];
-    for (let i = 0; i < 4; i++) {
-      const d = new Date(today);
-      d.setDate(d.getDate() + i);
-      const times = buildTimes(d, today, leadMin, startHour, endHour);
-      if (!times.length) continue;
-      arr.push({ key: `d${i}`, label: dayLabel(d, today), date: d, times });
-    }
-    return arr;
-  }, [today, leadMin, startHour, endHour]);
-
-  // Parse current value: "<dayLabel> HH:MM"
-  const parsed = useMemo(() => {
-    if (!value) return { day: "", time: "" };
-    const m = value.match(/^(.*)\s(\d{2}:\d{2})$/);
-    if (!m) return { day: "", time: "" };
-    return { day: m[1], time: m[2] };
-  }, [value]);
-
+  const parsed = useMemo(() => parseValue(value), [value]);
   const mode: "asap" | "scheduled" = value ? "scheduled" : "asap";
-  const activeDay = days.find((d) => d.label === parsed.day) ?? days[0];
+
+  const [open, setOpen] = useState(false);
+  const [timeDraft, setTimeDraft] = useState(parsed.time);
 
   function setMode(m: "asap" | "scheduled") {
-    if (m === "asap") onChange("");
-    else if (days.length) {
-      const d = days[0];
-      onChange(`${d.label} ${d.times[0]}`);
+    if (m === "asap") {
+      onChange("");
+      setTimeDraft("");
+    } else {
+      const d = new Date(today.getTime() + leadMin * 60000);
+      const hh = String(d.getHours()).padStart(2, "0");
+      const mm = String(d.getMinutes()).padStart(2, "0");
+      const t = `${hh}:${mm}`;
+      setTimeDraft(t);
+      onChange(serialise(stripTime(today), t));
     }
   }
-  function setDay(label: string) {
-    const d = days.find((x) => x.label === label);
+
+  function pickDate(d: Date | undefined) {
     if (!d) return;
-    const t = d.times.includes(parsed.time) ? parsed.time : d.times[0];
-    onChange(`${d.label} ${t}`);
+    const t = timeDraft || "12:00";
+    setTimeDraft(t);
+    onChange(serialise(d, t));
+    setOpen(false);
   }
-  function setTime(t: string) {
-    const d = activeDay;
-    if (!d) return;
-    onChange(`${d.label} ${t}`);
+
+  function onTimeChange(raw: string) {
+    // allow only digits and ":"
+    let v = raw.replace(/[^\d:]/g, "").slice(0, 5);
+    // auto-insert ":"
+    if (v.length === 2 && !v.includes(":")) v = v + ":";
+    setTimeDraft(v);
+    const m = v.match(/^(\d{2}):(\d{2})$/);
+    if (m) {
+      const h = Math.min(23, Number(m[1]));
+      const min = Math.min(59, Number(m[2]));
+      const fixed = `${String(h).padStart(2, "0")}:${String(min).padStart(2, "0")}`;
+      const date = parsed.date ?? stripTime(today);
+      onChange(serialise(date, fixed));
+    }
   }
+
+  const displayDate = parsed.date ?? stripTime(today);
 
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-2 gap-2 p-1 bg-neutral-100 rounded-xl">
+      <div className="grid grid-cols-2 gap-1.5 p-1 bg-neutral-100 rounded-xl">
         <button
           type="button"
           onClick={() => setMode("asap")}
@@ -121,37 +115,42 @@ export function DeliveryTimePicker({
         </button>
       </div>
 
-      {mode === "scheduled" && activeDay && (
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <div className="text-[11px] font-semibold text-neutral-500 mb-1 ml-1">Дата</div>
-            <Select value={activeDay.label} onValueChange={setDay}>
-              <SelectTrigger className="h-11 rounded-xl bg-white">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="max-h-72">
-                {days.map((d) => (
-                  <SelectItem key={d.key} value={d.label} className="py-2.5">
-                    {d.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <div className="text-[11px] font-semibold text-neutral-500 mb-1 ml-1">Время</div>
-            <Select value={parsed.time || activeDay.times[0]} onValueChange={setTime}>
-              <SelectTrigger className="h-11 rounded-xl bg-white">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="max-h-72">
-                {activeDay.times.map((t) => (
-                  <SelectItem key={t} value={t} className="py-2.5 font-mono">
-                    {t}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+      {mode === "scheduled" && (
+        <div className="grid grid-cols-[1fr_auto] gap-2">
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                className={cn(
+                  "h-11 px-3 rounded-xl bg-white border border-neutral-200 flex items-center gap-2 text-sm font-semibold text-left hover:border-neutral-300 transition",
+                )}
+              >
+                <CalendarIcon className="w-4 h-4 text-neutral-500" />
+                <span className="flex-1 truncate">{fmtDate(displayDate, today)}</span>
+              </button>
+            </PopoverTrigger>
+            <PopoverContent align="start" className="w-auto p-0 pointer-events-auto">
+              <Calendar
+                mode="single"
+                selected={parsed.date ?? undefined}
+                onSelect={pickDate}
+                disabled={{ before: stripTime(today) }}
+                initialFocus
+                className="pointer-events-auto"
+              />
+            </PopoverContent>
+          </Popover>
+
+          <div className="relative">
+            <Clock className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <input
+              type="text"
+              inputMode="numeric"
+              placeholder="ЧЧ:ММ"
+              value={timeDraft}
+              onChange={(e) => onTimeChange(e.target.value)}
+              className="h-11 w-28 pl-9 pr-3 rounded-xl bg-white border border-neutral-200 text-sm font-semibold tabular-nums focus:outline-none focus:border-primary"
+            />
           </div>
         </div>
       )}

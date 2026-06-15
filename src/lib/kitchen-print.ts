@@ -126,12 +126,12 @@ function buildReceiptHtml(
   return `<!doctype html>
 <html lang="${s.language}"><head><meta charset="utf-8" /><title>${t(s, "client")} #${esc(order.number)}</title>
 <style>
-  @page { size: ${s.paper_width}mm auto; margin: 4mm; }
+  @page { size: ${s.paper_width}mm auto; margin: 0; }
   * { box-sizing: border-box; }
-  body { margin: 0; background: #fff; color: #000; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: ${s.font_size}px; }
-  .receipt { width: ${s.paper_width}mm; max-width: ${s.paper_width}mm; padding: 6mm; margin: 0 auto; }
+  html, body { margin: 0; padding: 0; background: #fff; color: #000; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: ${s.font_size}px; }
+  .receipt { width: ${s.paper_width}mm; max-width: ${s.paper_width}mm; padding: 3mm 2mm; margin: 0 auto; }
   .center { text-align: center; }
-  .logo { max-width: ${Math.max(s.paper_width - 20, 30)}mm; max-height: 22mm; object-fit: contain; margin: 0 auto 4px; display: block; }
+  .logo { max-width: ${Math.max(s.paper_width - 10, 30)}mm; max-height: 22mm; object-fit: contain; margin: 0 auto 4px; display: block; }
   .map { width: 100%; height: auto; display: block; margin: 6px auto; }
   .title { font-size: ${s.font_size + 9}px; font-weight: 900; }
   .header-line { font-size: ${s.font_size}px; }

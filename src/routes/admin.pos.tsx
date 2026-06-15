@@ -275,7 +275,7 @@ function PosPage() {
                 <button key={p.id} onClick={() => addProduct(p)}
                   className="text-left rounded-xl border border-neutral-100 hover:border-primary hover:bg-primary/5 p-2 transition">
                   <div className="aspect-square rounded-lg bg-neutral-50 grid place-items-center overflow-hidden text-2xl mb-1.5">
-                    {p.image_url ? <img src={p.image_url} alt="" className="w-full h-full object-cover" /> : "🍣"}
+                    {p.image_url ? <img src={p.image_url} alt="" loading="lazy" decoding="async" className="w-full h-full object-cover" /> : "🍣"}
                   </div>
                   <div className="text-xs font-semibold line-clamp-2 leading-snug min-h-[2.2em]">{p.name}</div>
                   <div className="text-sm font-extrabold mt-1">{Number(p.price)} ₽</div>

@@ -157,7 +157,7 @@ function ProductsAdmin() {
               <tr key={p.id} className="border-t hover:bg-neutral-50/50">
                 <td className="p-3">
                   <div className="h-12 w-12 rounded-lg bg-neutral-100 grid place-items-center overflow-hidden text-xl">
-                    {p.image_url ? <img src={p.image_url} className="w-full h-full object-cover" alt="" /> : "🍣"}
+                    {p.image_url ? <img src={p.image_url} loading="lazy" decoding="async" className="w-full h-full object-cover" alt="" /> : "🍣"}
                   </div>
                 </td>
                 <td>

@@ -58,8 +58,8 @@ function KitchenReceipt() {
   const total = Number(order.total ?? subtotal - discount);
 
   return (
-    <div className="bg-white text-black font-mono p-6 max-w-[80mm] mx-auto print:max-w-none print:p-2">
-      <style>{`@media print { @page { size: 80mm auto; margin: 4mm; } body { background: white; } .no-print { display: none } }`}</style>
+    <div className="bg-white text-black font-mono p-3 max-w-[80mm] mx-auto print:max-w-none print:p-0">
+      <style>{`@media print { @page { size: 80mm auto; margin: 0; } html, body { background: white; margin: 0; padding: 0; } .no-print { display: none } }`}</style>
 
       <div className="text-center">
         {s.logo_url && <img src={s.logo_url} alt="" className="mx-auto max-h-[22mm] object-contain mb-1" />}

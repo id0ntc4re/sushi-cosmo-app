@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCart } from "@/lib/cart";
 import { createCheckoutOrder } from "@/lib/orders.functions";
 import { validatePromo, type PromoCode, type GiftItem } from "@/lib/promo";
-import { getDeliverySlots } from "@/lib/timeSlots";
+import { DeliveryTimePicker } from "@/components/DeliveryTimePicker";
 import logo from "@/assets/logo.svg";
 import { detectBranchKey, branchKeyFromName } from "@/lib/branch-detect";
 import { detectBranchByAddress, resolveZoneSmart } from "@/lib/geocode.functions";

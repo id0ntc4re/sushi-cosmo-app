@@ -177,7 +177,7 @@ function PosPage() {
             payment_method: paymentMethod,
             change_from: paymentMethod === "cash" && changeFrom !== "" ? Number(changeFrom) : null,
             persons: 1,
-            delivery_time: null,
+            delivery_time: deliveryTime || null,
             comment: comment.trim() || null,
             subtotal,
             delivery_cost: 0,

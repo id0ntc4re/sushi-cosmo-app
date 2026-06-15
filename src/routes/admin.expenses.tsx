@@ -109,7 +109,7 @@ function Expenses() {
           <select value={draft.category} onChange={(e) => setDraft({ ...draft, category: e.target.value })} className="px-3 py-2 rounded-xl border sm:col-span-2">
             {CATS.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
           </select>
-          <input type="number" placeholder="Сумма ₽" value={(draft.amount || "") || ""} onChange={(e) => setDraft({ ...draft, amount: Number(e.target.value) })} className="px-3 py-2 rounded-xl border" />
+          <input min="0" type="number" placeholder="Сумма ₽" value={(draft.amount || "") || ""} onChange={(e) => setDraft({ ...draft, amount: Number(e.target.value) })} className="px-3 py-2 rounded-xl border" />
           <input type="date" value={draft.spent_at} onChange={(e) => setDraft({ ...draft, spent_at: e.target.value })} className="px-3 py-2 rounded-xl border" />
           <input placeholder="Комментарий" value={draft.note} onChange={(e) => setDraft({ ...draft, note: e.target.value })} className="px-3 py-2 rounded-xl border" />
           <button onClick={add} className="px-4 py-2 rounded-xl bg-primary text-white font-bold">Добавить</button>

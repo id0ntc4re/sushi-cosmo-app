@@ -65,13 +65,13 @@ function SettingsAdmin() {
       <div className="bg-white rounded-3xl p-6 space-y-4 mb-6">
         <h2 className="font-extrabold text-lg">Доставка и заказы</h2>
         <Field label="Стоимость доставки, ₽">
-          <input placeholder="0" type="number" className={inp} value={(s.delivery_cost) || ""} onChange={(e) => setS({ ...s, delivery_cost: Number(e.target.value) })} />
+          <input min="0" placeholder="0" type="number" className={inp} value={(s.delivery_cost) || ""} onChange={(e) => setS({ ...s, delivery_cost: Number(e.target.value) })} />
         </Field>
         <Field label="Бесплатная доставка от, ₽">
-          <input placeholder="0" type="number" className={inp} value={(s.free_delivery_from) || ""} onChange={(e) => setS({ ...s, free_delivery_from: Number(e.target.value) })} />
+          <input min="0" placeholder="0" type="number" className={inp} value={(s.free_delivery_from) || ""} onChange={(e) => setS({ ...s, free_delivery_from: Number(e.target.value) })} />
         </Field>
         <Field label="Минимальная сумма заказа, ₽">
-          <input placeholder="0" type="number" className={inp} value={(s.min_order) || ""} onChange={(e) => setS({ ...s, min_order: Number(e.target.value) })} />
+          <input min="0" placeholder="0" type="number" className={inp} value={(s.min_order) || ""} onChange={(e) => setS({ ...s, min_order: Number(e.target.value) })} />
         </Field>
         <Field label="Часы работы">
           <input className={inp} value={s.work_hours} onChange={(e) => setS({ ...s, work_hours: e.target.value })} />
@@ -96,7 +96,7 @@ function SettingsAdmin() {
         </Field>
         <div className="grid grid-cols-2 gap-3">
           <Field label="Скидка, %">
-            <input placeholder="0" type="number" className={inp} value={(flash.percent) || ""}
+            <input min="0" placeholder="0" type="number" className={inp} value={(flash.percent) || ""}
               onChange={(e) => setFlash({ ...flash, percent: Number(e.target.value) })} />
           </Field>
           <Field label="Действует до">

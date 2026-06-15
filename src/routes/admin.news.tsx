@@ -111,7 +111,7 @@ function NewsAdmin() {
             <label className="block md:col-span-2"><span className="text-xs text-neutral-600 block mb-1">Полный текст</span>
               <textarea className={`${inp} min-h-[180px]`} value={editing.content ?? ""} onChange={(e) => setEditing({ ...editing, content: e.target.value })} /></label>
             <label className="block"><span className="text-xs text-neutral-600 block mb-1">Сортировка</span>
-              <input placeholder="0" type="number" className={inp} value={(editing.sort_order ?? 0) || ""} onChange={(e) => setEditing({ ...editing, sort_order: Number(e.target.value) })} /></label>
+              <input min="0" placeholder="0" type="number" className={inp} value={(editing.sort_order ?? 0) || ""} onChange={(e) => setEditing({ ...editing, sort_order: Number(e.target.value) })} /></label>
             <label className="flex items-center gap-2 mt-6"><input type="checkbox" checked={editing.is_active ?? true} onChange={(e) => setEditing({ ...editing, is_active: e.target.checked })} /> Опубликовано</label>
           </div>
           <div className="flex gap-2 mt-6 justify-end">

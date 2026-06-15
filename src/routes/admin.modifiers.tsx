@@ -54,7 +54,7 @@ function Page() {
           <h3 className="font-extrabold mb-4">Все модификаторы</h3>
           <div className="grid grid-cols-12 gap-2 mb-4">
             <input className={inp + " col-span-7"} placeholder="Название (бортик, доп. сыр)" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
-            <input type="number" className={inp + " col-span-3"} placeholder="₽" value={(draft.price) || ""} onChange={(e) => setDraft({ ...draft, price: Number(e.target.value) })} />
+            <input min="0" type="number" className={inp + " col-span-3"} placeholder="₽" value={(draft.price) || ""} onChange={(e) => setDraft({ ...draft, price: Number(e.target.value) })} />
             <button onClick={addMod} className="col-span-2 rounded-xl bg-primary text-white font-bold">+</button>
           </div>
           <ul className="space-y-2">
@@ -62,7 +62,7 @@ function Page() {
               <li key={m.id} className="flex items-center gap-2 bg-neutral-50 rounded-xl p-3">
                 <input className="flex-1 bg-transparent font-semibold" defaultValue={m.name}
                   onBlur={(e) => updateMod(m.id, { name: e.target.value })} />
-                <input type="number" defaultValue={m.price} className="w-20 px-2 py-1 border rounded text-right"
+                <input min="0" type="number" defaultValue={m.price} className="w-20 px-2 py-1 border rounded text-right"
                   onBlur={(e) => updateMod(m.id, { price: Number(e.target.value) })} /> ₽
                 <input type="checkbox" checked={m.is_active} onChange={(e) => updateMod(m.id, { is_active: e.target.checked })} />
                 <button onClick={() => delMod(m.id)} className="text-red-500 text-xs">✕</button>

@@ -350,9 +350,9 @@ function OrdersAdmin() {
                   <L lab="Точка самовывоза" full><input value={meta.pickup_point} onChange={(e) => setMeta({ ...meta, pickup_point: e.target.value })} className={inp} /></L>
                 )}
                 <L lab="Время" full><DeliveryTimePicker value={meta.delivery_time} onChange={(v) => setMeta({ ...meta, delivery_time: v })} leadMin={meta.delivery_type === "pickup" ? 30 : 60} /></L>
-                <L lab="Персон"><input placeholder="0" type="number" value={(meta.persons) || ""} onChange={(e) => setMeta({ ...meta, persons: Number(e.target.value) })} className={inp} /></L>
-                <L lab="Сдача с"><input placeholder="0" type="number" value={(meta.change_from) || ""} onChange={(e) => setMeta({ ...meta, change_from: e.target.value })} className={inp} /></L>
-                <L lab="Доставка ₽"><input placeholder="0" type="number" value={(meta.delivery_cost) || ""} onChange={(e) => setMeta({ ...meta, delivery_cost: Number(e.target.value) })} className={inp} /></L>
+                <L lab="Персон"><input min="0" placeholder="0" type="number" value={(meta.persons) || ""} onChange={(e) => setMeta({ ...meta, persons: Number(e.target.value) })} className={inp} /></L>
+                <L lab="Сдача с"><input min="0" placeholder="0" type="number" value={(meta.change_from) || ""} onChange={(e) => setMeta({ ...meta, change_from: e.target.value })} className={inp} /></L>
+                <L lab="Доставка ₽"><input min="0" placeholder="0" type="number" value={(meta.delivery_cost) || ""} onChange={(e) => setMeta({ ...meta, delivery_cost: Number(e.target.value) })} className={inp} /></L>
                 <L lab="Скидка">
                   {(() => {
                     const sub = items.reduce((a: number, x: any) => a + Number(x.total || 0), 0);

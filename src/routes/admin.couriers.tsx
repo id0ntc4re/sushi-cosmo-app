@@ -170,13 +170,13 @@ function Zones() {
           <input className={inp} placeholder="Район / зона" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
         </Field>
         <Field className="col-span-2" label="Доставка, ₽" hint="сколько берём за доставку в эту зону">
-          <input placeholder="0" type="number" className={inp} value={(draft.cost) || ""} onChange={(e) => setDraft({ ...draft, cost: Number(e.target.value) })} />
+          <input min="0" placeholder="0" type="number" className={inp} value={(draft.cost) || ""} onChange={(e) => setDraft({ ...draft, cost: Number(e.target.value) })} />
         </Field>
         <Field className="col-span-2" label="Мин. заказ, ₽" hint="ниже этой суммы заказ оформить нельзя">
-          <input placeholder="0" type="number" className={inp} value={(draft.min_order) || ""} onChange={(e) => setDraft({ ...draft, min_order: Number(e.target.value) })} />
+          <input min="0" placeholder="0" type="number" className={inp} value={(draft.min_order) || ""} onChange={(e) => setDraft({ ...draft, min_order: Number(e.target.value) })} />
         </Field>
         <Field className="col-span-2" label="Бесплатно от, ₽" hint="доставка станет 0 ₽ при заказе от этой суммы (пусто = всегда платная)">
-          <input placeholder="0" type="number" className={inp} value={(draft.free_from) || ""} onChange={(e) => setDraft({ ...draft, free_from: Number(e.target.value) })} />
+          <input min="0" placeholder="0" type="number" className={inp} value={(draft.free_from) || ""} onChange={(e) => setDraft({ ...draft, free_from: Number(e.target.value) })} />
         </Field>
         <div className="col-span-3 flex items-end">
           <button onClick={add} className="w-full h-[42px] rounded-xl bg-primary text-white font-bold">+ Добавить зону</button>
@@ -204,15 +204,15 @@ function Zones() {
             <div className="grid grid-cols-12 gap-2 items-center">
               <div className="col-span-3 font-semibold">{z.name}</div>
               <div className="col-span-2">
-                <input type="number" defaultValue={z.cost} onBlur={(e) => update(z.id, { cost: Number(e.target.value) })} className="w-full px-2 py-1 border rounded" />
+                <input min="0" type="number" defaultValue={z.cost} onBlur={(e) => update(z.id, { cost: Number(e.target.value) })} className="w-full px-2 py-1 border rounded" />
                 <div className="text-[10px] text-neutral-400">Доставка ₽</div>
               </div>
               <div className="col-span-2">
-                <input type="number" defaultValue={z.min_order} onBlur={(e) => update(z.id, { min_order: Number(e.target.value) })} className="w-full px-2 py-1 border rounded" />
+                <input min="0" type="number" defaultValue={z.min_order} onBlur={(e) => update(z.id, { min_order: Number(e.target.value) })} className="w-full px-2 py-1 border rounded" />
                 <div className="text-[10px] text-neutral-400">Мин. заказ ₽</div>
               </div>
               <div className="col-span-2">
-                <input type="number" defaultValue={z.free_from ?? ""} onBlur={(e) => update(z.id, { free_from: e.target.value ? Number(e.target.value) : null })} className="w-full px-2 py-1 border rounded" />
+                <input min="0" type="number" defaultValue={z.free_from ?? ""} onBlur={(e) => update(z.id, { free_from: e.target.value ? Number(e.target.value) : null })} className="w-full px-2 py-1 border rounded" />
                 <div className="text-[10px] text-neutral-400">Бесплатно от ₽</div>
               </div>
               <div className="col-span-2 flex items-center gap-2">

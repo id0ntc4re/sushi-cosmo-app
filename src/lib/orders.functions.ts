@@ -27,7 +27,7 @@ export const createCheckoutOrder = createServerFn({ method: "POST" })
       payment_method: z.enum(["cash", "card_courier", "card_online"]),
       change_from: z.number().nullable(),
       persons: z.number().int().min(1).max(20),
-      delivery_time: z.string().max(50).nullable(),
+      delivery_time: deliveryTimeSchema,
       comment: z.string().max(500).nullable(),
       subtotal: z.number().min(0),
       delivery_cost: z.number().min(0),

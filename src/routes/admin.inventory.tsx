@@ -262,7 +262,7 @@ function Recipes() {
             {semiProducts.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
         )}
-        <input placeholder="0" type="number" step="0.01" value={(qty) || ""} onChange={(e) => setQty(Number(e.target.value))} placeholder="Кол-во"
+        <input type="number" step="0.01" value={(qty) || ""} onChange={(e) => setQty(Number(e.target.value))} placeholder="Кол-во"
           className={inp + " mb-3"} />
         <button onClick={add} className="w-full px-4 py-2.5 rounded-xl bg-primary text-white font-bold">+ Добавить в техкарту</button>
         <p className="text-xs text-neutral-500 mt-3">

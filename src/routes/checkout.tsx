@@ -589,7 +589,7 @@ function Checkout() {
                   </div>
                   {form.payment_method === "cash" && (
                     <Field label="Сдача с (₽)">
-                      <input placeholder="0" type="number" className={inputCls} value={(form.change_from) || ""}
+                      <input type="number" className={inputCls} value={(form.change_from) || ""}
                         onChange={(e) => set("change_from", e.target.value)}
                         placeholder="Например, 2000" />
                     </Field>

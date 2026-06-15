@@ -353,7 +353,7 @@ function PosPage() {
                 <label className="text-xs font-semibold text-neutral-700 block">
                   Сумма от клиента (для расчёта сдачи)
                 </label>
-                <input placeholder="0" type="number" inputMode="decimal" min="0" value={(changeFrom) || ""}
+                <input type="number" inputMode="decimal" min="0" value={(changeFrom) || ""}
                   onChange={(e) => setChangeFrom(e.target.value)}
                   placeholder={`К оплате: ${total.toLocaleString("ru")} ₽`}
                   className={inp} />

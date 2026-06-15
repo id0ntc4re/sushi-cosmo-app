@@ -92,7 +92,7 @@ function BannersAdmin() {
             </div>
             <Field label="URL картинки"><input className={inp} value={editing.image_url ?? ""} onChange={(e) => setEditing({ ...editing, image_url: e.target.value })} placeholder="https://…" /></Field>
             <div className="grid grid-cols-2 gap-3">
-              <Field label="Порядок"><input type="number" className={inp} value={editing.sort_order ?? 0} onChange={(e) => setEditing({ ...editing, sort_order: Number(e.target.value) })} /></Field>
+              <Field label="Порядок"><input placeholder="0" type="number" className={inp} value={(editing.sort_order ?? 0) === 0 || (editing.sort_order ?? 0) === "0" ? "" : (editing.sort_order ?? 0)} onChange={(e) => setEditing({ ...editing, sort_order: Number(e.target.value) })} /></Field>
               <label className="flex items-end gap-2 pb-2">
                 <input type="checkbox" checked={editing.is_active ?? true} onChange={(e) => setEditing({ ...editing, is_active: e.target.checked })} />
                 <span className="text-sm">Активен</span>

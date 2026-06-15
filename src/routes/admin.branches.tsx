@@ -215,7 +215,7 @@ function BranchesPage() {
                   placeholder="orders@filial.ru" className="w-full px-3 py-2 rounded-xl border" />
                 <p className="text-xs text-neutral-500 mt-1">На этот адрес автоматически уходит копия каждого нового заказа.</p>
               </Field>
-              <Field label="Порядок"><input type="number" value={editing.sort_order ?? 0} onChange={(e) => setEditing({ ...editing, sort_order: Number(e.target.value) })}
+              <Field label="Порядок"><input placeholder="0" type="number" value={(editing.sort_order ?? 0) === 0 || (editing.sort_order ?? 0) === "0" ? "" : (editing.sort_order ?? 0)} onChange={(e) => setEditing({ ...editing, sort_order: Number(e.target.value) })}
                 className="w-full px-3 py-2 rounded-xl border" /></Field>
               <label className="flex items-center gap-2">
                 <input type="checkbox" checked={editing.is_active ?? true}

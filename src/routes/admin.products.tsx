@@ -184,7 +184,7 @@ function ProductsAdmin() {
           <div className="grid md:grid-cols-2 gap-3">
             <Field label="Название*"><input className={inp} value={editing.name ?? ""} onChange={(e) => setEditing({ ...editing, name: e.target.value })} /></Field>
             <Field label="SKU"><input className={inp} value={editing.sku ?? ""} onChange={(e) => setEditing({ ...editing, sku: e.target.value })} /></Field>
-            <Field label="Цена*"><input type="number" className={inp} value={editing.price ?? 0} onChange={(e) => setEditing({ ...editing, price: Number(e.target.value) })} /></Field>
+            <Field label="Цена*"><input placeholder="0" type="number" className={inp} value={(editing.price ?? 0) === 0 || (editing.price ?? 0) === "0" ? "" : (editing.price ?? 0)} onChange={(e) => setEditing({ ...editing, price: Number(e.target.value) })} /></Field>
             <Field label="Вес/объём"><input className={inp} value={editing.weight ?? ""} onChange={(e) => setEditing({ ...editing, weight: e.target.value })} placeholder="220 г" /></Field>
             <Field label="Категория">
               <select className={inp} value={editing.category_id ?? ""} onChange={(e) => setEditing({ ...editing, category_id: e.target.value || null })}>
@@ -192,7 +192,7 @@ function ProductsAdmin() {
                 {cats.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
             </Field>
-            <Field label="Сортировка"><input type="number" className={inp} value={editing.sort_order ?? 0} onChange={(e) => setEditing({ ...editing, sort_order: Number(e.target.value) })} /></Field>
+            <Field label="Сортировка"><input placeholder="0" type="number" className={inp} value={(editing.sort_order ?? 0) === 0 || (editing.sort_order ?? 0) === "0" ? "" : (editing.sort_order ?? 0)} onChange={(e) => setEditing({ ...editing, sort_order: Number(e.target.value) })} /></Field>
             <div className="md:col-span-2">
               <span className="text-xs text-neutral-600 block mb-1">Пищевая ценность (на порцию, можно оставить пустым)</span>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-2">

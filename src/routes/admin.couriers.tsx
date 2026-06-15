@@ -170,13 +170,13 @@ function Zones() {
           <input className={inp} placeholder="Район / зона" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
         </Field>
         <Field className="col-span-2" label="Доставка, ₽" hint="сколько берём за доставку в эту зону">
-          <input type="number" className={inp} value={draft.cost} onChange={(e) => setDraft({ ...draft, cost: Number(e.target.value) })} />
+          <input placeholder="0" type="number" className={inp} value={(draft.cost) === 0 || (draft.cost) === "0" ? "" : (draft.cost)} onChange={(e) => setDraft({ ...draft, cost: Number(e.target.value) })} />
         </Field>
         <Field className="col-span-2" label="Мин. заказ, ₽" hint="ниже этой суммы заказ оформить нельзя">
-          <input type="number" className={inp} value={draft.min_order} onChange={(e) => setDraft({ ...draft, min_order: Number(e.target.value) })} />
+          <input placeholder="0" type="number" className={inp} value={(draft.min_order) === 0 || (draft.min_order) === "0" ? "" : (draft.min_order)} onChange={(e) => setDraft({ ...draft, min_order: Number(e.target.value) })} />
         </Field>
         <Field className="col-span-2" label="Бесплатно от, ₽" hint="доставка станет 0 ₽ при заказе от этой суммы (пусто = всегда платная)">
-          <input type="number" className={inp} value={draft.free_from} onChange={(e) => setDraft({ ...draft, free_from: Number(e.target.value) })} />
+          <input placeholder="0" type="number" className={inp} value={(draft.free_from) === 0 || (draft.free_from) === "0" ? "" : (draft.free_from)} onChange={(e) => setDraft({ ...draft, free_from: Number(e.target.value) })} />
         </Field>
         <div className="col-span-3 flex items-end">
           <button onClick={add} className="w-full h-[42px] rounded-xl bg-primary text-white font-bold">+ Добавить зону</button>

@@ -54,7 +54,7 @@ function Page() {
           <h3 className="font-extrabold mb-4">Все модификаторы</h3>
           <div className="grid grid-cols-12 gap-2 mb-4">
             <input className={inp + " col-span-7"} placeholder="Название (бортик, доп. сыр)" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
-            <input type="number" className={inp + " col-span-3"} placeholder="₽" value={draft.price} onChange={(e) => setDraft({ ...draft, price: Number(e.target.value) })} />
+            <input type="number" className={inp + " col-span-3"} placeholder="₽" value={(draft.price) === 0 || (draft.price) === "0" ? "" : (draft.price)} onChange={(e) => setDraft({ ...draft, price: Number(e.target.value) })} />
             <button onClick={addMod} className="col-span-2 rounded-xl bg-primary text-white font-bold">+</button>
           </div>
           <ul className="space-y-2">

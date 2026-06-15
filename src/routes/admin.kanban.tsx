@@ -28,7 +28,11 @@ function Kanban() {
   const [fiscalOrderId, setFiscalOrderId] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const knownIds = useRef<Set<string>>(new Set());
+  const soundOnRef = useRef(soundOn);
+  const reloadTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const { isSuper, branchId, branches } = useAdminRole();
+
+  useEffect(() => { soundOnRef.current = soundOn; }, [soundOn]);
 
   async function load() {
     let q = supabase.from("orders")
@@ -43,6 +47,11 @@ function Kanban() {
     list.forEach((o: any) => knownIds.current.add(o.id));
   }
 
+  function scheduleReload() {
+    if (reloadTimer.current) clearTimeout(reloadTimer.current);
+    reloadTimer.current = setTimeout(() => { load(); }, 200);
+  }
+
   async function printKitchen(o: any) {
     if (o.kitchen_printed_at && !confirm("Чек уже печатался. Напечатать ещё раз?")) return;
     try {
@@ -53,21 +62,28 @@ function Kanban() {
     }
   }
 
+  // Тикер времени отдельно — чтобы не пересоздавать realtime-канал
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(t);
+  }, []);
 
-
+  // Загрузка + realtime — пересоздаётся только при смене фильтра/роли
   useEffect(() => {
     load();
-    const t = setInterval(() => setNow(Date.now()), 1000);
     const ch = supabase.channel("kanban-orders")
       .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, (p: any) => {
         if (p.eventType === "INSERT" && !knownIds.current.has(p.new.id)) {
-          if (soundOn) audioRef.current?.play().catch(() => {});
+          if (soundOnRef.current) audioRef.current?.play().catch(() => {});
           toast.success(`Новый заказ #${p.new.number}`);
         }
-        load();
+        scheduleReload();
       }).subscribe();
-    return () => { clearInterval(t); supabase.removeChannel(ch); };
-  }, [soundOn, isSuper, filterBranch]);
+    return () => {
+      if (reloadTimer.current) clearTimeout(reloadTimer.current);
+      supabase.removeChannel(ch);
+    };
+  }, [isSuper, filterBranch]);
 
   async function move(id: string, status: string) {
     const patch: any = { status };

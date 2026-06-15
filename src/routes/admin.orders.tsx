@@ -316,7 +316,7 @@ function OrdersAdmin() {
               } />
               {open.change_from && <Info k="Сдача с" v={`${open.change_from} ₽`} />}
               <Info k="Персон" v={open.persons} />
-              <Info k="Время" v={open.delivery_time || "—"} />
+              <Info k="Время" v={formatDeliveryTime(open.delivery_time)} />
               {open.comment && <div className="sm:col-span-2"><Info k="Комментарий" v={open.comment} /></div>}
               {customer && (
                 <div className="sm:col-span-2 flex flex-wrap gap-2 mt-1">

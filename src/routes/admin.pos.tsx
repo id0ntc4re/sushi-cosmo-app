@@ -8,6 +8,7 @@ import { createOrderAsAdmin } from "@/lib/orders.functions";
 import { formatRuPhone } from "@/lib/phone-format";
 import { AddressFields } from "@/components/AddressFields";
 import { FiscalReceiptModal } from "@/components/FiscalReceiptModal";
+import { DeliveryTimePicker } from "@/components/DeliveryTimePicker";
 
 export const Route = createFileRoute("/admin/pos")({ component: PosPage });
 

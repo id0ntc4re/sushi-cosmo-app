@@ -124,7 +124,7 @@ function Shifts() {
           <div className="border-t pt-4 flex items-end gap-3">
             <label className="flex-1">
               <span className="text-sm text-neutral-600 block mb-1">Наличные на момент закрытия</span>
-              <input type="number" value={closeCash} onChange={(e) => setCloseCash(Number(e.target.value))}
+              <input placeholder="0" type="number" value={(closeCash) === 0 || (closeCash) === "0" ? "" : (closeCash)} onChange={(e) => setCloseCash(Number(e.target.value))}
                 className="w-full px-3 py-2 rounded-xl border" />
             </label>
             <button onClick={closeShift} className="px-6 py-2.5 rounded-full bg-red-500 text-white font-bold">Z-отчёт / Закрыть смену</button>
@@ -145,7 +145,7 @@ function Shifts() {
           <div className="flex gap-3 items-end">
             <label className="flex-1">
               <span className="text-sm text-neutral-600 block mb-1">Наличные в кассе</span>
-              <input type="number" value={openCash} onChange={(e) => setOpenCash(Number(e.target.value))}
+              <input placeholder="0" type="number" value={(openCash) === 0 || (openCash) === "0" ? "" : (openCash)} onChange={(e) => setOpenCash(Number(e.target.value))}
                 className="w-full px-3 py-2 rounded-xl border" />
             </label>
             <button onClick={openNewShift} className="px-6 py-2.5 rounded-full bg-primary text-white font-bold">Открыть смену</button>

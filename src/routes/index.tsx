@@ -145,6 +145,8 @@ function Index() {
                     alt={s.title}
                     className="absolute inset-0 w-full h-full object-cover"
                     loading={i === 0 ? "eager" : "lazy"}
+                    decoding="async"
+                    {...(i === 0 ? { fetchPriority: "high" as any } : {})}
                   />
                 )}
                 {(s.title || s.eyebrow || s.subtitle || s.cta_label) && (

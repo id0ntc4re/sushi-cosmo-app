@@ -139,12 +139,12 @@ function StockTab({ branchId, ingredients }: { branchId: string; ingredients: In
                   <td className="py-2 font-semibold">{i.name}</td>
                   <td className="text-neutral-500">{i.unit}</td>
                   <td>
-                    <input type="number" defaultValue={stock}
+                    <input min="0" type="number" defaultValue={stock}
                       onBlur={(e) => { const v = Number(e.target.value); if (v !== stock) upsert(i.id, { stock: v }); }}
                       className="w-24 px-2 py-1.5 rounded-lg border" />
                   </td>
                   <td>
-                    <input type="number" defaultValue={min}
+                    <input min="0" type="number" defaultValue={min}
                       onBlur={(e) => { const v = Number(e.target.value); if (v !== min) upsert(i.id, { min_stock: v }); }}
                       className="w-24 px-2 py-1.5 rounded-lg border" />
                   </td>
@@ -215,7 +215,7 @@ function TransfersTab({ branchId, branches, ingredients, isSuper, userBranch }: 
             <option value="">Продукт</option>
             {ingredients.map((i: Ingredient) => <option key={i.id} value={i.id}>{i.name} ({i.unit})</option>)}
           </select>
-          <input type="number" placeholder="Кол-во" value={(draft.qty || "") || ""} onChange={(e) => setDraft({ ...draft, qty: Number(e.target.value) })} className="px-3 py-2 rounded-xl border" />
+          <input min="0" type="number" placeholder="Кол-во" value={(draft.qty || "") || ""} onChange={(e) => setDraft({ ...draft, qty: Number(e.target.value) })} className="px-3 py-2 rounded-xl border" />
           <input placeholder="Комментарий" value={draft.note} onChange={(e) => setDraft({ ...draft, note: e.target.value })} className="px-3 py-2 rounded-xl border" />
           <button onClick={create} className="px-4 py-2 rounded-xl bg-primary text-white font-bold">Переместить</button>
         </div>
@@ -306,7 +306,7 @@ function WriteoffsTab({ branchId, ingredients }: { branchId: string; ingredients
             <option value="">Продукт</option>
             {ingredients.map((i) => <option key={i.id} value={i.id}>{i.name} ({i.unit})</option>)}
           </select>
-          <input type="number" placeholder="Кол-во" value={(draft.qty || "") || ""} onChange={(e) => setDraft({ ...draft, qty: Number(e.target.value) })} className="px-3 py-2 rounded-xl border" />
+          <input min="0" type="number" placeholder="Кол-во" value={(draft.qty || "") || ""} onChange={(e) => setDraft({ ...draft, qty: Number(e.target.value) })} className="px-3 py-2 rounded-xl border" />
           <input placeholder="Причина (порча, брак…)" value={draft.reason} onChange={(e) => setDraft({ ...draft, reason: e.target.value })} className="px-3 py-2 rounded-xl border" />
           <button onClick={create} className="px-4 py-2 rounded-xl bg-red-600 text-white font-bold">Списать</button>
         </div>
@@ -401,7 +401,7 @@ function InventoryTab({ branchId, ingredients }: { branchId: string; ingredients
                     <td className="py-2 font-semibold">{i.name} <span className="text-neutral-500 font-normal">({i.unit})</span></td>
                     <td>{exp}</td>
                     <td>
-                      <input type="number" value={c ?? ""} onChange={(e) => setCounted({ ...counted, [i.id]: e.target.value })}
+                      <input min="0" type="number" value={c ?? ""} onChange={(e) => setCounted({ ...counted, [i.id]: e.target.value })}
                         className="w-24 px-2 py-1.5 rounded-lg border" />
                     </td>
                     <td className={diff == null ? "text-neutral-400" : diff === 0 ? "text-green-600 font-bold" : diff < 0 ? "text-red-600 font-bold" : "text-amber-600 font-bold"}>
@@ -502,11 +502,11 @@ function ProductStockTab({ branchId }: { branchId: string }) {
             <tr key={r.id} className="border-t">
               <td className="p-3 font-semibold">{r.name} {r.unit && <span className="text-xs text-neutral-500">({r.unit})</span>}</td>
               <td>
-                <input type="number" step="0.01" defaultValue={r.stock} onBlur={(e) => Number(e.target.value) !== Number(r.stock) && upsert(r.id, { stock: Number(e.target.value) })}
+                <input min="0" type="number" step="0.01" defaultValue={r.stock} onBlur={(e) => Number(e.target.value) !== Number(r.stock) && upsert(r.id, { stock: Number(e.target.value) })}
                   className={`px-2 py-1 rounded-lg border w-28 ${Number(r.stock) <= Number(r.min_stock) && Number(r.min_stock) > 0 ? "border-red-300 bg-red-50" : "border-neutral-200"}`} />
               </td>
               <td>
-                <input type="number" step="0.01" defaultValue={r.min_stock} onBlur={(e) => Number(e.target.value) !== Number(r.min_stock) && upsert(r.id, { min_stock: Number(e.target.value) })}
+                <input min="0" type="number" step="0.01" defaultValue={r.min_stock} onBlur={(e) => Number(e.target.value) !== Number(r.min_stock) && upsert(r.id, { min_stock: Number(e.target.value) })}
                   className="px-2 py-1 rounded-lg border border-neutral-200 w-28" />
               </td>
               <td className="text-right pr-3">
@@ -755,7 +755,7 @@ function PreparedTab({ ingredients, reloadIngredients }: { ingredients: Ingredie
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 mb-3">
           <input placeholder="Название (Чесночный соус)" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} className="px-3 py-2 rounded-xl border sm:col-span-2" />
           <input placeholder="Ед. (г, мл, шт)" value={draft.unit} onChange={(e) => setDraft({ ...draft, unit: e.target.value })} className="px-3 py-2 rounded-xl border" />
-          <input type="number" placeholder="Выход" value={(draft.prep_yield) || ""} onChange={(e) => setDraft({ ...draft, prep_yield: Number(e.target.value) })} className="px-3 py-2 rounded-xl border" />
+          <input min="0" type="number" placeholder="Выход" value={(draft.prep_yield) || ""} onChange={(e) => setDraft({ ...draft, prep_yield: Number(e.target.value) })} className="px-3 py-2 rounded-xl border" />
         </div>
         <button onClick={createPrepared} className="w-full px-4 py-2 rounded-xl bg-primary text-white font-bold mb-4">+ Создать заготовку</button>
 
@@ -793,7 +793,7 @@ function PreparedTab({ ingredients, reloadIngredients }: { ingredients: Ingredie
             </div>
             <div className="flex items-center gap-2 mb-4 text-sm">
               <label>Выход батча:</label>
-              <input type="number" defaultValue={selected.prep_yield} onBlur={(e) => updateYield(selected.id, Number(e.target.value))} className="w-24 px-2 py-1 rounded-lg border" />
+              <input min="0" type="number" defaultValue={selected.prep_yield} onBlur={(e) => updateYield(selected.id, Number(e.target.value))} className="w-24 px-2 py-1 rounded-lg border" />
               <span className="text-neutral-500">{selected.unit}</span>
               <span className="ml-auto font-bold">≈ {perUnit.toFixed(2)} ₽ / {selected.unit}</span>
             </div>
@@ -805,7 +805,7 @@ function PreparedTab({ ingredients, reloadIngredients }: { ingredients: Ingredie
                 {allIng.filter((i) => i.id !== selectedId).map((i) => <option key={i.id} value={i.id}>{i.name} ({i.unit}){i.is_prepared ? " 🧪" : ""}</option>)}
               </select>
               <div className="flex gap-2">
-                <input type="number" placeholder="Кол-во" value={(addComp.qty || "") || ""} onChange={(e) => setAddComp({ ...addComp, qty: Number(e.target.value) })} className="px-3 py-2 rounded-xl border w-full" />
+                <input min="0" type="number" placeholder="Кол-во" value={(addComp.qty || "") || ""} onChange={(e) => setAddComp({ ...addComp, qty: Number(e.target.value) })} className="px-3 py-2 rounded-xl border w-full" />
                 <button onClick={addComponent} className="px-3 py-2 rounded-xl bg-primary text-white font-bold">+</button>
               </div>
             </div>

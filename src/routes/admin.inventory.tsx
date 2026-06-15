@@ -65,9 +65,9 @@ function Stock() {
       <div className="grid grid-cols-12 gap-2 mb-4 items-end">
         <input className={inp + " col-span-3"} placeholder="Название" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
         <input className={inp + " col-span-1"} placeholder="ед." value={draft.unit} onChange={(e) => setDraft({ ...draft, unit: e.target.value })} />
-        <input type="number" className={inp + " col-span-2"} placeholder="Остаток" value={(draft.stock) || ""} onChange={(e) => setDraft({ ...draft, stock: Number(e.target.value) })} />
-        <input type="number" className={inp + " col-span-2"} placeholder="Мин." value={(draft.min_stock) || ""} onChange={(e) => setDraft({ ...draft, min_stock: Number(e.target.value) })} />
-        <input type="number" className={inp + " col-span-2"} placeholder="Цена ₽/ед." value={(draft.cost_price) || ""} onChange={(e) => setDraft({ ...draft, cost_price: Number(e.target.value) })} />
+        <input min="0" type="number" className={inp + " col-span-2"} placeholder="Остаток" value={(draft.stock) || ""} onChange={(e) => setDraft({ ...draft, stock: Number(e.target.value) })} />
+        <input min="0" type="number" className={inp + " col-span-2"} placeholder="Мин." value={(draft.min_stock) || ""} onChange={(e) => setDraft({ ...draft, min_stock: Number(e.target.value) })} />
+        <input min="0" type="number" className={inp + " col-span-2"} placeholder="Цена ₽/ед." value={(draft.cost_price) || ""} onChange={(e) => setDraft({ ...draft, cost_price: Number(e.target.value) })} />
         <button onClick={add} className="col-span-2 px-4 py-2 rounded-xl bg-primary text-white font-bold">+ Добавить</button>
       </div>
 
@@ -84,11 +84,11 @@ function Stock() {
                 <td>{it.unit}</td>
                 <td className={`font-bold ${low ? "text-red-600" : ""}`}>{Number(it.stock)}{low && " ⚠️"}</td>
                 <td>
-                  <input type="number" defaultValue={it.min_stock} onBlur={(e) => update(it.id, { min_stock: Number(e.target.value) })}
+                  <input min="0" type="number" defaultValue={it.min_stock} onBlur={(e) => update(it.id, { min_stock: Number(e.target.value) })}
                     className="w-20 px-2 py-1 rounded border" />
                 </td>
                 <td>
-                  <input type="number" defaultValue={it.cost_price} onBlur={(e) => update(it.id, { cost_price: Number(e.target.value) })}
+                  <input min="0" type="number" defaultValue={it.cost_price} onBlur={(e) => update(it.id, { cost_price: Number(e.target.value) })}
                     className="w-24 px-2 py-1 rounded border" /> ₽
                 </td>
                 <td>
@@ -262,7 +262,7 @@ function Recipes() {
             {semiProducts.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
         )}
-        <input type="number" step="0.01" value={(qty) || ""} onChange={(e) => setQty(Number(e.target.value))} placeholder="Кол-во"
+        <input min="0" type="number" step="0.01" value={(qty) || ""} onChange={(e) => setQty(Number(e.target.value))} placeholder="Кол-во"
           className={inp + " mb-3"} />
         <button onClick={add} className="w-full px-4 py-2.5 rounded-xl bg-primary text-white font-bold">+ Добавить в техкарту</button>
         <p className="text-xs text-neutral-500 mt-3">
@@ -540,8 +540,8 @@ function InvoiceEditor({ inv, suppliers, branches, ingredients, onClose }: any) 
             <select value={newItem.ingredient_id} onChange={(e) => setNewItem({ ...newItem, ingredient_id: e.target.value })} className={inp + " col-span-5"}>
               {ingredients.map((i: any) => <option key={i.id} value={i.id}>{i.name} (ост: {Number(i.stock)} {i.unit}, цена: {Number(i.cost_price).toFixed(2)} ₽)</option>)}
             </select>
-            <input type="number" placeholder="Кол-во" value={(newItem.qty || "") || ""} onChange={(e) => setNewItem({ ...newItem, qty: Number(e.target.value) })} className={inp + " col-span-2"} />
-            <input type="number" step="0.01" placeholder="Цена за ед." value={(newItem.price || "") || ""} onChange={(e) => setNewItem({ ...newItem, price: Number(e.target.value) })} className={inp + " col-span-2"} />
+            <input min="0" type="number" placeholder="Кол-во" value={(newItem.qty || "") || ""} onChange={(e) => setNewItem({ ...newItem, qty: Number(e.target.value) })} className={inp + " col-span-2"} />
+            <input min="0" type="number" step="0.01" placeholder="Цена за ед." value={(newItem.price || "") || ""} onChange={(e) => setNewItem({ ...newItem, price: Number(e.target.value) })} className={inp + " col-span-2"} />
             <div className="col-span-2 px-3 py-2 font-bold">{(newItem.qty * newItem.price).toFixed(2)} ₽</div>
             <button onClick={addItem} className="col-span-1 px-3 py-2 rounded-xl bg-primary text-white font-bold">+</button>
           </div>

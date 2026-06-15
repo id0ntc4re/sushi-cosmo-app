@@ -173,7 +173,7 @@ function PromosAdmin() {
 
             {editing.discount_type !== "gift" && (
               <Field label="Размер скидки">
-                <input placeholder="0" type="number" className={inp} value={(editing.discount_value) || ""} onChange={(e) => setEditing({ ...editing, discount_value: e.target.value })} />
+                <input min="0" placeholder="0" type="number" className={inp} value={(editing.discount_value) || ""} onChange={(e) => setEditing({ ...editing, discount_value: e.target.value })} />
               </Field>
             )}
 
@@ -245,13 +245,13 @@ function PromosAdmin() {
               </div>
             )}
 
-            <Field label="Мин. сумма заказа, ₽"><input placeholder="0" type="number" className={inp} value={(editing.min_order) || ""} onChange={(e) => setEditing({ ...editing, min_order: e.target.value })} /></Field>
+            <Field label="Мин. сумма заказа, ₽"><input min="0" placeholder="0" type="number" className={inp} value={(editing.min_order) || ""} onChange={(e) => setEditing({ ...editing, min_order: e.target.value })} /></Field>
             <div className="grid grid-cols-2 gap-3 items-end">
               <Field label="Действует с"><input type="date" className={inp} value={editing.starts_at} onChange={(e) => setEditing({ ...editing, starts_at: e.target.value })} /></Field>
               <Field label="Действует до"><input type="date" className={inp} value={editing.expires_at} onChange={(e) => setEditing({ ...editing, expires_at: e.target.value })} /></Field>
             </div>
             <div className="text-[11px] text-neutral-500 -mt-1">Если поля пустые — промокод действует без ограничения по сроку.</div>
-            <Field label="Макс. использований (пусто = без лимита)"><input placeholder="0" type="number" className={inp} value={(editing.max_uses) || ""} onChange={(e) => setEditing({ ...editing, max_uses: e.target.value })} /></Field>
+            <Field label="Макс. использований (пусто = без лимита)"><input min="0" placeholder="0" type="number" className={inp} value={(editing.max_uses) || ""} onChange={(e) => setEditing({ ...editing, max_uses: e.target.value })} /></Field>
             <label className="flex items-center gap-2">
               <input type="checkbox" checked={editing.is_active} onChange={(e) => setEditing({ ...editing, is_active: e.target.checked })} />
               <span className="text-sm">Активен</span>

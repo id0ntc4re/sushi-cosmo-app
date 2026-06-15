@@ -84,7 +84,7 @@ function CategoriesAdmin() {
             <label className="block"><span className="text-xs text-neutral-600">Slug</span>
               <input className="w-full mt-1 px-3 py-2 rounded-xl border" value={editing.slug ?? ""} onChange={(e) => setEditing({ ...editing, slug: e.target.value })} placeholder="auto" /></label>
             <label className="block"><span className="text-xs text-neutral-600">Сортировка</span>
-              <input placeholder="0" type="number" className="w-full mt-1 px-3 py-2 rounded-xl border" value={(editing.sort_order ?? 0) || ""} onChange={(e) => setEditing({ ...editing, sort_order: Number(e.target.value) })} /></label>
+              <input min="0" placeholder="0" type="number" className="w-full mt-1 px-3 py-2 rounded-xl border" value={(editing.sort_order ?? 0) || ""} onChange={(e) => setEditing({ ...editing, sort_order: Number(e.target.value) })} /></label>
             <label className="flex items-center gap-2"><input type="checkbox" checked={editing.is_active ?? true} onChange={(e) => setEditing({ ...editing, is_active: e.target.checked })} /> Активна</label>
           </div>
           <div className="flex gap-2 mt-6 justify-end">

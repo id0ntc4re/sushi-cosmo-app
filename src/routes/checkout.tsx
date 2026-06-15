@@ -565,7 +565,7 @@ function Checkout() {
                     />
                   </Field>
                   <Field label="Количество персон">
-                    <input placeholder="0" type="number" min={1} max={20} className={inputCls} value={(form.persons) === 0 || (form.persons) === "0" ? "" : (form.persons)}
+                    <input placeholder="0" type="number" min={1} max={20} className={inputCls} value={(form.persons) || ""}
                       onChange={(e) => set("persons", Number(e.target.value))} />
                   </Field>
                 </Section>
@@ -589,7 +589,7 @@ function Checkout() {
                   </div>
                   {form.payment_method === "cash" && (
                     <Field label="Сдача с (₽)">
-                      <input placeholder="0" type="number" className={inputCls} value={(form.change_from) === 0 || (form.change_from) === "0" ? "" : (form.change_from)}
+                      <input placeholder="0" type="number" className={inputCls} value={(form.change_from) || ""}
                         onChange={(e) => set("change_from", e.target.value)}
                         placeholder="Например, 2000" />
                     </Field>
@@ -704,7 +704,7 @@ function Checkout() {
                       <div className="flex gap-2 items-center">
                         <input type="range" min={0} max={maxBonus} value={bonusApplied}
                           onChange={(e) => setBonusUse(Number(e.target.value))} className="flex-1" />
-                        <input placeholder="0" type="number" min={0} max={maxBonus} value={(bonusApplied) === 0 || (bonusApplied) === "0" ? "" : (bonusApplied)}
+                        <input placeholder="0" type="number" min={0} max={maxBonus} value={(bonusApplied) || ""}
                           onChange={(e) => setBonusUse(Math.max(0, Math.min(maxBonus, Number(e.target.value) || 0)))}
                           className="w-20 px-2 py-1 rounded-lg border text-sm text-right" />
                       </div>

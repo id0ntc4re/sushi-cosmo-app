@@ -214,7 +214,7 @@ function Customers() {
                 </Field>
               </div>
               <Field label="Бонусы">
-                <input placeholder="0" type="number" step="1" value={(edit.bonus_balance ?? 0) === 0 || (edit.bonus_balance ?? 0) === "0" ? "" : (edit.bonus_balance ?? 0)} onChange={(e) => setEdit({ ...edit, bonus_balance: Number(e.target.value) })}
+                <input placeholder="0" type="number" step="1" value={(edit.bonus_balance ?? 0) || ""} onChange={(e) => setEdit({ ...edit, bonus_balance: Number(e.target.value) })}
                   className="w-full px-4 py-2 rounded-xl border border-neutral-200" />
               </Field>
 

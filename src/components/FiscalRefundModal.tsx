@@ -330,7 +330,7 @@ export function FiscalRefundModal({ orderId, onClose, onRefunded }: Props) {
                         <button disabled={disabled} onClick={() => setQty(l.key, l.qty - 1)}
                           className="h-7 w-7 rounded-full bg-white border font-bold disabled:opacity-30">−</button>
                         <input placeholder="0"
-                          type="number" min={0} max={max} value={(l.qty) === 0 || (l.qty) === "0" ? "" : (l.qty)}
+                          type="number" min={0} max={max} value={(l.qty) || ""}
                           onChange={(e) => setQty(l.key, Number(e.target.value))}
                           disabled={disabled}
                           className="w-12 text-center text-sm font-bold border rounded-md py-1" />

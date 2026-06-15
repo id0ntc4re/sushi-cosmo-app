@@ -353,7 +353,7 @@ function PosPage() {
                 <label className="text-xs font-semibold text-neutral-700 block">
                   Сумма от клиента (для расчёта сдачи)
                 </label>
-                <input placeholder="0" type="number" inputMode="decimal" min="0" value={(changeFrom) === 0 || (changeFrom) === "0" ? "" : (changeFrom)}
+                <input placeholder="0" type="number" inputMode="decimal" min="0" value={(changeFrom) || ""}
                   onChange={(e) => setChangeFrom(e.target.value)}
                   placeholder={`К оплате: ${total.toLocaleString("ru")} ₽`}
                   className={inp} />
@@ -412,7 +412,7 @@ function PosPage() {
                       discountPct === v ? "bg-primary text-white" : "bg-neutral-100 hover:bg-neutral-200"
                     }`}>{v}%</button>
                 ))}
-                <input placeholder="0" type="number" min={0} max={100} value={(discountPct) === 0 || (discountPct) === "0" ? "" : (discountPct)}
+                <input placeholder="0" type="number" min={0} max={100} value={(discountPct) || ""}
                   onChange={(e) => setDiscountPct(Math.max(0, Math.min(100, Number(e.target.value) || 0)))}
                   className="w-16 px-2 py-1.5 rounded-full text-xs border text-center" />
               </div>
@@ -420,7 +420,7 @@ function PosPage() {
             {profile && bonusBalance > 0 && (
               <div>
                 <div className="text-xs text-neutral-600 mb-1">Бонусы (доступно {bonusBalance}, можно списать до {maxBonus})</div>
-                <input placeholder="0" type="number" min={0} max={maxBonus} value={(bonusUse) === 0 || (bonusUse) === "0" ? "" : (bonusUse)}
+                <input placeholder="0" type="number" min={0} max={maxBonus} value={(bonusUse) || ""}
                   onChange={(e) => setBonusUse(Math.max(0, Math.min(maxBonus, Number(e.target.value) || 0)))}
                   className={inp} disabled={discountPct > 0} />
                 {discountPct > 0 && <div className="text-[10px] text-neutral-400 mt-1">Скидка и бонусы не суммируются</div>}

@@ -319,6 +319,16 @@ function PosPage() {
             {deliveryType === "delivery" && (
               <AddressFields value={address} onChange={setAddress} required />
             )}
+            <div className="pt-1">
+              <div className="text-xs font-semibold text-neutral-600 mb-2">
+                {deliveryType === "pickup" ? "Когда забрать" : "Когда доставить"}
+              </div>
+              <DeliveryTimePicker
+                value={deliveryTime}
+                onChange={setDeliveryTime}
+                leadMin={deliveryType === "pickup" ? 30 : 60}
+              />
+            </div>
             <input className={inp} placeholder="Комментарий клиента"
               value={comment} onChange={(e) => setComment(e.target.value)} />
             {isSuper && branches.length > 1 && (

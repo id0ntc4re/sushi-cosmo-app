@@ -353,7 +353,31 @@ function OrdersAdmin() {
                 <L lab="Персон"><input type="number" value={meta.persons} onChange={(e) => setMeta({ ...meta, persons: Number(e.target.value) })} className={inp} /></L>
                 <L lab="Сдача с"><input type="number" value={meta.change_from} onChange={(e) => setMeta({ ...meta, change_from: e.target.value })} className={inp} /></L>
                 <L lab="Доставка ₽"><input type="number" value={meta.delivery_cost} onChange={(e) => setMeta({ ...meta, delivery_cost: Number(e.target.value) })} className={inp} /></L>
-                <L lab="Скидка ₽"><input type="number" value={meta.discount} onChange={(e) => setMeta({ ...meta, discount: Number(e.target.value) })} className={inp} /></L>
+                <L lab="Скидка">
+                  {(() => {
+                    const sub = items.reduce((a: number, x: any) => a + Number(x.total || 0), 0);
+                    const pct = sub > 0 ? Math.round((Number(meta.discount) / sub) * 1000) / 10 : 0;
+                    return (
+                      <div className="flex gap-2 items-center">
+                        <div className="relative flex-1">
+                          <input type="number" min={0} max={100} step="0.1" value={pct}
+                            onChange={(e) => {
+                              const p = Math.max(0, Math.min(100, Number(e.target.value) || 0));
+                              setMeta({ ...meta, discount: Math.round((sub * p) / 100) });
+                            }}
+                            className={`${inp} pr-7`} />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-neutral-400">%</span>
+                        </div>
+                        <div className="relative flex-1">
+                          <input type="number" min={0} value={meta.discount}
+                            onChange={(e) => setMeta({ ...meta, discount: Math.max(0, Number(e.target.value) || 0) })}
+                            className={`${inp} pr-7`} />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-neutral-400">₽</span>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </L>
                 <L lab="Комментарий" full><textarea value={meta.comment} onChange={(e) => setMeta({ ...meta, comment: e.target.value })} className={`${inp} min-h-[60px]`} /></L>
               </div>
               <button onClick={saveMeta} className="px-4 py-2 rounded-full bg-primary text-white font-semibold text-sm">💾 Сохранить данные</button>

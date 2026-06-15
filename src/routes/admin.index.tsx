@@ -234,7 +234,7 @@ function ShiftButtons({ branchId }: { branchId: string | null | undefined }) {
     }
   }
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-2 flex-wrap">
       <button onClick={() => run("openShift")} disabled={!!busy || !branchId}
         className="px-4 py-2 rounded-full bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold disabled:opacity-50">
         {busy === "openShift" ? "Открываем…" : "🔓 Открыть смену"}
@@ -243,6 +243,52 @@ function ShiftButtons({ branchId }: { branchId: string | null | undefined }) {
         className="px-4 py-2 rounded-full bg-neutral-900 hover:bg-neutral-800 text-white text-sm font-bold disabled:opacity-50">
         {busy === "closeShift" ? "Закрываем…" : "🔒 Закрыть смену"}
       </button>
+      <TestKktButton branchId={branchId} />
     </div>
+  );
+}
+
+function TestKktButton({ branchId }: { branchId: string | null | undefined }) {
+  const [busy, setBusy] = useState(false);
+  async function run() {
+    if (!branchId) return toast.error("Выберите конкретный филиал выше");
+    setBusy(true);
+    try {
+      const { data: b } = await (supabase.from("branches") as any)
+        .select("kkt_url,kkt_tax_system,kkt_vat,kkt_operator_name,kkt_operator_inn,kkt_payments_place,kkt_payments_address,name,is_demo")
+        .eq("id", branchId).maybeSingle();
+      if (!b?.kkt_url) return toast.error("В филиале не указан адрес ККТ");
+      const isDemo = String(b.kkt_url).toLowerCase().startsWith("demo://") || b.is_demo;
+      if (!isDemo) {
+        if (!confirm(`Филиал «${b.name}» не в демо-режиме. Пробить ТЕСТОВЫЙ чек на реальной кассе?`)) return;
+      }
+      const { printFiscalReceipt } = await import("@/lib/fiscal-print");
+      const res = await printFiscalReceipt({
+        kktUrl: b.kkt_url,
+        taxationType: b.kkt_tax_system || "usn_income",
+        vat: b.kkt_vat || "none",
+        operatorName: b.kkt_operator_name || "Тест-кассир",
+        operatorInn: b.kkt_operator_inn,
+        paymentMethod: "card_online",
+        total: 1,
+        items: [{ name: "🧪 Тестовая позиция", price: 1, quantity: 1 }],
+        paymentsPlace: b.kkt_payments_place,
+        paymentsAddress: b.kkt_payments_address,
+      });
+      if (!res.ok) { toast.error(res.message); return; }
+      toast.success(
+        `Тестовый чек пробит ✓  ФД №${res.fiscalDocumentNumber}  ФП ${res.fiscalSign}`,
+        { duration: 8000 }
+      );
+      if (res.ofdReceiptUrl) console.log("OFD URL:", res.ofdReceiptUrl);
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <button onClick={run} disabled={busy || !branchId}
+      className="px-4 py-2 rounded-full bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold disabled:opacity-50">
+      {busy ? "Печатаем…" : "🧪 Тест ККТ (демо-чек)"}
+    </button>
   );
 }

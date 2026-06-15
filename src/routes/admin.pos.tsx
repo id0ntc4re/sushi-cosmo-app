@@ -198,7 +198,7 @@ function PosPage() {
       toast.success(`Заказ №${order.number} создан`);
       setFiscalOrderId(order.id);
       // Reset
-      setCart([]); setComment(""); setAdminNote(""); setDiscountPct(0); setBonusUse(0); setHolidayKind(null);
+      setCart([]); setComment(""); setAdminNote(""); setDiscountPct(0); setBonusUse(0); setHolidayKind(null); setDeliveryTime("");
     } catch (e: any) {
       const { ruError } = await import("@/lib/errors");
       toast.error(ruError(e, "Не удалось создать заказ"));

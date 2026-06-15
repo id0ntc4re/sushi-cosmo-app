@@ -78,33 +78,33 @@ function Index() {
   }, [banners.length]);
 
   useEffect(() => {
+    let cancelled = false;
     (async () => {
       try {
         setLoading(true);
         setLoadError(null);
-        const prods = await supabase
-          .from("products")
-          .select("id,name,price,weight,category_id,image_url,description,ingredients,is_addon,tags,calories,protein,fat,carbs")
-          .eq("is_active", true)
-          .eq("is_semi_product", false)
-          .order("sort_order");
-
+        const [prods, cats, bans] = await Promise.all([
+          supabase
+            .from("products")
+            .select("id,name,price,weight,category_id,image_url,description,ingredients,is_addon,tags,calories,protein,fat,carbs")
+            .eq("is_active", true)
+            .eq("is_semi_product", false)
+            .order("sort_order"),
+          supabase.from("categories").select("id,name,slug").eq("is_active", true).order("sort_order"),
+          supabase.from("banners").select("image_url,eyebrow,title,subtitle,cta_label,cta_link").eq("is_active", true).order("sort_order"),
+        ]);
+        if (cancelled) return;
         if (prods.error) throw prods.error;
-        const list = (prods.data as Product[]) ?? [];
-        setProducts(list);
+        setProducts((prods.data as Product[]) ?? []);
+        if (!cats.error) setCategories(cats.data ?? []);
+        if (!bans.error && bans.data && bans.data.length) setBanners(bans.data as Banner[]);
       } catch (e: any) {
-        setLoadError(e?.message ?? "Не удалось загрузить меню");
+        if (!cancelled) setLoadError(e?.message ?? "Не удалось загрузить меню");
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
-
-      const [cats, bans] = await Promise.all([
-        supabase.from("categories").select("id,name,slug").eq("is_active", true).order("sort_order"),
-        supabase.from("banners").select("image_url,eyebrow,title,subtitle,cta_label,cta_link").eq("is_active", true).order("sort_order"),
-      ]);
-      if (!cats.error) setCategories(cats.data ?? []);
-      if (!bans.error && bans.data && bans.data.length) setBanners(bans.data as Banner[]);
     })();
+    return () => { cancelled = true; };
   }, []);
 
   const filteredProducts = useMemo(() => {

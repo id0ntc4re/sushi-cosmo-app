@@ -158,10 +158,16 @@ export function DeliveryTimePicker({ value, onChange, leadMin = 60 }: Props) {
               placeholder="ЧЧ:ММ"
               value={timeDraft}
               onChange={(e) => onTimeChange(e.target.value)}
-              className="h-11 w-28 pl-9 pr-3 rounded-xl bg-white border border-neutral-200 text-sm font-semibold tabular-nums focus:outline-none focus:border-primary"
+              className={`h-11 w-28 pl-9 pr-3 rounded-xl bg-white border text-sm font-semibold tabular-nums focus:outline-none ${
+                isPast ? "border-red-400 focus:border-red-500 text-red-600" : "border-neutral-200 focus:border-primary"
+              }`}
             />
           </div>
         </div>
+      )}
+
+      {mode === "scheduled" && isPast && (
+        <p className="text-xs text-red-600 ml-1">Нельзя выбрать прошедшее время — укажите будущую дату/время.</p>
       )}
 
       {mode === "asap" && (

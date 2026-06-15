@@ -73,9 +73,7 @@ export function DeliveryTimePicker({ value, onChange, leadMin = 60 }: Props) {
   }
 
   function onTimeChange(raw: string) {
-    // allow only digits and ":"
     let v = raw.replace(/[^\d:]/g, "").slice(0, 5);
-    // auto-insert ":"
     if (v.length === 2 && !v.includes(":")) v = v + ":";
     setTimeDraft(v);
     const m = v.match(/^(\d{2}):(\d{2})$/);
@@ -87,6 +85,17 @@ export function DeliveryTimePicker({ value, onChange, leadMin = 60 }: Props) {
       onChange(serialise(date, fixed));
     }
   }
+
+  // Past-time guard
+  const selectedDateTime = useMemo(() => {
+    if (!parsed.date) return null;
+    const m = timeDraft.match(/^(\d{2}):(\d{2})$/);
+    if (!m) return null;
+    const d = new Date(parsed.date);
+    d.setHours(Number(m[1]), Number(m[2]), 0, 0);
+    return d;
+  }, [parsed.date, timeDraft]);
+  const isPast = selectedDateTime ? selectedDateTime.getTime() < Date.now() : false;
 
   const displayDate = parsed.date ?? stripTime(today);
 
@@ -149,10 +158,16 @@ export function DeliveryTimePicker({ value, onChange, leadMin = 60 }: Props) {
               placeholder="ЧЧ:ММ"
               value={timeDraft}
               onChange={(e) => onTimeChange(e.target.value)}
-              className="h-11 w-28 pl-9 pr-3 rounded-xl bg-white border border-neutral-200 text-sm font-semibold tabular-nums focus:outline-none focus:border-primary"
+              className={`h-11 w-28 pl-9 pr-3 rounded-xl bg-white border text-sm font-semibold tabular-nums focus:outline-none ${
+                isPast ? "border-red-400 focus:border-red-500 text-red-600" : "border-neutral-200 focus:border-primary"
+              }`}
             />
           </div>
         </div>
+      )}
+
+      {mode === "scheduled" && isPast && (
+        <p className="text-xs text-red-600 ml-1">Нельзя выбрать прошедшее время — укажите будущую дату/время.</p>
       )}
 
       {mode === "asap" && (

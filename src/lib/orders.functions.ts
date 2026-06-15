@@ -4,6 +4,17 @@ import { supabaseAdmin } from "@/integrations/supabase/client.server";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { sendOrderEmail } from "@/lib/email.server";
 
+const deliveryTimeSchema = z.string().max(50).nullable().refine(
+  (v) => {
+    if (!v) return true;
+    const m = v.match(/^(\d{4})-(\d{2})-(\d{2})\s(\d{1,2}):(\d{2})$/);
+    if (!m) return true; // legacy free-form values pass
+    const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), Number(m[4]), Number(m[5]));
+    return d.getTime() >= Date.now() - 5 * 60000;
+  },
+  { message: "Нельзя оформить заказ на прошедшее время" },
+);
+
 export const createCheckoutOrder = createServerFn({ method: "POST" })
   .inputValidator((data) => z.object({
     accessToken: z.string().nullable().optional(),
@@ -16,7 +27,7 @@ export const createCheckoutOrder = createServerFn({ method: "POST" })
       payment_method: z.enum(["cash", "card_courier", "card_online"]),
       change_from: z.number().nullable(),
       persons: z.number().int().min(1).max(20),
-      delivery_time: z.string().max(50).nullable(),
+      delivery_time: deliveryTimeSchema,
       comment: z.string().max(500).nullable(),
       subtotal: z.number().min(0),
       delivery_cost: z.number().min(0),
@@ -209,7 +220,7 @@ export const createOrderAsAdmin = createServerFn({ method: "POST" })
       payment_method: z.enum(["cash", "card_courier", "card_online"]),
       change_from: z.number().nullable(),
       persons: z.number().int().min(1).max(20),
-      delivery_time: z.string().max(50).nullable(),
+      delivery_time: deliveryTimeSchema,
       comment: z.string().max(500).nullable(),
       subtotal: z.number().min(0),
       delivery_cost: z.number().min(0),

@@ -48,68 +48,138 @@ function formatDeliveryTime(v: string | null | undefined): string {
 function renderOrderHtml(o: OrderEmailData): string {
   const payment =
     o.payment_method === "cash" ? "Наличные" :
-    o.payment_method === "card_courier" ? "Картой" :
+    o.payment_method === "card_courier" ? "Картой курьеру" :
     "Картой онлайн";
+
+  const fmtMoney = (n: number) => `${Math.round(n).toLocaleString("ru-RU")} ₽`;
+  const orderNo = `#${String(o.number).padStart(4, "0")}`;
+  const now = new Date();
+  const createdAt =
+    `${String(now.getDate()).padStart(2, "0")}.${String(now.getMonth() + 1).padStart(2, "0")}.${now.getFullYear()} ` +
+    `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
+
   const itemsRows = o.items
     .map(
       (it) => `
       <tr>
-        <td style="padding:8px 4px;border-bottom:1px solid #eee">${escapeHtml(it.name)}</td>
-        <td style="padding:8px 4px;border-bottom:1px solid #eee;text-align:center">${it.quantity}</td>
-        <td style="padding:8px 4px;border-bottom:1px solid #eee;text-align:right">${it.price * it.quantity} ₽</td>
+        <td style="padding:12px 0;border-bottom:1px solid #f3f4f6;color:#374151;font-size:14px">${escapeHtml(it.name)}</td>
+        <td style="padding:12px 0;border-bottom:1px solid #f3f4f6;color:#374151;font-size:14px;text-align:center;width:60px">${it.quantity}</td>
+        <td style="padding:12px 0;border-bottom:1px solid #f3f4f6;color:#374151;font-size:14px;text-align:right;width:100px;white-space:nowrap">${fmtMoney(it.price * it.quantity)}</td>
       </tr>`,
     )
     .join("");
 
-  return `
-  <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;color:#222">
-    <h2 style="margin:0 0 8px">🛒 Новый заказ №${o.number}</h2>
-    ${o.branch_name ? `<p style="margin:0 0 16px;color:#666">Филиал: <b>${escapeHtml(o.branch_name)}</b></p>` : ""}
+  const totalsRow = (label: string, val: string, color = "#6b7280") => `
+      <tr>
+        <td style="padding:4px 0;color:${color};font-size:14px">${label}:</td>
+        <td style="padding:4px 0;color:${color};font-size:14px;text-align:right;white-space:nowrap">${val}</td>
+      </tr>`;
 
-    <h3 style="margin:16px 0 6px">Клиент</h3>
-    <p style="margin:0;line-height:1.6">
-      <b>${escapeHtml(o.customer_name)}</b><br/>
-      📞 <a href="tel:${escapeHtml(o.phone)}">${escapeHtml(o.phone)}</a>
-    </p>
+  const deliveryBlock = o.delivery_type === "delivery"
+    ? `<div style="color:#111827;font-weight:500;font-style:italic;font-size:14px">Курьером на адрес:</div>
+       <div style="color:#1f2937;margin-top:4px;font-size:14px;line-height:1.5">${escapeHtml(o.address ?? "—")}</div>`
+    : `<div style="color:#111827;font-weight:500;font-style:italic;font-size:14px">Самовывоз:</div>
+       <div style="color:#1f2937;margin-top:4px;font-size:14px;line-height:1.5">${escapeHtml(o.pickup_point ?? "—")}</div>`;
 
-    <h3 style="margin:16px 0 6px">Доставка</h3>
-    <p style="margin:0;line-height:1.6">
-      ${o.delivery_type === "delivery"
-        ? `🚚 Доставка<br/>Адрес: <b>${escapeHtml(o.address ?? "—")}</b>`
-        : `🏪 Самовывоз<br/>Точка: <b>${escapeHtml(o.pickup_point ?? "—")}</b>`}
-      <br/>Время: <b>${escapeHtml(formatDeliveryTime(o.delivery_time))}</b>
-    </p>
+  return `<!DOCTYPE html>
+<html lang="ru"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Новый заказ ${orderNo}</title></head>
+<body style="margin:0;padding:0;background:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f3f4f6;padding:40px 12px">
+  <tr><td align="center">
+    <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08)">
 
-    <h3 style="margin:16px 0 6px">Оплата</h3>
-    <p style="margin:0;line-height:1.6">
-      ${payment}${o.change_from ? ` · сдача с ${o.change_from} ₽` : ""}
-    </p>
+      <tr><td style="background:#18181b;padding:24px 32px;border-bottom:4px solid #f97316">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+          <td style="vertical-align:middle">
+            <div style="color:#ffffff;font-size:22px;font-weight:700;letter-spacing:-0.5px">КОСМО<span style="color:#f97316">СУШИ</span></div>
+            <div style="color:#a1a1aa;font-size:11px;text-transform:uppercase;letter-spacing:2px;margin-top:4px">Новый заказ в филиале</div>
+          </td>
+          <td style="vertical-align:middle;text-align:right">
+            <div style="color:#71717a;font-size:11px;text-transform:uppercase;letter-spacing:0.5px">Номер заказа</div>
+            <div style="color:#ffffff;font-size:20px;font-weight:700;font-family:'SF Mono',Menlo,Consolas,monospace;margin-top:2px">${orderNo}</div>
+          </td>
+        </tr></table>
+      </td></tr>
 
-    ${o.comment ? `<h3 style="margin:16px 0 6px">Комментарий</h3><p style="margin:0;padding:10px;background:#fff8e1;border-radius:6px">${escapeHtml(o.comment)}</p>` : ""}
+      <tr><td style="background:#fafafa;padding:20px 32px;border-bottom:1px solid #f3f4f6">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+          <td style="vertical-align:top">
+            <div style="color:#9ca3af;font-size:10px;text-transform:uppercase;font-weight:700;letter-spacing:0.5px;margin-bottom:4px">Филиал</div>
+            <div style="color:#1f2937;font-weight:500;font-size:14px">${escapeHtml(o.branch_name ?? "—")}</div>
+          </td>
+          <td style="vertical-align:top;text-align:right">
+            <div style="color:#9ca3af;font-size:10px;text-transform:uppercase;font-weight:700;letter-spacing:0.5px;margin-bottom:4px">Принят</div>
+            <div style="color:#1f2937;font-weight:500;font-size:14px">${createdAt}</div>
+          </td>
+        </tr></table>
+      </td></tr>
 
-    <h3 style="margin:16px 0 6px">Состав</h3>
-    <table style="width:100%;border-collapse:collapse">
-      <thead>
-        <tr style="background:#fafafa">
-          <th style="text-align:left;padding:8px 4px">Блюдо</th>
-          <th style="padding:8px 4px">Кол-во</th>
-          <th style="text-align:right;padding:8px 4px">Сумма</th>
-        </tr>
-      </thead>
-      <tbody>${itemsRows}</tbody>
+      <tr><td style="padding:24px 32px;border-bottom:1px solid #f3f4f6">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"><tr>
+          <td width="50%" style="vertical-align:top;padding-right:16px">
+            <div style="color:#9ca3af;font-size:10px;text-transform:uppercase;font-weight:700;letter-spacing:1px;margin-bottom:10px">Клиент</div>
+            <div style="color:#111827;font-weight:700;font-size:17px">${escapeHtml(o.customer_name)}</div>
+            <a href="tel:${escapeHtml(o.phone)}" style="color:#ea580c;text-decoration:none;font-weight:500;display:block;margin-top:4px;font-size:14px">${escapeHtml(o.phone)}</a>
+            <div style="margin-top:14px">
+              <div style="color:#9ca3af;font-size:10px;text-transform:uppercase;font-weight:700;letter-spacing:0.5px;margin-bottom:2px">Время</div>
+              <div style="color:#1f2937;font-size:14px">${escapeHtml(formatDeliveryTime(o.delivery_time))}</div>
+            </div>
+          </td>
+          <td width="50%" style="vertical-align:top;padding-left:16px">
+            <div style="color:#9ca3af;font-size:10px;text-transform:uppercase;font-weight:700;letter-spacing:1px;margin-bottom:10px">Доставка</div>
+            ${deliveryBlock}
+            <div style="margin-top:14px">
+              <div style="color:#9ca3af;font-size:10px;text-transform:uppercase;font-weight:700;letter-spacing:0.5px;margin-bottom:2px">Оплата</div>
+              <div style="color:#1f2937;font-size:14px">${payment}${o.change_from ? ` <span style="color:#6b7280">· сдача с ${fmtMoney(o.change_from)}</span>` : ""}</div>
+            </div>
+          </td>
+        </tr></table>
+      </td></tr>
+
+      ${o.comment ? `
+      <tr><td style="background:#fff7ed;padding:14px 32px;border-left:4px solid #fb923c">
+        <div style="color:#9a3412;font-size:10px;text-transform:uppercase;font-weight:700;letter-spacing:0.5px;margin-bottom:4px">Комментарий к заказу</div>
+        <div style="color:#7c2d12;font-size:14px;line-height:1.5;font-style:italic">«${escapeHtml(o.comment)}»</div>
+      </td></tr>` : ""}
+
+      <tr><td style="padding:24px 32px">
+        <div style="color:#9ca3af;font-size:10px;text-transform:uppercase;font-weight:700;letter-spacing:1px;margin-bottom:12px">Состав заказа</div>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+          <thead><tr>
+            <th align="left" style="padding:8px 0;border-bottom:2px solid #e5e7eb;color:#1f2937;font-size:13px;font-weight:700">Наименование</th>
+            <th align="center" style="padding:8px 0;border-bottom:2px solid #e5e7eb;color:#1f2937;font-size:13px;font-weight:700;width:60px">Кол-во</th>
+            <th align="right" style="padding:8px 0;border-bottom:2px solid #e5e7eb;color:#1f2937;font-size:13px;font-weight:700;width:100px">Цена</th>
+          </tr></thead>
+          <tbody>${itemsRows}</tbody>
+        </table>
+      </td></tr>
+
+      <tr><td style="background:#fafafa;padding:24px 32px;border-top:1px solid #e5e7eb">
+        <table role="presentation" align="right" cellpadding="0" cellspacing="0" border="0" style="width:240px">
+          ${totalsRow("Сумма блюд", fmtMoney(o.subtotal))}
+          ${o.discount > 0 ? totalsRow("Скидка", `−${fmtMoney(o.discount)}`, "#16a34a") : ""}
+          ${o.bonus_used > 0 ? totalsRow("Бонусы", `−${fmtMoney(o.bonus_used)}`, "#2563eb") : ""}
+          ${o.delivery_cost > 0 ? totalsRow("Доставка", fmtMoney(o.delivery_cost)) : totalsRow("Доставка", "Бесплатно")}
+          <tr><td colspan="2" style="padding-top:8px"><div style="border-top:1px solid #e5e7eb;line-height:0;font-size:0">&nbsp;</div></td></tr>
+          <tr>
+            <td style="padding:8px 0;color:#111827;font-size:16px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px">Итого:</td>
+            <td style="padding:8px 0;color:#ea580c;font-size:20px;font-weight:700;text-align:right;white-space:nowrap">${fmtMoney(o.total)}</td>
+          </tr>
+        </table>
+        <div style="clear:both;height:0;line-height:0;font-size:0">&nbsp;</div>
+      </td></tr>
+
+      <tr><td style="padding:24px 32px;text-align:center;border-top:1px solid #f3f4f6">
+        <div style="color:#9ca3af;font-size:11px;line-height:1.6">
+          Это автоматическое уведомление для сотрудников филиала КосмоСуши.<br/>
+          При возникновении проблем свяжитесь с администратором.
+        </div>
+      </td></tr>
+
     </table>
-
-    <table style="width:100%;margin-top:16px;font-size:14px">
-      <tr><td>Сумма блюд</td><td style="text-align:right">${o.subtotal} ₽</td></tr>
-      ${o.discount > 0 ? `<tr><td>Скидка</td><td style="text-align:right;color:#c00">−${o.discount} ₽</td></tr>` : ""}
-      ${o.bonus_used > 0 ? `<tr><td>Бонусы</td><td style="text-align:right;color:#c00">−${o.bonus_used} ₽</td></tr>` : ""}
-      ${o.delivery_cost > 0 ? `<tr><td>Доставка</td><td style="text-align:right">${o.delivery_cost} ₽</td></tr>` : ""}
-      <tr style="font-size:18px;font-weight:bold">
-        <td style="padding-top:8px;border-top:2px solid #222">Итого</td>
-        <td style="padding-top:8px;border-top:2px solid #222;text-align:right">${o.total} ₽</td>
-      </tr>
-    </table>
-  </div>`;
+  </td></tr>
+</table>
+</body></html>`;
 }
 
 /**

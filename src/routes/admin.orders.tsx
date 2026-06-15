@@ -7,6 +7,22 @@ import { printKitchenReceipt } from "@/lib/kitchen-print";
 import { AddressFields } from "@/components/AddressFields";
 import { FiscalReceiptModal } from "@/components/FiscalReceiptModal";
 import { FiscalRefundModal } from "@/components/FiscalRefundModal";
+import { DeliveryTimePicker } from "@/components/DeliveryTimePicker";
+
+const WD_SHORT = ["вс", "пн", "вт", "ср", "чт", "пт", "сб"];
+const MO_SHORT = ["янв", "фев", "мар", "апр", "мая", "июн", "июл", "авг", "сен", "окт", "ноя", "дек"];
+function formatDeliveryTime(v: string | null | undefined): string {
+  if (!v) return "Как можно скорее";
+  const m = String(v).match(/^(\d{4})-(\d{2})-(\d{2})\s(\d{1,2}):(\d{2})$/);
+  if (!m) return String(v);
+  const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const diff = Math.round((d.getTime() - today.getTime()) / 86400000);
+  const time = `${m[4].padStart(2, "0")}:${m[5]}`;
+  if (diff === 0) return `Сегодня, ${time}`;
+  if (diff === 1) return `Завтра, ${time}`;
+  return `${WD_SHORT[d.getDay()]}, ${d.getDate()} ${MO_SHORT[d.getMonth()]}, ${time}`;
+}
 
 export const Route = createFileRoute("/admin/orders")({
   component: OrdersAdmin,
@@ -300,7 +316,7 @@ function OrdersAdmin() {
               } />
               {open.change_from && <Info k="Сдача с" v={`${open.change_from} ₽`} />}
               <Info k="Персон" v={open.persons} />
-              <Info k="Время" v={open.delivery_time || "—"} />
+              <Info k="Время" v={formatDeliveryTime(open.delivery_time)} />
               {open.comment && <div className="sm:col-span-2"><Info k="Комментарий" v={open.comment} /></div>}
               {customer && (
                 <div className="sm:col-span-2 flex flex-wrap gap-2 mt-1">
@@ -337,7 +353,7 @@ function OrdersAdmin() {
                 ) : (
                   <L lab="Точка самовывоза" full><input value={meta.pickup_point} onChange={(e) => setMeta({ ...meta, pickup_point: e.target.value })} className={inp} /></L>
                 )}
-                <L lab="Время"><input value={meta.delivery_time} onChange={(e) => setMeta({ ...meta, delivery_time: e.target.value })} className={inp} placeholder="ASAP или 19:30" /></L>
+                <L lab="Время" full><DeliveryTimePicker value={meta.delivery_time} onChange={(v) => setMeta({ ...meta, delivery_time: v })} leadMin={meta.delivery_type === "pickup" ? 30 : 60} /></L>
                 <L lab="Персон"><input type="number" value={meta.persons} onChange={(e) => setMeta({ ...meta, persons: Number(e.target.value) })} className={inp} /></L>
                 <L lab="Сдача с"><input type="number" value={meta.change_from} onChange={(e) => setMeta({ ...meta, change_from: e.target.value })} className={inp} /></L>
                 <L lab="Доставка ₽"><input type="number" value={meta.delivery_cost} onChange={(e) => setMeta({ ...meta, delivery_cost: Number(e.target.value) })} className={inp} /></L>

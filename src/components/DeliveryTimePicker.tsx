@@ -73,9 +73,7 @@ export function DeliveryTimePicker({ value, onChange, leadMin = 60 }: Props) {
   }
 
   function onTimeChange(raw: string) {
-    // allow only digits and ":"
     let v = raw.replace(/[^\d:]/g, "").slice(0, 5);
-    // auto-insert ":"
     if (v.length === 2 && !v.includes(":")) v = v + ":";
     setTimeDraft(v);
     const m = v.match(/^(\d{2}):(\d{2})$/);
@@ -87,6 +85,17 @@ export function DeliveryTimePicker({ value, onChange, leadMin = 60 }: Props) {
       onChange(serialise(date, fixed));
     }
   }
+
+  // Past-time guard
+  const selectedDateTime = useMemo(() => {
+    if (!parsed.date) return null;
+    const m = timeDraft.match(/^(\d{2}):(\d{2})$/);
+    if (!m) return null;
+    const d = new Date(parsed.date);
+    d.setHours(Number(m[1]), Number(m[2]), 0, 0);
+    return d;
+  }, [parsed.date, timeDraft]);
+  const isPast = selectedDateTime ? selectedDateTime.getTime() < Date.now() : false;
 
   const displayDate = parsed.date ?? stripTime(today);
 

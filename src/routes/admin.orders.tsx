@@ -353,7 +353,7 @@ function OrdersAdmin() {
                 ) : (
                   <L lab="Точка самовывоза" full><input value={meta.pickup_point} onChange={(e) => setMeta({ ...meta, pickup_point: e.target.value })} className={inp} /></L>
                 )}
-                <L lab="Время"><input value={meta.delivery_time} onChange={(e) => setMeta({ ...meta, delivery_time: e.target.value })} className={inp} placeholder="ASAP или 19:30" /></L>
+                <L lab="Время" full><DeliveryTimePicker value={meta.delivery_time} onChange={(v) => setMeta({ ...meta, delivery_time: v })} leadMin={meta.delivery_type === "pickup" ? 30 : 60} /></L>
                 <L lab="Персон"><input type="number" value={meta.persons} onChange={(e) => setMeta({ ...meta, persons: Number(e.target.value) })} className={inp} /></L>
                 <L lab="Сдача с"><input type="number" value={meta.change_from} onChange={(e) => setMeta({ ...meta, change_from: e.target.value })} className={inp} /></L>
                 <L lab="Доставка ₽"><input type="number" value={meta.delivery_cost} onChange={(e) => setMeta({ ...meta, delivery_cost: Number(e.target.value) })} className={inp} /></L>

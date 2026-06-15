@@ -77,7 +77,7 @@ function renderOrderHtml(o: OrderEmailData): string {
       ${o.delivery_type === "delivery"
         ? `🚚 Доставка<br/>Адрес: <b>${escapeHtml(o.address ?? "—")}</b>`
         : `🏪 Самовывоз<br/>Точка: <b>${escapeHtml(o.pickup_point ?? "—")}</b>`}
-      ${o.delivery_time ? `<br/>Время: <b>${escapeHtml(o.delivery_time)}</b>` : ""}
+      <br/>Время: <b>${escapeHtml(formatDeliveryTime(o.delivery_time))}</b>
     </p>
 
     <h3 style="margin:16px 0 6px">Оплата</h3>

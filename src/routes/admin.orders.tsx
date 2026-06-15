@@ -360,7 +360,9 @@ function OrdersAdmin() {
                     return (
                       <div className="flex gap-2 items-center">
                         <div className="relative flex-1">
-                          <input type="number" min={0} max={100} step="0.1" value={pct}
+                          <input type="number" min={0} max={100} step="0.1"
+                            value={pct === 0 ? "" : pct}
+                            placeholder="0"
                             onChange={(e) => {
                               const p = Math.max(0, Math.min(100, Number(e.target.value) || 0));
                               setMeta({ ...meta, discount: Math.round((sub * p) / 100) });
@@ -369,7 +371,9 @@ function OrdersAdmin() {
                           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-neutral-400">%</span>
                         </div>
                         <div className="relative flex-1">
-                          <input type="number" min={0} value={meta.discount}
+                          <input type="number" min={0}
+                            value={Number(meta.discount) === 0 ? "" : meta.discount}
+                            placeholder="0"
                             onChange={(e) => setMeta({ ...meta, discount: Math.max(0, Number(e.target.value) || 0) })}
                             className={`${inp} pr-7`} />
                           <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-neutral-400">₽</span>

@@ -427,7 +427,7 @@ function OrdersAdmin() {
                       .map((p) => (
                         <button key={p.id} onClick={() => addProduct(p)}
                           className="w-full flex items-center gap-2 px-3 py-2 text-left text-sm hover:bg-primary/5">
-                          {p.image_url && <img src={p.image_url} className="h-8 w-8 rounded object-cover" alt="" />}
+                          {p.image_url && <img src={p.image_url} loading="lazy" decoding="async" className="h-8 w-8 rounded object-cover" alt="" />}
                           <span className="flex-1 truncate">{p.name}</span>
                           <span className="font-bold">{Number(p.price)} ₽</span>
                         </button>

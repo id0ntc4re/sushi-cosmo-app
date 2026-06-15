@@ -35,6 +35,7 @@ function PosPage() {
 
   const [cart, setCart] = useState<CartLine[]>([]);
   const [deliveryType, setDeliveryType] = useState<"delivery" | "pickup">("delivery");
+  const [deliveryTime, setDeliveryTime] = useState<string>("");
   const [address, setAddress] = useState("");
   const [comment, setComment] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "card_courier" | "card_online">("cash");
